@@ -1,0 +1,1 @@
+<li><a href="{$uri}" class="##$_modx->resource.id === {$id} ? 'active' : ''}">{$menutitle?:$pagetitle}</a></li>

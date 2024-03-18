@@ -1,0 +1,1 @@
+<div class="columns-list__letter">По запросу "{$query}" теги не найдены.</div>

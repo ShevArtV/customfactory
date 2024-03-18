@@ -1,0 +1,116 @@
+.js-custom-select.disabled {
+  pointer-events: none;
+  opacity: .5;
+}
+
+.select {
+  border-radius: 0;
+  position: relative;
+  cursor: pointer;
+  transition: all .4s;
+  z-index: 0;
+}
+
+.select .select__item_selected {
+  border-radius: 0;
+  color: #000;
+  display: flex;
+  justify-content: space-between;
+  column-gap:10px;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 600;
+
+  position: relative;
+  background-color: transparent;
+  transition: all .4s;
+  z-index: 2;  
+}
+
+.select .select__item_selected:after {
+  content: "";
+  background: url("data:image/svg+xml,%3Csvg width='12' height='7' viewBox='0 0 12 7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%2311263A' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat;
+  transition: transform .4s;
+  transform: rotate(0deg);
+  padding: 0 5px;
+  display: block;
+  width: 12px;
+  height: 7px;
+}
+
+.select .select__wrap{
+  box-shadow: 0 5px 10px -2px rgba(0,0,0,.2);
+  list-style: none;
+  border-radius: 0;
+  opacity: 0;
+  transition: all .4s;
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 100%;
+  background-color: #fff;
+  margin-bottom: 0;
+  z-index: 1;
+  pointer-events: none;
+  min-width: max-content;  
+}
+
+.select .select__wrap .select__item {
+  padding: 10px;
+  font-size: 18px;
+  color: #000;
+  justify-content: space-between;
+  align-items: center;
+  display: flex;
+  cursor: pointer;
+  transition: color .4s, background-color .4s;
+}
+
+.select .select__wrap .select__item:hover {
+  color: #000;
+  background-color: #f2f2f2;
+}
+
+.select .select__wrap .select__item.selected {
+  display: none;
+}
+
+.select .select__wrap .select__item.disabled {
+  opacity: .5;
+  pointer-events: none;
+}
+
+.right .select__wrap{
+  left: unset;
+  right: 0;
+}
+
+.open .select {
+  z-index: 2;
+}
+
+.open .select__wrap{
+  opacity: 1;
+  pointer-events: all;
+}
+
+.open .select__item_selected:after {
+  transform: rotate(180deg);
+}
+
+.select-pill .select__item_selected{
+  height: 46px;
+  font-size: 16px;
+  min-width: auto;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #BDBDBD;
+  color: var(--color-text);
+  padding: 0 20px;
+  background: none;
+  border-radius: 30px;
+}
+.select-pill .select .select__wrap{
+  top: 100%;
+}

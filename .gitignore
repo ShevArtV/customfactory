@@ -1,0 +1,11 @@
+/assets/components/
+/assets/temp/
+/assets/test.php
+/core/cache/
+/core/components/
+/core/model/
+/core/packages/
+/core/vendor/
+/core/xpdo/
+/core/composer.phar
+/core/composer.lock
