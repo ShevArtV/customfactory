@@ -44,4 +44,55 @@ class Base
         }
         return $output;
     }
+
+    public function getProductTypes()
+    {
+        $cacheKey = 'getProductTypes::cache';
+        if ($output = $this->modx->cacheManager->get($cacheKey)) {
+            return $output;
+        }
+        $q = $this->modx->newQuery('msProduct');
+        $q->select('id, pagetitle');
+        $q->where(['msProduct.template' => 14]);
+        $tstart = microtime(true);
+        if ($q->prepare() && $q->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+            $output = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $this->modx->cacheManager->set($cacheKey, $output);
+            return $output;
+        }
+    }
+
+    public function getParents()
+    {
+        $cacheKey = 'getParents::cache';
+        if ($output = $this->modx->cacheManager->get($cacheKey)) {
+            return $output;
+        }
+        $q = $this->modx->newQuery('modResource');
+        $q->select('id, pagetitle');
+        $q->where(['modResource.class_key' => 'msCategory', 'modResource.parent' => 13]);
+        $tstart = microtime(true);
+        if ($q->prepare() && $q->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+            $output = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+            $this->modx->cacheManager->set($cacheKey, $output);
+            return $output;
+        }
+    }
+
+    public function executeSearch(\xPDOQuery $query, int $configId, array $rids, array $params){
+        $tstart = microtime(true);
+        $this->modx->log(1, print_r($params, 1));
+        if ($query->prepare() && $query->stmt->execute($params)) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+            $_SESSION['flatfilters'][$configId]['totalResources'] = $query->stmt->rowCount();
+            $rids = $query->stmt->fetchAll(\PDO::FETCH_COLUMN);
+        }
+
+        $this->modx->event->returnedValues['rids'] = implode(',', $rids);
+    }
 }

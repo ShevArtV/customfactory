@@ -382,6 +382,8 @@
                         <h2>Выберите данные для отображения в файле.</h2>
                         <div class="columns-list columns-list-2">
                             <input type="hidden" name="className" value="modUser">
+                            <input type="checkbox" name="captions[id][]" value="ID" checked class="v_hidden">
+                            <input type="checkbox" name="names[]" value="id" checked class="v_hidden">
                             {set $groups = $_modx->runSnippet('@FILE snippets/designer/snippet.getuserfields.php', [])}
                             {foreach $groups as $group => $fields}
                                 <div class="columns-list__item">
@@ -411,7 +413,7 @@
                     <div class="modal-content">
                         <div class="input-group">
                             <label class="input-label">Введите запрос</label>
-                            <input type="text" class="input" name="query" form="filterForm" value="{$.get.query}">
+                            <input type="text" class="input" name="query" data-query form="filterForm" value="{$.get.query}">
                             <small class="error" data-si-error="query"></small>
                         </div>
                     </div>

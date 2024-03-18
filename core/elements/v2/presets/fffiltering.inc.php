@@ -31,6 +31,6 @@ return [
         'tpl' => '#/fffiltering/designs/item.tpl',
 
         'sortby' => ['createdon' => 'DESC'],
-        //'element' => 'msProducts',
+        'element' => 'msProducts',
     ]
 ];

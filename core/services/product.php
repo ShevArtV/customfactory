@@ -27,16 +27,22 @@ class Product extends Base
 
     public function getDesignTemplates($prohibited_categories = '9999999999'): array
     {
+        $cacheKey = 'getDesignTemplates::' . $prohibited_categories;
+        if ($output = $this->modx->cacheManager->get($cacheKey)) {
+            return $output;
+        }
         $prohibited_categories = explode(',', $prohibited_categories);
         $output = [];
         $q = $this->modx->newQuery('msProductData');
         $q->setClassAlias('Data');
-        $q->select("Data.size AS size, 
-                           Data.id AS root_id,
-                           Data.count_files AS count_files,
-                           Parent.pagetitle AS pagetitle, 
-                           Parent.menuindex AS menuindex, 
-                           Product.parent AS parent");
+        $q->select(
+            "Data.size AS size, 
+                    Data.id AS root_id,
+                    Data.count_files AS count_files,
+                    Parent.pagetitle AS pagetitle, 
+                    Parent.menuindex AS menuindex, 
+                    Product.parent AS parent"
+        );
         $q->leftJoin('modResource', 'Product', 'Data.id = Product.id');
         $q->leftJoin('modResource', 'Parent', 'Product.parent = Parent.id');
         $q->where(['Product.template' => 14, 'Parent.published' => 1, 'Parent.deleted' => 0]);
@@ -55,13 +61,17 @@ class Product extends Base
                 $output[$item['pagetitle']]['sizes'][$size[0]] = $item;
             }
         }
-
+        $this->modx->cacheManager->set($cacheKey, $output);
         return $output;
     }
 
     public function getTagsByAlphabet($query = '')
     {
-        $output = [];
+        $cacheKey = 'getTagsByAlphabet::' . $query;
+        if ($output = $this->modx->cacheManager->get($cacheKey)) {
+            return $output;
+        }
+
         $q = $this->modx->newQuery('TaggerTag');
         $q->select('label, tag');
         if ($query) {
@@ -79,11 +89,14 @@ class Product extends Base
                 $key = is_numeric($firstChar) ? 'A_Цифры' : $firstChar;
                 $output[$key][$item['label']] = $item['tag'];
             }
-            ksort($output);
+            if (!empty($output)) {
+                ksort($output);
+            }
         }
-
+        $this->modx->cacheManager->set($cacheKey, $output);
         return $output;
     }
+
 
     public function prepareFiles(array $filelist, int $rid)
     {
@@ -106,6 +119,38 @@ class Product extends Base
             $resource->set('print', implode('|', $files));
             $resource->save();
         }
+    }
+
+    public function searchProducts(string $query, string $rids, int $configId)
+    {
+        $tag = mb_substr($query, 0, 1, "UTF-8");
+        $tag = mb_strtoupper($tag, "UTF-8") . mb_substr($query, 1, null, "UTF-8");
+        $color = mb_strtolower(trim($query));
+        $pagetitle = $article = $profileNum = "%{$query}%";
+        $rids = explode(',', $rids);
+        $params = array(
+            ':tag' => $tag,
+            ':color' => $color,
+            ':pagetitle' => $pagetitle,
+            ':article' => $article,
+            ':profileNum' => $profileNum,
+        );
+
+        $q = $this->modx->newQuery('msProduct');
+        $q->leftJoin('msProductData', 'Data');
+        $q->leftJoin('modUserProfile', 'Profile', 'Profile.id = msProduct.createdby');
+        $q->select('msProduct.id as id');
+        $q->where(
+            "
+                    (JSON_SEARCH(Data.tags, 'one', :tag) IS NOT NULL
+                    OR JSON_SEARCH(Data.color, 'one', :color) IS NOT NULL
+                    OR msProduct.pagetitle LIKE :pagetitle
+                    OR Data.article LIKE :article 
+                    OR Profile.profile_num LIKE :profileNum)                    
+            "
+        );
+        $q->andCondition(['msProduct.id:IN' => $rids]);
+        $this->executeSearch($q, $configId, $rids, $params);
     }
 
     public function createProduct(array $productData): array
@@ -172,5 +217,25 @@ class Product extends Base
             $output = $this->checkDouble($articlePrefix, $tagLabel, $number, $profile_num, $rid);
         }
         return $output;
+    }
+
+    public function getProductFields()
+    {
+        return [
+            'Общие' => [
+                'pagetitle' => 'Название',
+                'parent' => 'Категория',
+                'root_id' => 'Тип товара',
+                'article' => 'Артикул',
+                'article_ya' => 'Артикул Яндекс',
+                'article_wb' => 'Артикул WB',
+                'article_oz' => 'Артикул Ozon',
+                'tags' => 'Тег',
+                'color' => 'Цвета',
+                'status' => 'Статус',
+                'prev_status' => 'Предыдущий Статус',
+                'price' => 'Цена',
+            ]
+        ];
     }
 }

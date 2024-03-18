@@ -9,38 +9,41 @@ use \PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class Report extends Base
 {
-    /** @var string */
+    /** @var string $className */
     private string $className;
 
-    /** @var string */
+    /** @var string $filename */
     private string $filename;
 
-    /** @var string */
+    /** @var string $file */
     private string $file;
 
-    /** @var array */
+    /** @var array $names */
     private array $names;
 
-    /** @var array */
+    /** @var array $captions */
     private array $captions;
 
-    /** @var array */
+    /** @var array $headers */
     private array $headers;
 
-    /** @var array */
+    /** @var array $ids */
     private array $ids;
 
-    /** @var array */
+    /** @var array $sizes */
     private array $sizes;
 
-    /** @var array */
+    /** @var array $tshirtParents */
     private array $tshirtParents;
 
-    /** @var array */
+    /** @var array $statuses */
     private array $statuses;
 
-    /** @var array */
+    /** @var array $types */
     private array $types;
+
+    /** @var array $parents */
+    private array $parents;
 
     protected function initialize()
     {
@@ -49,22 +52,23 @@ class Report extends Base
         $this->sizes = ['M', 'L', 'XL', 'XXL'];
         $this->tshirtParents = [69138789, 6914097897];
         $this->filename = 'report-' . date('d-m-Y-H-i-s');
-        $this->getProductTypes();
+        $this->setProductTypes();
+        $this->setParents();
     }
 
-    private function getProductTypes()
+    private function setProductTypes()
     {
-        $q = $this->modx->newQuery('msProduct');
-        $q->select('id, pagetitle');
-        $q->where(['msProduct.template' => 14]);
-        $tstart = microtime(true);
-        if ($q->prepare() && $q->stmt->execute()) {
-            $this->modx->queryTime += microtime(true) - $tstart;
-            $this->modx->executedQueries++;
-            $products = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
-            foreach ($products as $p) {
-                $this->types[$p['id']] = $p['pagetitle'];
-            }
+        $products = $this->getProductTypes();
+        foreach ($products as $p) {
+            $this->types[$p['id']] = $p['pagetitle'];
+        }
+    }
+
+    private function setParents()
+    {
+        $parents = $this->getParents();
+        foreach ($parents as $p) {
+            $this->parents[$p['id']] = $p['pagetitle'];
         }
     }
 
@@ -116,7 +120,7 @@ class Report extends Base
         }
         if ($this->className === 'msProduct') {
             $q->leftJoin('msProductData', 'Data');
-            $q->select('*');
+            $q->select($this->modx->getSelectColumns('msProduct', 'msProduct', '', ['parent', 'id', 'content', 'pagetitle']));
             $q->select($this->modx->getSelectColumns('msProductData', 'Data', '', ['id'], true));
             if (!empty($this->ids)) {
                 $q->where(['msProduct.id:IN' => $this->ids]);
@@ -138,7 +142,7 @@ class Report extends Base
                     $output = array_merge($output, $this->getUserData($resource, $strNum));
                 }
                 if ($this->className === 'msProduct') {
-                    if (in_array($resource->get('parent'), $this->tshirtParents)) {
+                    if (in_array($resource['parent'], $this->tshirtParents)) {
                         for ($i = 0; $i < 4; $i++) {
                             $strNum++;
                             $output = array_merge($output, $this->getProductData($resource, $strNum, $i));
@@ -147,14 +151,12 @@ class Report extends Base
                         $strNum++;
                         $output = array_merge($output, $this->getProductData($resource, $strNum));
                     }
-
                 }
             }
         }
 
         return $output;
     }
-
 
     public function getUserData(array $resourceData, int $strNum): array
     {
@@ -165,7 +167,7 @@ class Report extends Base
         foreach ($this->names as $i => $name) {
             $index = $this->getColumnIndex($i + 1) . $strNum;
             $output[$index] = $name === 'dob' ? date('d.m.Y', $resourceData[$name]) : $resourceData[$name];
-            if($name === 'status'){
+            if ($name === 'status') {
                 $output[$index] = str_replace('&nbsp;', '', $this->statuses['designer'][$resourceData['status']]['caption']);
             }
         }
@@ -179,9 +181,6 @@ class Report extends Base
             $index = $this->getColumnIndex($i + 1) . $strNum;
             $output[$index] = $resourceData[$name];
 
-            if (is_array($resourceData[$name])) {
-                $output[$index] = implode(', ', $resourceData[$name][0]);
-            }
             switch ($name) {
                 case 'article_barcode':
                     $output[$index] = $resourceData['article'] . ' ' . $this->sizes[$i];
@@ -199,6 +198,14 @@ class Report extends Base
                     break;
                 case 'root_id':
                     $output[$index] = $this->types[$resourceData['root_id']];
+                    break;
+                case 'parent':
+                    $output[$index] = $this->parents[$resourceData['parent']];
+                    break;
+                case 'tags':
+                case 'color':
+                    $value = json_decode($resourceData[$name], true);
+                    $output[$index] = is_array($value) ? implode(', ', $value) : $value;
                     break;
             }
         }

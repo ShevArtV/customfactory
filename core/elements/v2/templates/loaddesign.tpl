@@ -140,7 +140,7 @@
                                 {$tags}
                                 <div class="columns-list__name" data-mpc-remove="1" data-mpc-chunk="gettagsbyalphabet/tag.tpl">
                                     <label class="checkbox-label">
-                                        <input type="radio" name="data[tag_label]" value="{$label}" data-checkbox="{$name}" class="checkbox">
+                                        <input type="radio" name="data[tag_label]" value="{$label}" data-tag="data[tags][]" data-checkbox="{$name}" class="checkbox">
                                         <span class="checkbox-text">{$name}</span>
                                     </label>
                                 </div>
@@ -196,7 +196,7 @@
                                 {foreach $colors as $color index=$id}
                                     <div class="columns-list__name">
                                         <label class="checkbox-label">
-                                            <input type="checkbox" value="{$color | strip}" class="checkbox" name="data[color][]" form="uploadQuizForm" data-checkbox="{$color | strip}">
+                                            <input type="checkbox" value="{$color | strip}" class="checkbox" name="data[color][]" data-color form="uploadQuizForm" data-checkbox="{$color | strip}">
                                             <span class="checkbox-text">{$color | strip}</span>
                                         </label>
                                     </div>

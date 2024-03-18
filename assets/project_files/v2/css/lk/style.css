@@ -213,7 +213,7 @@ svg:not(:root) {
   background-color: #fff;
   display: flex;
   flex-direction: column;
-  padding: 30px;
+  padding: 40px 30px 30px;
   width: 100%;
   max-width: 1020px;
   border-radius: 15px;
@@ -742,7 +742,6 @@ svg:not(:root) {
 .checkbox-label {
   display: block;
   user-select: none;
-  padding-top: 20px;
 }
 
 .checkbox-label--popup {

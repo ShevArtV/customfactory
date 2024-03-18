@@ -132,7 +132,7 @@ class LoadToSelectel
                 }
 
                 foreach ($fileInfo as $info) {
-                    $files[] = $info['url'];
+                    $files[] = $info['path'];
                 }
 
                 if (!empty($files)) {

@@ -130,8 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 project.checkMaxColors(selectedCheckbox.closest('form'), selectedCheckbox);
             }
         },
-        modalShow(target) {
+        modalShow(e, target) {
             if (typeof Fancybox !== 'undefined') {
+                e.preventDefault();
                 Fancybox.show([{src: target.dataset.modalShow, type: "inline"}]);
             }
         },
@@ -140,9 +141,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 Fancybox.close();
             }
         },
-        checkMaxColors(form, target) {
+        checkMaxColors(root, target) {
             const leftTextBlock = document.querySelector('[data-js-left]');
-            const colors = document.querySelectorAll('[name="data[color][]"]:checked');
+            const colors = root.querySelectorAll('[data-color]:checked');
             if (colors.length > 3) {
                 target.checked = false;
                 SendIt.Notify.error('Выбрано максимальное количество цветов.');
@@ -156,10 +157,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 leftTextBlock && (leftTextBlock.textContent = 'Можете выбрать 3 цвета')
             }
         },
-        setTags() {
-            const tag = document.querySelector('[name="data[tag_label]"]:checked');
-            const target = document.querySelector('[name="data[tags][]"]');
-            target.value = tag.dataset.checkbox;
+        setTags(target) {
+            const tag = document.querySelector(`[name="${target.dataset.tag}"]`);
+            tag.value = target.dataset.checkbox;
         },
         clearFileList(e) {
             const fileWrap = document.querySelector('[data-fu-wrap]');
@@ -221,9 +221,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const root = step.closest('[data-si-form]');
             root && SendIt?.QuizForm?.change(root, step.dataset.qfStep, true);
         },
-        selectAll() {
+        selectAll(target) {
             const selectedIds = document.querySelectorAll('[name="selected_id[]"]');
-            selectedIds && selectedIds.forEach(el => el.checked = true)
+            selectedIds && selectedIds.forEach(el => el.checked = target.checked)
         },
         unSelectAll() {
             const selectedIds = document.querySelectorAll('[name="selected_id[]"]');
@@ -370,17 +370,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', async (e) => {
         e.target.closest('[data-tab-target]') && project.toggleTab(e)
         e.target.closest('[data-checkbox-btn]') && project.showSelectedCheckbox(e.target.closest('[data-checkbox-btn]'))
-        e.target.closest('[data-micromodal-trigger]') && project.modalShow(e)
         e.target.closest('[data-checkbox-value]') && project.removeSelectedCheckbox(e)
         e.target.closest('[data-copy]') && project.copyText(e)
         e.target.closest('[data-qf-step]') && project.toggleStep(e.target.closest('[data-qf-step]'))
         e.target.closest('[data-unselect-all]') && project.unSelectAll()
         e.target.closest('[data-modal-close]') && project.modalClose()
-        e.target.closest('[data-modal-show]') && project.modalShow(e.target.closest('[data-modal-show]'))
+        e.target.closest('[data-modal-show]') && project.modalShow(e, e.target.closest('[data-modal-show]'))
         e.target.closest('[data-popup-link]') && project.popupShow(e.target.closest('[data-popup-link]'))
         !e.target.closest('[data-popup]') && !e.target.closest('[data-popup-link]') && project.popupClose()
         e.target.closest('[data-period-value]') && project.selectPeriod(e.target.closest('[data-period-value]'))
         e.target.closest('[data-apply-period]') && project.triggerChangePeriod();
+        e.target.closest('[name="selected_id[]"]') && document.querySelector('[data-select-all]') && (document.querySelector('[data-select-all]').checked = false);
     })
 
     document.addEventListener('change', (e) => {
@@ -388,8 +388,8 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.closest('[data-match-donor]') && project.syncFields(e)
         e.target.closest('[data-size-target]') && project.enableSizes(e)
         e.target.closest('[data-qf-item]') && project.setCompleteOnChange(e)
-        e.target.closest('[name="data[color][]"]') && project.checkMaxColors(e.target.form, e.target.closest('[name="data[color][]"]'))
-        e.target.closest('[name="data[tag_label]"]') && project.setTags()
+        e.target.closest('[data-color]') && project.checkMaxColors(e.target.closest('.modal'), e.target.closest('[data-color]'))
+        e.target.closest('[data-tag]') && project.setTags(e.target.closest('[data-tag]'))
         e.target.closest('[name="data[root_id]"]') && project.clearFileList(e)
         e.target.closest('[data-select-all]') && project.selectAll(e.target.closest('[data-select-all]'))
         e.target.closest('[data-listuser-status]') && project.enterComment(e.target.closest('[data-listuser-status]'));
@@ -410,6 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 
     document.addEventListener('ff:after:reset', (e) => {
+        const queryField = document.querySelector('[data-query]');
         if (typeof dp !== 'undefined') {
             const {datePickerField, datePickerFieldMin, datePickerFieldMax, selectDateText} = project.getDatepickerElements();
             dp.clear();
@@ -417,6 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
             datePickerFieldMax && (datePickerFieldMax.value = '');
             selectDateText && (selectDateText.textContent = 'Не задано');
         }
+        queryField && (queryField.value = '');
     })
 
     document.addEventListener('ff:results:loaded', (e) => {

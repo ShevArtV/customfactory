@@ -124,6 +124,38 @@ class Designer extends Base
         }
     }
 
+    public function searchUsers(string $query, string $rids, int $configId)
+    {
+        $phone = preg_replace('/[^0-9]/', '', $query);
+        $phone = preg_replace('/(\d)(\d{3})(\d{3})(\d{2})(\d{2})$/', '+7(\2)\3-\4-\5', $phone);
+        $date = strtotime($query) ? '%' . strtotime($query) . '%' : $query;
+        $query = "%{$query}%";
+        $rids =  explode(',', $rids);
+        $params = array(
+            ':query' => $query,
+            ':phone' => $phone ?: $query,
+            ':date' => $date
+        );
+
+        $q = $this->modx->newQuery('modUser');
+        $q->leftJoin('modUserProfile', 'Profile');
+        $q->select('modUser.id as id');
+        $q->where("
+                    (modUser.username LIKE :query 
+                    OR Profile.fullname LIKE :query
+                    OR Profile.profile_num LIKE :query
+                    OR Profile.city LIKE :query 
+                    OR Profile.email LIKE :query 
+                    OR Profile.phone = :phone 
+                    OR Profile.createdon LIKE :date 
+                    OR Profile.pass_num LIKE :query 
+                    OR Profile.pass_series LIKE :query
+                    OR Profile.inn LIKE :query)                    
+            ");
+        $q->andCondition(['modUser.id:IN' => $rids]);
+        $this->executeSearch($q, $configId, $rids, $params);
+    }
+
     public function updateUser($data)
     {
         if (!$user = $this->modx->getObject('modUser', (int)$data['id'])) {
