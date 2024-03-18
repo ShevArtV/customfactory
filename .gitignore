@@ -9,3 +9,14 @@
 /core/xpdo/
 /core/composer.phar
 /core/composer.lock
+/layout/
+/manager/
+/temp/
+/.htaccess
+/favicon.ico
+/.idea/.gitignore
+/.idea/customfactory.art-sites.ru.iml
+/.idea/deployment.xml
+/.idea/modules.xml
+/.idea/php.xml
+/.idea/watcherTasks.xml
