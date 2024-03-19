@@ -2,6 +2,8 @@
 
 namespace CustomServices;
 
+use CustomServices\LoadToSelectel;
+
 class Product extends Base
 {
     /**
@@ -17,11 +19,20 @@ class Product extends Base
      */
     private $assetsPath;
 
+    /** @var array $statuses */
+    private array $statuses;
+
+    /** @var LoadToSelectel $loadToSelectel */
+    private LoadToSelectel $loadToSelectel;
+
     protected function initialize()
     {
+        parent::initialize();
         $this->basePath = $this->modx->getOption('base_path');
         $this->corePath = $this->modx->getOption('core_path');
         $this->assetsPath = $this->modx->getOption('assets_path');
+        $this->statuses = $this->getStatuses();
+        $this->loadToSelectel = new LoadToSelectel($this->modx);
         $this->modx->addPackage('tagger', $this->corePath . 'components/tagger/model/');
     }
 
@@ -97,7 +108,6 @@ class Product extends Base
         return $output;
     }
 
-
     public function prepareFiles(array $filelist, int $rid)
     {
         $senditTempPath = $this->modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');
@@ -116,7 +126,7 @@ class Product extends Base
             }
         }
         if (!empty($files) && $resource = $this->modx->getObject('modResource', $rid)) {
-            $resource->set('print', implode('|', $files));
+            $resource->set('temp_files', implode('|', $files));
             $resource->save();
         }
     }
@@ -188,6 +198,181 @@ class Product extends Base
             'rid' => $newProduct->get('id')
         ];
     }
+
+    public function updateProduct(array $productData): array
+    {
+        if (!$product = $this->modx->getObject('modResource', ['class_key' => 'msProduct', 'id' => (int)$productData['id']])) {
+            return [
+                'success' => false,
+                'msg' => 'Произошла ошибка при обновлении дизайна.'
+            ];
+        }
+        $productData['prev_status'] = $product->get('status') ?: 0;
+        $monitoredFields = [
+            'status' => $productData['prev_status'],
+            'parent' => $product->get('parent'),
+            'root_id' => $product->get('root_id'),
+            'tags' => $product->get('tags'),
+            'color' => $product->get('color'),
+        ];
+
+        foreach ($monitoredFields as $key => $value) {
+            if (!isset($productData[$key])) {
+                continue;
+            }
+            $productData[$key] = $this->checkChanges($key, $value, $productData[$key], (int)$productData['id']);
+        }
+
+        if($productData['root_id'] && $root = $this->modx->getObject('msProduct', $productData['root_id'])) {
+            $files = $product->get('print') ? explode('|', $product->get('print')) : [];
+            if(count($files) !== $root->get('count_files')){
+                $productData['root_id'] = $monitoredFields['root_id'];
+            }
+        }
+
+        $product->fromArray($productData);
+        $product->save();
+
+        $this->flatfilters->removeResourceIndex((int)$productData['id']);
+        $this->flatfilters->indexingDocument($product);
+
+        return [
+            'success' => true,
+            'msg' => 'Дизайн обновлен.',
+            'rid' => $productData['id']
+        ];
+    }
+
+
+    public function removeProduct(\msProduct $product): array
+    {
+        $id = $product->get('id');
+        $preview = $product->get('preview') ? explode('|', $product->get('preview')) : [];
+        $print = $product->get('print') ? explode('|', $product->get('print')) : [];
+        $files = array_merge($preview, $print);
+        if (!empty($files)) {
+            foreach ($files as $path) {
+                $this->loadToSelectel->removeContainer($path);
+            }
+        }
+
+        $this->flatfilters->removeResourceIndex($id);
+
+        $product->remove();
+
+        return [
+            'success' => true,
+            'msg' => 'Дизайн удалён.',
+            'rid' => $id
+        ];
+    }
+
+    public function changeStatus($data)
+    {
+        return [
+            'success' => true,
+            'msg' => 'Статус изменен.',
+            'selectedIds' => $this->setProductsField($data, 'status')
+        ];
+    }
+
+    public function changeParent($data)
+    {
+        return [
+            'success' => true,
+            'msg' => 'Категория изменен.',
+            'selectedIds' => $this->setProductsField($data, 'parent')
+        ];
+    }
+
+    public function changeRootId($data)
+    {
+        return [
+            'success' => true,
+            'msg' => 'Тип изменен.',
+            'selectedIds' => $this->setProductsField($data, 'root_id')
+        ];
+    }
+
+    public function changeTags($data)
+    {
+        return [
+            'success' => true,
+            'msg' => 'Тэги изменены.',
+            'selectedIds' => $this->setProductsField($data, 'tags')
+        ];
+    }
+
+    public function changeColor($data)
+    {
+        return [
+            'success' => true,
+            'msg' => 'Цвета изменены.',
+            'selectedIds' => $this->setProductsField($data, 'color')
+        ];
+    }
+
+    public function changeDeleted($data)
+    {
+        return [
+            'success' => true,
+            'msg' => 'Удалено.',
+            'selectedIds' => $this->setProductsField($data, 'deleted')
+        ];
+    }
+
+    public function setProductsField(array $data, string $key): array
+    {
+        $selectedIds = !is_array($data['selected_id']) ? json_decode($data['selected_id'], true) : $data['selected_id'];
+        $productData = !is_array($data['data']) ? json_decode($data['data'], true) : $data['data'];
+        if (!empty($selectedIds)) {
+            foreach ($selectedIds as $selectedId) {
+                $value = $productData[$selectedId][$key];
+                if ($key === 'status') {
+                    $value = $data[$key];
+                }
+                if ($key === 'deleted') {
+                    $value = 1;
+                }
+                $result = $this->updateProduct(['id' => $selectedId, $key => $value]);
+                if (!$result['success']) {
+                    $this->modx->log(1, '[Designer::setProductsField] ' . $result['msg']);
+                }
+            }
+        }
+        return $selectedIds;
+    }
+
+
+    public function checkChanges($key, $oldValue, $newValue, $rid)
+    {
+        switch ($key) {
+            case 'status':
+                $this->modx->log(1, print_r($this->statuses, 1));
+                if ($oldValue !== $newValue && is_array($this->statuses['product'][$oldValue]) && !in_array($newValue, $this->statuses['product'][$oldValue]['allow'])) {
+                    $this->modx->log(1, print_r($oldValue, 1));
+                    $this->modx->log(1, print_r($newValue, 1));
+                    $newValue = $oldValue;
+                }
+                $setLog = $newValue !== $oldValue;
+                break;
+
+            case 'tags':
+            case 'color':
+                $setLog = !empty(array_diff($newValue, $oldValue));
+                break;
+            default:
+                $setLog = $newValue !== $oldValue;
+                break;
+        }
+
+        if ($setLog) {
+            $this->setModerateLog($key, $oldValue, $newValue, $rid);
+        }
+
+        return $newValue;
+    }
+
 
     public function getArticle(array $productData): array
     {

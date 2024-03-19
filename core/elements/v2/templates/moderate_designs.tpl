@@ -32,24 +32,31 @@
                                         {$options}
                                         <li data-mpc-remove="1" data-mpc-chunk="fffiltering/designs/ffcheckboxgroup.tpl">
                                             {set $statuses = ('statuses' | placeholder)}
-                                            <label class="checkbox-label">
-                                                {set $values = ($.get[$key] | split: ',') ?: []}
-                                                {switch $key}
-                                                {case 'parent'}
-                                                {set $caption = $value | resource: 'pagetitle'}
-                                                {case 'status'}
-                                                {set $caption = $statuses['product'][$value]['caption']}
-                                                {default}
-                                                {set $caption = $value}
-                                                {/switch}
-                                                <input class="checkbox" type="checkbox"
-                                                       data-ff-filter="{$key}" name="{$key}[]"
-                                                       data-ff-caption="{$caption}"
-                                                       value="{$value}"
-                                                       id="{$key}-{$idx}"
-                                                       data-mpc-attr="{($value in list $values) ? 'checked' : ''}">
-                                                <span class="checkbox-text checkbox-text--small">{$caption}</span>
-                                            </label>
+                                            {if $key == 'status' && $value == 7 && $_modx->resource.template == 19}
+                                                {set $flag = true}
+                                            {/if}
+                                            {if !$flag}
+                                                <label class="checkbox-label">
+                                                    {set $values = ($.get[$key] | split: ',') ?: []}
+                                                    {switch $key}
+                                                    {case 'parent'}
+                                                    {set $caption = $value | resource: 'pagetitle'}
+                                                    {case 'root_id'}
+                                                    {set $caption = $value | resource: 'pagetitle'}
+                                                    {case 'status'}
+                                                    {set $caption = $statuses['product'][$value]['caption']}
+                                                    {default}
+                                                    {set $caption = $value}
+                                                    {/switch}
+                                                    <input class="checkbox" type="checkbox"
+                                                           data-ff-filter="{$key}" name="{$key}[]"
+                                                           data-ff-caption="{$caption}"
+                                                           value="{$value}"
+                                                           id="{$key}-{$idx}"
+                                                           data-mpc-attr="{($value in list $values) ? 'checked' : ''}">
+                                                    <span class="checkbox-text checkbox-text--small">{$caption}</span>
+                                                </label>
+                                            {/if}
                                         </li>
                                     </ul>
                                 </div>
@@ -140,7 +147,7 @@
                                 <div class="filter-item">
                                     <div class="js-custom-select select-pill">
                                         {set $statuses = ('statuses' | placeholder)}
-                                        <select class="" name="status">
+                                        <select class="" data-list-status="5" name="status">
                                             {foreach $statuses['product'] as $id => $data}
                                                 <option value="{$id}">{$data.caption}</option>
                                             {/foreach}
@@ -148,7 +155,7 @@
                                     </div>
                                 </div>
                                 <div class="filter-item">
-                                    <button type="button" class="btn btn--dark btn--small" data-si-event="click" data-si-preset="setProductsStatus">Установить статус</button>
+                                    <button type="button" class="btn btn--dark btn--small" data-si-event="click" data-si-preset="changeStatus">Установить статус</button>
                                 </div>
                             </div>
                         </li>
@@ -156,7 +163,7 @@
                 </div>
                 <div class="filter-column">
                     <div class="btn-group">
-                        <button class="btn btn--small" type="button" data-si-event="click" data-si-preset="removeProducts">Удалить</button>
+                        <button class="btn btn--small" type="button" form="listActionProducts" data-si-event="click" data-si-preset="changeDeleted">Удалить</button>
                         <button class="btn btn--glass btn--small" type="button" data-modal-show="#modal-excel">Скачать в Excel</button>
                     </div>
                 </div>
@@ -180,15 +187,18 @@
                     <div class="card-design">
                         <div class="card-design__check">
                             <label class="checkbox-label">
-                                <input type="checkbox" class="checkbox" name="selected_id[]" value="{$id}" form="listActionProducts">
+                                <input type="checkbox" class="checkbox" name="selected_id[]" id="sel-product-{$id}" value="{$id}" form="listActionProducts">
                                 <span class="checkbox-text"></span>
                             </label>
                         </div>
 
                         <ul class="card-design__images">
-                            <li style="background-image: url(img/2023-12-23_123120.jpg)"></li>
-                            <li style="background-image: url(img/2023-12-23_123120.jpg)"></li>
-                            <li style="background-image: url(img/2023-12-23_123120.jpg)"></li>
+                            {set $previews = $preview | split: '|'}
+                            {if $previews}
+                                {foreach $previews as $path}
+                                    <li style="background-image: url(https://311725.selcdn.ru/custom_factory/{$path})"></li>
+                                {/foreach}
+                            {/if}
                         </ul>
                         <div class="card-design__content">
                             <div class="card-design__title">{$pagetitle} <small>(id:{$id})</small></div>
@@ -200,18 +210,78 @@
                             <ul class="card-design__params">
                                 {set $statuses = ('statuses' | placeholder)}
                                 <li class="active">Статус: {$statuses['product'][$status]['caption']}</li>
-                                <li>Категория: <a href="">{$parent | resource: 'pagetitle'}</a></li>
-                                <li>Тип товара: <a href="">{$roo_id | resource: 'pagetitle'}</a></li>
-                                <li>Тэг: <a href="#" data-modal-show="#modal-tag-{$id}">{$tags[0]?:'Назначить тэг'}</a></li>
+                                <li>Категория: <a href="#" data-modal-show="#modal-parent-{$id}"
+                                                  data-for="#sel-product-{$id}">{$parent ? ($parent | resource: 'pagetitle') : 'Не задан'}</a>
+                                </li>
+                                <li>Тип товара: <a href="#" data-modal-show="#modal-root-{$id}"
+                                                   data-for="#sel-product-{$id}">{$root_id ? ($root_id | resource: 'pagetitle') : 'Не задан'}</a>
+                                </li>
+                                <li>Тэг: <a href="#" data-modal-show="#modal-tag-{$id}" data-for="#sel-product-{$id}">{$tags[0]?:'Назначить тэг'}</a>
+                                </li>
                                 <li>Цвета:
                                     {foreach $color as $c last=$l}
-                                        <a href="#" data-modal-show="#modal-color-{$id}">{$c}</a>{if !$l},{/if}
+                                        <a href="#" data-modal-show="#modal-color-{$id}" data-for="#sel-product-{$id}">{$c}</a>{if !$l},{/if}
                                     {/foreach}
                                 </li>
                             </ul>
                         </div>
+
+                        <div id="modal-parent-{$id}" aria-hidden="true" class="modal">
+                            <div class="modal-main">
+                                <div class="modal-close" data-modal-close></div>
+                                <div class="modal-title">Выберите категорию</div>
+                                <div class="modal-content scrollbar">
+                                    {set $parents = $_modx->runSnippet('@FILE snippets/product/snippet.getparents.php', [])}
+                                    {if $parents}
+                                        <div class="columns-list">
+                                            {foreach $parents as $p}
+                                                <div class="columns-list__name">
+                                                    <label class="checkbox-label">
+                                                        <input type="radio" value="{$p.id}" class="checkbox" name="data[{$id}][parent]"
+                                                               data-mpc-attr="{$p.id === $parent ? 'checked' : ''}"
+                                                               form="listActionProducts">
+                                                        <span class="checkbox-text">{$p.pagetitle}</span>
+                                                    </label>
+                                                </div>
+                                            {/foreach}
+                                        </div>
+                                    {/if}
+                                </div>
+                                <div class="modal-footer center">
+                                    <button type="button" class="btn" form="listActionProducts" data-si-event="click" data-si-preset="changeParent">Сохранить</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="modal-root-{$id}" aria-hidden="true" class="modal">
+                            <div class="modal-main">
+                                <div class="modal-close" data-modal-close></div>
+                                <div class="modal-title">Выберите тип товара</div>
+                                <div class="modal-content scrollbar">
+                                    {set $types = $_modx->runSnippet('@FILE snippets/product/snippet.gettypes.php', [])}
+                                    {if $types}
+                                        <div class="columns-list">
+                                            {foreach $types as $t}
+                                                <div class="columns-list__name">
+                                                    <label class="checkbox-label">
+                                                        <input type="radio" value="{$t.id}" class="checkbox" name="data[{$id}][root_id]"
+                                                               data-mpc-attr="{$t.id === $root_id ? 'checked' : ''}"
+                                                               form="listActionProducts">
+                                                        <span class="checkbox-text">{$t.pagetitle}</span>
+                                                    </label>
+                                                </div>
+                                            {/foreach}
+                                        </div>
+                                    {/if}
+                                </div>
+                                <div class="modal-footer center">
+                                    <button type="button" class="btn" form="listActionProducts" data-si-event="click" data-si-preset="changeRootId">Сохранить</button>
+                                </div>
+                            </div>
+                        </div>
+
                         <div id="modal-tag-{$id}" aria-hidden="true" class="modal">
-                            <input type="hidden" value="{$tag_label}" form="listActionProducts" name="data[{$props.pid}][tags][]">
+                            <input type="hidden" value="{$tag_label}" form="listActionProducts" name="data[{$id}][tags][]">
                             <div class="modal-main">
                                 <div class="modal-close" data-modal-close></div>
                                 <div class="modal-title">Назначьте тэг для дизайна</div>
@@ -239,7 +309,7 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer center">
-                                    <button type="button" class="btn" data-si-event="click" data-si-preset="changeTag">Сохранить</button>
+                                    <button type="button" class="btn" form="listActionProducts" data-si-event="click" data-si-preset="changeTags">Сохранить</button>
                                 </div>
                             </div>
                         </div>
@@ -247,17 +317,18 @@
                         <div id="modal-color-{$id}" aria-hidden="true" class="modal">
                             <div class="modal-main">
                                 <div class="modal-close" data-modal-close></div>
+                                <div class="modal-title">Выберите цвета</div>
                                 <div class="modal-content scrollbar">
                                     {set $colors = 51982 | resource: 'colors'}
                                     {if $colors}
                                         <div class="columns-list">
                                             {set $colors = $colors | split: ','}
-                                            {foreach $colors as $c index=$id}
+                                            {foreach $colors as $c}
                                                 <div class="columns-list__name">
                                                     <label class="checkbox-label">
                                                         <input type="checkbox" value="{$c | strip}" class="checkbox" name="data[{$id}][color][]" data-color
                                                                data-mpc-attr="{(($c | strip) in list $color) ? 'checked' : ''}"
-                                                               form="uploadQuizForm" data-checkbox="{$c | strip}">
+                                                               form="listActionProducts" data-checkbox="{$c | strip}">
                                                         <span class="checkbox-text">{$c | strip}</span>
                                                     </label>
                                                 </div>
@@ -266,37 +337,11 @@
                                     {/if}
                                 </div>
                                 <div class="modal-footer center">
-                                    <button type="button" class="btn" data-checkbox-btn="4">Выбрать</button>
+                                    <button type="button" class="btn" form="listActionProducts" data-si-event="click" data-si-preset="changeColor">Сохранить</button>
                                 </div>
                             </div>
                         </div>
 
-                        <div id="modal-parent-{$id}" aria-hidden="true" class="modal">
-                            <div class="modal-main">
-                                <div class="modal-close" data-modal-close></div>
-                                <div class="modal-content scrollbar">
-                                    {set $colors = 51982 | resource: 'colors'}
-                                    {if $colors}
-                                        <div class="columns-list">
-                                            {set $colors = $colors | split: ','}
-                                            {foreach $colors as $c index=$id}
-                                                <div class="columns-list__name">
-                                                    <label class="checkbox-label">
-                                                        <input type="checkbox" value="{$c | strip}" class="checkbox" name="data[{$id}][color][]" data-color
-                                                               data-mpc-attr="{(($c | strip) in list $color) ? 'checked' : ''}"
-                                                               form="uploadQuizForm" data-checkbox="{$c | strip}">
-                                                        <span class="checkbox-text">{$c | strip}</span>
-                                                    </label>
-                                                </div>
-                                            {/foreach}
-                                        </div>
-                                    {/if}
-                                </div>
-                                <div class="modal-footer center">
-                                    <button type="button" class="btn" data-checkbox-btn="4">Выбрать</button>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

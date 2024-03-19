@@ -2,29 +2,6 @@ import CustomSelect from './custom_select.js';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    /**
-     * https://air-datepicker.com/
-     */
-    /*$('.js-datepicker').each(function () {
-        const _this = $(this)
-        const datepicker = $('[data-datepicker]', _this)
-        const datepickerValue = datepicker.data('datepicker')
-        const min = $('.js-datepicker-min', _this)
-        const max = $('.js-datepicker-max', _this)
-
-        new AirDatepicker('#' + datepickerValue, {
-            inline: true,
-            range: true,
-            multipleDatesSeparator: '-',
-            prevHtml: '<svg viewBox="0 0 8 14"><path d="M7 1L1 7L7 13"/></svg>',
-            nextHtml: '<svg viewBox="0 0 8 14"><path d="M1 13L7 7L1 1"/></svg>',
-            onSelect() {
-                min.val(datepicker.val().split('-')[0])
-                max.val(datepicker.val().split('-')[1])
-            }
-        })
-    })*/
-
     const project = {
         customSelectConfig: {
             hideClass: 'd-none'
@@ -244,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await FlatFilters.MainHandler.update();
         },
         enterComment(target) {
-            if ([3, 5].includes(Number(target.value))) {
+            if (Number(target.value) === Number(target.dataset.listStatus)) {
                 Fancybox.show([{src: '#modal-comment', type: "inline"}]);
             }
         },
@@ -302,6 +279,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const datePickerField = document.querySelector('[data-datepicker]');
             datePickerField && datePickerField.dispatchEvent(new Event('change', {bubbles: true}));
             project.popupClose();
+        },
+        checkedFor(target) {
+            const checkbox = document.querySelector(target.dataset.for);
+            checkbox && (checkbox.checked = true);
         }
     }
 
@@ -380,6 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
         !e.target.closest('[data-popup]') && !e.target.closest('[data-popup-link]') && project.popupClose()
         e.target.closest('[data-period-value]') && project.selectPeriod(e.target.closest('[data-period-value]'))
         e.target.closest('[data-apply-period]') && project.triggerChangePeriod();
+        e.target.closest('[data-for]') && project.checkedFor(e.target.closest('[data-for]'));
         e.target.closest('[name="selected_id[]"]') && document.querySelector('[data-select-all]') && (document.querySelector('[data-select-all]').checked = false);
     })
 
@@ -392,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.closest('[data-tag]') && project.setTags(e.target.closest('[data-tag]'))
         e.target.closest('[name="data[root_id]"]') && project.clearFileList(e)
         e.target.closest('[data-select-all]') && project.selectAll(e.target.closest('[data-select-all]'))
-        e.target.closest('[data-listuser-status]') && project.enterComment(e.target.closest('[data-listuser-status]'));
+        e.target.closest('[data-list-status]') && project.enterComment(e.target.closest('[data-list-status]'));
         e.target.closest('[data-key]') && project.selectCaption(e.target.closest('[data-key]'));
     })
 
@@ -460,7 +442,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             case 'updateUser':
             case 'setStatusUsers':
-            case 'removeUsers':
+            case 'unactiveUsers':
+            case 'updateProduct':
+            case 'changeStatus':
+            case 'changeParent':
+            case 'changeRootId':
+            case 'changeTags':
+            case 'changeColor':
+            case 'changeDeleted':
                 project.updateFiltersView();
                 break;
 
@@ -485,6 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const errorBlock = document.querySelector(Sending.config.errorBlockSelector.replace('${fieldName}', result.data.allowFiles));
             errorBlock && (errorBlock.textContent = '')
         }
+        (typeof Fancybox !== 'undefined') && Fancybox.close();
     })
 
     document.addEventListener('fu:uploading:start', (e) => {
@@ -512,8 +502,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         switch (headers['X-SIPRESET']) {
             case 'setStatusUsers':
-                if (result.data.errors.comment) {
-                    MicroModal.show('modal-comment');
+            case 'changeStatus':
+                if (result.data.errors.comment || result.data.errors.content) {
+                    Fancybox.show([{src: '#modal-comment', type: "inline"}]);
                 }
                 break;
         }

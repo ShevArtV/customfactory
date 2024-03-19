@@ -5,11 +5,8 @@ namespace CustomServices;
 /**
  *
  */
-class LoadToSelectel
+class LoadToSelectel extends Base
 {
-    /* @var \modX $modx */
-    private $modx;
-
     /* @var string */
     private string $basePath;
 
@@ -25,8 +22,9 @@ class LoadToSelectel
     /**
      * @return bool
      */
-    private function initialize(): void
+    protected function initialize(): void
     {
+        parent::initialize();
         $this->basePath = $this->modx->getOption('base_path');
         $filesource = 3;
         $ctx = 'web';
@@ -63,26 +61,18 @@ class LoadToSelectel
             $this->modx->log(1, '[LoadToSelectel::initialize] Не удалось получить медиа источник.');
             return false;
         }
-        if (!$parents = $this->getParents()) {
+        if (!$parentsData = $this->getParents()) {
             $this->modx->log(1, '[LoadToSelectel::initialize] Не удалось получить список родителей.');
             return false;
+        }
+        $parents = [];
+        foreach($parentsData as $data){
+            $parents[] = $data['id'];
         }
 
         $products = $this->getNewProducts($parents);
         $this->prepareLoading($products);
         return true;
-    }
-
-    /**
-     * @return array
-     */
-    private function getParents(): array
-    {
-        $q = $this->modx->newQuery('modResource');
-        $q->where(['class_key' => 'msCategory', 'parent' => 13]);
-        $q->prepare();
-        $statement = $this->modx->query($q->toSQL());
-        return $statement->fetchAll(\PDO::FETCH_COLUMN) ?: [];
     }
 
     /**
@@ -110,8 +100,8 @@ class LoadToSelectel
     private function prepareLoading(\xPDOIterator $products): void
     {
         foreach ($products as $product) {
-            $filelist = $product->get('print');
-
+            $filelist = $product->get('temp_files');
+            $flag = 0;
             if (empty($filelist)) {
                 $product->remove();
                 continue;
@@ -137,12 +127,19 @@ class LoadToSelectel
 
                 if (!empty($files)) {
                     $product->set($key, implode('|', $files));
-                    $product->set('status', 1);
-                    $product->set('published', 1);
-                    $product->save();
                     $this->removeFiles($filesData[$key]);
                     $this->removeEmptyDir(dirname($filesData[$key][0]['tmp_name']));
+                    $flag++;
                 }
+            }
+
+            if($flag === 2){
+                $status = $product->get('status') ?: 1;
+                $product->set('status', $status);
+                $product->set('published', 1);
+                $product->set('temp_files', '');
+                $product->save();
+                $this->flatfilters->indexingDocument($product);
             }
         }
     }

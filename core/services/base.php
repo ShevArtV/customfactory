@@ -19,6 +19,7 @@ class Base
     protected function initialize()
     {
         $this->flatfilters = $this->modx->getService('flatfilters', 'Flatfilters', MODX_CORE_PATH . 'components/flatfilters/');
+        $this->modx->addPackage('moderatorlog', MODX_CORE_PATH . 'components/moderatorlog/model/');
     }
 
     public function getStatuses()
@@ -85,7 +86,6 @@ class Base
 
     public function executeSearch(\xPDOQuery $query, int $configId, array $rids, array $params){
         $tstart = microtime(true);
-        $this->modx->log(1, print_r($params, 1));
         if ($query->prepare() && $query->stmt->execute($params)) {
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
@@ -94,5 +94,20 @@ class Base
         }
 
         $this->modx->event->returnedValues['rids'] = implode(',', $rids);
+    }
+
+    public function setModerateLog(string $fieldKey, $oldValue, $newValue, $rid, $type = 'products')
+    {
+        $params = [
+            'user_id' => $this->modx->user->get('id'),
+            'rid' => $rid,
+            'field' => $fieldKey,
+            'old_value' => $oldValue,
+            'new_value' => $newValue,
+            'type' => $type
+        ];
+        $event = $this->modx->newObject('moderatorlogEvent');
+        $event->fromArray($params);
+        $event->save();
     }
 }

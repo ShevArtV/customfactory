@@ -14,4 +14,16 @@ return [
             'Продукция'
         ],
     ],
+    'workflow' => [
+        'type' => 'migx',
+        'caption' => 'Доработка',
+        'description' => '',
+        'category' => 'Вспомогательные',
+        'input_properties' => [
+            'configs' => 'workflow',
+        ],
+        'templates' => [
+            'Товар',
+        ],
+    ],
 ];

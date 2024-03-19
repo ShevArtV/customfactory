@@ -188,20 +188,46 @@ return [
         'snippet' => 'getTagsByAlphabet'
     ],
     'updateUser' => [
-        'validate' => 'comment:requiredIf=^status|3^',
-        'comment.vTextRequiredIf' => 'укажите причину отказа.',
+        'hooks' => '',
         'snippet' => '@FILE snippets/designer/snippet.manageuser.php',
+        'validate' => 'comment:requiredIf=^status|3^',
+        'comment.vTextRequiredIf' => 'Укажите причину отказа.',
     ],
     'setStatusUsers' => [
-        'hooks' => '',
+        'extends' => 'updateUser',
         'validate' => 'comment:requiredIf=^status|3^,selected_id:checkbox:required',
         'selected_id.vTextRequired' => 'Не выбрано ни одного ID',
-        'comment.vTextRequiredIf' => 'укажите причину отказа.',
-        'snippet' => '@FILE snippets/designer/snippet.manageuser.php',
     ],
-    'removeUsers' => [
+    'unactiveUsers' => [
         'extends' => 'setStatusUsers'
     ],
+    'updateProduct' => [
+        'hooks' => '',
+        'snippet' => '@FILE snippets/product/snippet.manageproduct.php',
+        'validate' => 'content:requiredIf=^status|5^,selected_id:checkbox:required',
+        'content.vTextRequiredIf' => 'Укажите причину отказа.',
+        'selected_id.vTextRequired' => 'Не выбрано ни одного ID',
+        'clearFieldsOnSuccess' => 1,
+    ],
+    'changeStatus'=> [
+        'extends' => 'updateProduct',
+    ],
+    'changeParent'=> [
+        'extends' => 'updateProduct',
+    ],
+    'changeRootId'=> [
+        'extends' => 'updateProduct',
+    ],
+    'changeTags'=> [
+        'extends' => 'updateProduct',
+    ],
+    'changeColor'=> [
+        'extends' => 'updateProduct',
+    ],
+    'changeDeleted'=> [
+        'extends' => 'updateProduct',
+    ],
+
     'generate_report' => [
         'hooks' => '',
         'validate' => 'names:checkbox:required',

@@ -99,7 +99,7 @@
                                 <div class="filter-item">
                                     <div class="js-custom-select select-pill">
                                         {set $statuses = ('statuses' | placeholder)}
-                                        <select class="" data-listuser-status name="status">
+                                        <select class="" data-list-status="3" name="status">
                                             {foreach $statuses['designer'] as $id => $data}
                                                 <option value="{$id}">{$data.caption}</option>
                                             {/foreach}
@@ -115,7 +115,7 @@
                 </div>
                 <div class="filter-column">
                     <div class="btn-group">
-                        <button class="btn btn--small" type="button" data-si-event="click" data-si-preset="removeUsers">Удалить выбранные</button>
+                        <button class="btn btn--small" type="button" data-si-event="click" data-si-preset="unactiveUsers">Удалить выбранные</button>
                     </div>
                 </div>
                 <div id="modal-comment" aria-hidden="true" class="modal modal-main_sm">

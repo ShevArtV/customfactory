@@ -2,6 +2,8 @@
 
 namespace CustomServices;
 
+use CustomServices\Product;
+
 class Designer extends Base
 {
 
@@ -14,12 +16,16 @@ class Designer extends Base
     /** @var array $statuses */
     private array $statuses;
 
+    /** @var Product $productService */
+    private Product $productService;
+
     protected function initialize()
     {
         parent::initialize();
         $this->basePath = $this->modx->getOption('base_path');
         $this->assetsPath = $this->modx->getOption('assets_path');
         $this->statuses = $this->getStatuses();
+        $this->productService = new Product($this->modx);
     }
 
     public function getProgress(int $id = 0)
@@ -73,7 +79,9 @@ class Designer extends Base
     public function prepareUpdateOffer($resource)
     {
         $upd = $resource->get('tv12');
-        if (!$upd[0]) return $resource;
+        if (!$upd[0]) {
+            return $resource;
+        }
         $oldResource = $this->modx->getObject('modResource', $resource->get('id'));
         $history = $resource->get('tv11') ? json_decode($resource->get('tv11'), true) : [];
         $newHystoryItem['text'] = $oldResource->get('content');
@@ -130,7 +138,7 @@ class Designer extends Base
         $phone = preg_replace('/(\d)(\d{3})(\d{3})(\d{2})(\d{2})$/', '+7(\2)\3-\4-\5', $phone);
         $date = strtotime($query) ? '%' . strtotime($query) . '%' : $query;
         $query = "%{$query}%";
-        $rids =  explode(',', $rids);
+        $rids = explode(',', $rids);
         $params = array(
             ':query' => $query,
             ':phone' => $phone ?: $query,
@@ -140,7 +148,8 @@ class Designer extends Base
         $q = $this->modx->newQuery('modUser');
         $q->leftJoin('modUserProfile', 'Profile');
         $q->select('modUser.id as id');
-        $q->where("
+        $q->where(
+            "
                     (modUser.username LIKE :query 
                     OR Profile.fullname LIKE :query
                     OR Profile.profile_num LIKE :query
@@ -151,7 +160,8 @@ class Designer extends Base
                     OR Profile.pass_num LIKE :query 
                     OR Profile.pass_series LIKE :query
                     OR Profile.inn LIKE :query)                    
-            ");
+            "
+        );
         $q->andCondition(['modUser.id:IN' => $rids]);
         $this->executeSearch($q, $configId, $rids, $params);
     }
@@ -170,10 +180,15 @@ class Designer extends Base
 
         $oldData = array_merge($user->toArray(), $profile->toArray());
         $oldStatus = $oldData['status'];
-        $this->setModerateLog($oldData, $data);
 
-        if ($data['status'] && $oldStatus !== $data['status'] && !in_array($data['status'], $this->statuses['designer'][$oldStatus]['allow'])) {
+        if ($data['status']
+            && !empty($this->statuses['designer'][$oldStatus]['allow'])
+            && $oldStatus !== $data['status']
+            && !in_array($data['status'], $this->statuses['designer'][$oldStatus]['allow'])
+        ) {
             $data['status'] = $oldStatus;
+        } else {
+            $this->setModerateLog('status', $oldStatus, $data['status'], $data['id'], 'user');
         }
 
         $profile->fromArray($data);
@@ -181,7 +196,7 @@ class Designer extends Base
         $user->fromArray($data);
         $user->save();
 
-        $this->flatfilters->removeResourceIndex($user->get('id'));
+        $this->flatfilters->removeResourceIndex((int)$data['id']);
         $this->flatfilters->indexingUser($user);
 
         return [
@@ -191,18 +206,46 @@ class Designer extends Base
         ];
     }
 
-    public function removeUser(int $id)
+    public function unactiveUsers($data)
     {
+        $data['active'] = 0;
+        return [
+            'success' => true,
+            'msg' => 'Статус пользователей изменен.',
+            'selectedIds' => $this->setUsersField($data, 'active'),
+        ];
+    }
 
-        if (!$user = $this->modx->getObject('modUser', $id)) {
-            return [
-                'success' => false,
-                'msg' => 'Произошла ошибка при удалении пользователя.',
-                'user_id' => $id,
-            ];
+    public function setStatusUsers($data)
+    {
+        return [
+            'success' => true,
+            'msg' => 'Статус пользователей изменен.',
+            'selectedIds' => $this->setUsersField($data, 'status'),
+        ];
+    }
+
+    public function setUsersField(array $data, string $key): array
+    {
+        $selectedIds = !is_array($data['selected_id']) ? json_decode($data['selected_id'], true) : $data['selected_id'];
+        if (!empty($selectedIds)) {
+            foreach ($selectedIds as $selectedId) {
+                $result = $this->updateUser(['id' => $selectedId, $key => $data[$key], 'comment' => $data['comment']]);
+                if (!$result['success']) {
+                    $this->modx->log(1, '[Designer::setUsersField] ' . $result['msg']);
+                }
+            }
         }
+        return $selectedIds;
+    }
+
+    public function removeUser(\modUser $user)
+    {
+        $id = $user->get('id');
 
         $this->removeUserFiles($id, $user->get('old_id'));
+
+        $this->removeUserProducts($id);
 
         $this->flatfilters->removeResourceIndex($id);
 
@@ -227,43 +270,16 @@ class Designer extends Base
         }
     }
 
-    public function removeUsers($data)
+    public function removeUserProducts(int $id)
     {
-        $selectedIds = !is_array($data['selected_id']) ? json_decode($data['selected_id']) : $data['selected_id'];
-        if (!empty($selectedIds)) {
-            foreach ($selectedIds as $selectedId) {
-                $result = $this->removeUser($selectedId);
-                if (!$result['success']) {
-                    $this->modx->log(1, '[Designer::setStatusUsers] ' . $result['msg']);
-                }
-            }
+        $products = $this->modx->getIterator('modResource', ['createdby' => $id, 'class_key' => 'msProduct']);
+        foreach ($products as $product) {
+            $this->productService->removeProduct($product->get('id'));
         }
-        return [
-            'success' => true,
-            'msg' => 'Пользователи удалены',
-            'selectedIds' => $selectedIds,
-        ];
     }
 
-    public function setStatusUsers($data)
+    public function getUserFields()
     {
-        $selectedIds = !is_array($data['selected_id']) ? json_decode($data['selected_id']) : $data['selected_id'];
-        if (!empty($selectedIds)) {
-            foreach ($selectedIds as $selectedId) {
-                $result = $this->updateUser(['id' => $selectedId, 'status' => $data['status'], 'comment' => $data['comment']]);
-                if (!$result['success']) {
-                    $this->modx->log(1, '[Designer::setStatusUsers] ' . $result['msg']);
-                }
-            }
-        }
-        return [
-            'success' => true,
-            'msg' => 'Статусы пользователей изменены.',
-            'selectedIds' => $selectedIds,
-        ];
-    }
-
-    public function getUserFields(){
         $fields = [
             'active' => 'Активен',
             'email' => 'Email',
@@ -346,16 +362,11 @@ class Designer extends Base
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
             $result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
-            foreach($result as $item){
+            foreach ($result as $item) {
                 $extrafields[$item['name']] = $item['name'] === 'status' ? 'Статус' : $item['label'];
             }
         }
         return $extrafields;
-    }
-
-    public function setModerateLog($oldData, $data)
-    {
-
     }
 
     public function removeDir(string $dir): void
@@ -364,10 +375,13 @@ class Designer extends Base
             $objects = scandir($dir);
             foreach ($objects as $object) {
                 if ($object != "." && $object != "..") {
-                    if (is_dir($dir . $object) && !is_link($dir . $object))
+                    if (is_dir($dir . $object) && !is_link($dir . $object)) {
                         $this->removeDir($dir . $object);
-                    else
-                        if (file_exists($dir . $object)) unlink($dir . $object);
+                    } else {
+                        if (file_exists($dir . $object)) {
+                            unlink($dir . $object);
+                        }
+                    }
                 }
             }
             if (file_exists($dir) && is_dir($dir)) {

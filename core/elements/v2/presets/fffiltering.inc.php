@@ -16,7 +16,7 @@ return [
         'tpl' => '#/fffiltering/designers/item.tpl',
 
         'sortby' => ['Profile.createdon' => 'DESC'],
-        'element' => 'pdoUsers',
+        'element' => '!pdoUsers',
     ],
     'designs' => [
         'configId' => 2,
