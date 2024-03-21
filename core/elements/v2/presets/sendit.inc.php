@@ -129,8 +129,16 @@ return [
         'hooks' => '',
         'maxSize' => 150,
         'maxCount' => 1,
-        'allowExt' => 'jpg,png,jpeg,webp,tiff,tif',
+        'allowExt' => 'jpg,png,jpeg,webp',
         'portion' => 1,
+        'threadsQuantity' => 12,
+    ],
+    'upload_screens' => [
+        'hooks' => '',
+        'maxSize' => 0.5,
+        'maxCount' => 3,
+        'allowExt' => 'jpg,png,jpeg,webp',
+        'portion' => 0.1,
         'threadsQuantity' => 12,
     ],
     'selfemployed_img' => [
@@ -173,6 +181,11 @@ return [
         'snippet' => '@FILE snippets/product/snippet.createproduct.php',
         'clearFieldsOnSuccess' => 1,
     ],
+    'reloadFiles' => [
+        'hooks' => '',
+        'snippet' => '@FILE snippets/product/snippet.reloadfiles.php',
+        'clearFieldsOnSuccess' => 1,
+    ],
     'upload_design' => [
         'hooks' => '',
         'maxSize' => 2000,
@@ -209,29 +222,39 @@ return [
         'selected_id.vTextRequired' => 'Не выбрано ни одного ID',
         'clearFieldsOnSuccess' => 1,
     ],
-    'changeStatus'=> [
+    'changeStatus' => [
         'extends' => 'updateProduct',
     ],
-    'changeParent'=> [
+    'changeParent' => [
         'extends' => 'updateProduct',
     ],
-    'changeRootId'=> [
+    'changeRootId' => [
         'extends' => 'updateProduct',
     ],
-    'changeTags'=> [
+    'changeTags' => [
         'extends' => 'updateProduct',
     ],
-    'changeColor'=> [
+    'changeColor' => [
         'extends' => 'updateProduct',
     ],
-    'changeDeleted'=> [
+    'changeDeleted' => [
         'extends' => 'updateProduct',
     ],
-
+    'toRework' => [
+        'hooks' => '',
+        'validate' => 'content:requiredIf=^status|7^,selected_id:checkbox:required',
+        'snippet' => '@FILE snippets/product/snippet.torework.php',
+        'fieldNames' => 'content==Комментарий'
+    ],
     'generate_report' => [
         'hooks' => '',
         'validate' => 'names:checkbox:required',
         'names.vTextRequired' => 'Выберите данные',
         'snippet' => '@FILE snippets/report/snippet.generatereport.php',
-    ]
+    ],
+    'load_workflow' => [
+        'hooks' => '',
+        'snippet' => '@FILE snippets/product/snippet.loadworkflow.php',
+        'successMessage' => '',
+    ],
 ];

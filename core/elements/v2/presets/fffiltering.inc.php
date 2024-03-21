@@ -31,6 +31,12 @@ return [
         'tpl' => '#/fffiltering/designs/item.tpl',
 
         'sortby' => ['createdon' => 'DESC'],
-        'element' => 'msProducts',
-    ]
+        'element' => '@FILE snippets/product/snippet.render.php',
+        'categories' => '$parents',
+        'types' => '$types',
+    ],
+    'products' => [
+        'extends' => 'fffiltering.designs',
+        'tpl' => '#/fffiltering/products/item.tpl',
+    ],
 ];

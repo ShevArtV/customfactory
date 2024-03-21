@@ -25,7 +25,7 @@
         <input type="hidden" name="data[published]" value="0">
         <input type="hidden" name="data[count_files]" value="1">
         <input type="hidden" name="data[tags][]" value="">
-        <input type="hidden" name="data[profile_num]" value="{$_modx->user.profile_num}">
+        <input type="hidden" name="data[profilenum]" value="{$_modx->user.profile_num}">
 
         <ul class="timeline md-hidden">
             <li data-qf-step="1" class="active">Товар</li>
@@ -189,7 +189,7 @@
                 <div class="modal-main">
                     <div class="modal-close" data-modal-close></div>
                     <div class="modal-content scrollbar">
-                        {set $colors = 51982 | resource: 'colors'}
+                        {set $colors = $_modx->runSnippet('@FILE snippets/product/snippet.getcolors.php', [])}
                         {if $colors}
                             <div class="columns-list">
                                 {set $colors = $colors | split: ','}

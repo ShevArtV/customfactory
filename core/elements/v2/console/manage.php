@@ -129,5 +129,21 @@ switch ($argv[1]) {
         echo sprintf('%.3f', $duration);
         echo $preview;
         break;
+    case 'set_profile_num':
+        $products = $modx->getIterator('modResource', [
+            'class_key' => 'msProduct',
+            'template' => 13,
+            'parent' => 14
+        ]);
+        foreach ($products as $k => $r) {
+            $profile = $modx->getObject('modUserProfile', [
+                'internalKey' => $r->get('createdby')
+            ]);
+            if (!$profile) continue;
+
+            $r->set('profilenum', $r->get('profile_num'));
+            $r->save();
+        }
+        break;
 
 }

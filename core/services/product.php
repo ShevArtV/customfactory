@@ -32,6 +32,7 @@ class Product extends Base
         $this->corePath = $this->modx->getOption('core_path');
         $this->assetsPath = $this->modx->getOption('assets_path');
         $this->statuses = $this->getStatuses();
+        $this->pdoTools = $this->modx->getParser()->pdoTools;
         $this->loadToSelectel = new LoadToSelectel($this->modx);
         $this->modx->addPackage('tagger', $this->corePath . 'components/tagger/model/');
     }
@@ -72,7 +73,7 @@ class Product extends Base
                 $output[$item['pagetitle']]['sizes'][$size[0]] = $item;
             }
         }
-        $this->modx->cacheManager->set($cacheKey, $output);
+        $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime);
         return $output;
     }
 
@@ -104,15 +105,15 @@ class Product extends Base
                 ksort($output);
             }
         }
-        $this->modx->cacheManager->set($cacheKey, $output);
+        $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime);
         return $output;
     }
 
-    public function prepareFiles(array $filelist, int $rid)
+    public function prepareFiles(array $filelist, int $rid, $folder = 'loadtoselectel/', $field = 'temp_files'): void
     {
         $senditTempPath = $this->modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');
         $senditTempPath = str_replace('[[+asseetsUrl]]', $this->assetsPath, $senditTempPath);
-        $targetFolder = $this->assetsPath . 'loadtoselectel/' . $rid . '/';
+        $targetFolder = $this->assetsPath . $folder . $rid . '/';
         $files = [];
         if (!file_exists($targetFolder)) {
             mkdir($targetFolder, 0777, true);
@@ -126,7 +127,7 @@ class Product extends Base
             }
         }
         if (!empty($files) && $resource = $this->modx->getObject('modResource', $rid)) {
-            $resource->set('temp_files', implode('|', $files));
+            $resource->set($field, implode('|', $files));
             $resource->save();
         }
     }
@@ -207,9 +208,9 @@ class Product extends Base
                 'msg' => 'Произошла ошибка при обновлении дизайна.'
             ];
         }
-        $productData['prev_status'] = $product->get('status') ?: 0;
+
         $monitoredFields = [
-            'status' => $productData['prev_status'],
+            'status' => $product->get('status') ?: 0,
             'parent' => $product->get('parent'),
             'root_id' => $product->get('root_id'),
             'tags' => $product->get('tags'),
@@ -223,9 +224,25 @@ class Product extends Base
             $productData[$key] = $this->checkChanges($key, $value, $productData[$key], (int)$productData['id']);
         }
 
-        if($productData['root_id'] && $root = $this->modx->getObject('msProduct', $productData['root_id'])) {
+        if ($productData['status'] !== $monitoredFields['status']) {
+            $productData['prev_status'] = $monitoredFields['status'];
+        }
+
+        if ($productData['status'] == 7 && !$productData['deleted']) {
+            $workflow['moderator_date'] = date('Y-m-d H:i:s');
+            $workflow['moderator_comment'] = $productData['content'];
+            $workflow['screens'] = $product->get('temp_files');
+            $productData['temp_files'] = '';
+            $this->setWorkflow($workflow, $product);
+        }
+
+        if($productData['deleted']){
+            $productData['editedon'] = time();
+        }
+
+        if ($productData['root_id'] && $root = $this->modx->getObject('msProduct', $productData['root_id'])) {
             $files = $product->get('print') ? explode('|', $product->get('print')) : [];
-            if(count($files) !== $root->get('count_files')){
+            if (count($files) !== $root->get('count_files')) {
                 $productData['root_id'] = $monitoredFields['root_id'];
             }
         }
@@ -242,7 +259,6 @@ class Product extends Base
             'rid' => $productData['id']
         ];
     }
-
 
     public function removeProduct(\msProduct $product): array
     {
@@ -325,6 +341,7 @@ class Product extends Base
     {
         $selectedIds = !is_array($data['selected_id']) ? json_decode($data['selected_id'], true) : $data['selected_id'];
         $productData = !is_array($data['data']) ? json_decode($data['data'], true) : $data['data'];
+
         if (!empty($selectedIds)) {
             foreach ($selectedIds as $selectedId) {
                 $value = $productData[$selectedId][$key];
@@ -334,7 +351,7 @@ class Product extends Base
                 if ($key === 'deleted') {
                     $value = 1;
                 }
-                $result = $this->updateProduct(['id' => $selectedId, $key => $value]);
+                $result = $this->updateProduct(['id' => $selectedId, $key => $value, 'content' => $data['content']]);
                 if (!$result['success']) {
                     $this->modx->log(1, '[Designer::setProductsField] ' . $result['msg']);
                 }
@@ -343,12 +360,10 @@ class Product extends Base
         return $selectedIds;
     }
 
-
     public function checkChanges($key, $oldValue, $newValue, $rid)
     {
         switch ($key) {
             case 'status':
-                $this->modx->log(1, print_r($this->statuses, 1));
                 if ($oldValue !== $newValue && is_array($this->statuses['product'][$oldValue]) && !in_array($newValue, $this->statuses['product'][$oldValue]['allow'])) {
                     $this->modx->log(1, print_r($oldValue, 1));
                     $this->modx->log(1, print_r($newValue, 1));
@@ -372,7 +387,6 @@ class Product extends Base
 
         return $newValue;
     }
-
 
     public function getArticle(array $productData): array
     {
@@ -421,6 +435,107 @@ class Product extends Base
                 'prev_status' => 'Предыдущий Статус',
                 'price' => 'Цена',
             ]
+        ];
+    }
+
+    public function renderProducts($properties): string
+    {
+        if (!$properties['tpl']) {
+            return $properties['resources'];
+        }
+        $resources = explode(',', $properties['resources']);
+        $lists = [
+            'categories' => $this->getParents(),
+            'types' => $this->getProductTypes(),
+            'colors' => $this->getColors(),
+            'allTags' => $this->getTagsByAlphabet(),
+        ];
+        $output = '';
+        $q = $this->modx->newQuery('msProduct');
+        $q->setClassAlias('Product');
+        $q->leftJoin('msProductData', 'Data');
+        $q->leftJoin('modTemplateVarResource', 'TV', 'Product.id = TV.contentid AND TV.tmplvarid = 15');
+        $q->select(['Product.*', 'Data.*', 'TV.value as workflow']);
+        $q->where(['Product.id:IN' => $resources]);
+        $q->sortby('FIELD(Product.id, ' . $properties['resources'] . ')', '');
+        $tstart = microtime(true);
+        if ($q->prepare() && $q->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+            $result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+            foreach ($result as $row) {
+                $row = array_merge($properties, $row, $lists);
+                $row['color'] = $row['color'] ? json_decode($row['color'], true) : [];
+                $row['tags'] = $row['tags'] ? json_decode($row['tags'], true) : [];
+                $row['workflow'] = $row['workflow'] ? json_decode($row['workflow'], true) : [];
+                $output .= $this->pdoTools->getChunk($properties['tpl'], $row);
+            }
+        }
+
+        return $output;
+    }
+
+    public function getColors(): array
+    {
+        $cacheKey = 'getColors::cache';
+        if ($output = $this->modx->cacheManager->get($cacheKey)) {
+            return $output;
+        }
+        $q = $this->modx->newQuery('modTemplateVarResource');
+        $q->select('value');
+        $q->where(['modTemplateVarResource.contentid' => 51982, 'modTemplateVarResource.tmplvarid' => 13]);
+        $q->prepare();
+        $tstart = microtime(true);
+        if ($q->prepare() && $q->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+            $result = $q->stmt->fetch(\PDO::FETCH_COLUMN);
+            $output = explode(',', $result);
+            $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime);
+            return $output;
+        }
+        return [];
+    }
+
+    public function loadWorkflow($id)
+    {
+        if (!$product = $this->modx->getObject('msProduct', $id)) {
+            return [
+                'success' => false,
+                'msg' => 'Товар не найден',
+                'html' => ''
+            ];
+        }
+
+        $workflow = $product->getTVValue('workflow');
+        $workflow = $workflow ? json_decode($workflow, true) : [];
+        $productData = $product->toArray();
+        $statuses = $this->getStatuses();
+        $types = $this->getProductTypes();
+
+        $params = [
+            'id' => $id,
+            'tags' => $productData['tags'],
+            'color' => $productData['color'],
+            'count_files' => $productData['count_files'],
+            'statuses' => $statuses,
+            'status' => $productData['status'],
+            'prev_status' => $productData['prev_status'],
+            'type' => $types[$productData['root_id']],
+            'workflow' => $workflow,
+        ];
+
+        $tpl = '@FILE chunks/common/workflow_designer.tpl';
+        if ($this->modx->user->isMember(['Moderators', 'Managers'])) {
+            $tpl = '@FILE chunks/common/workflow_moderator.tpl';
+        }
+
+        $html = $this->pdoTools->getChunk($tpl, $params);
+
+        return [
+            'success' => true,
+            'msg' => '',
+            'html' => $html
         ];
     }
 }

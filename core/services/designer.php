@@ -108,7 +108,17 @@ class Designer extends Base
         if (file_exists($filePath)) {
             $resource->setTVValue('update_offer', false);
             $resource->setTVValue('offers_history', file_get_contents($filePath));
+            $resource->set('introtext', time());
+            $resource->save();
             unlink($filePath);
+            $profiles = $this->modx->getIterator('modUserProfile', ['active' => 1]);
+            foreach ($profiles as $profile) {
+                $extended = $profile->get('extended');
+                $extended['offer'] = 0;
+                $profile->set('extended', $extended);
+                $profile->save();
+            }
+            $this->modx->runProcessor('security/logout', array('username' => 'all'));
         }
     }
 

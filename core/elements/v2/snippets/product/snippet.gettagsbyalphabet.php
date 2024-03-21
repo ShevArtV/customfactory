@@ -4,9 +4,7 @@ use CustomServices\Product;
 require_once MODX_CORE_PATH . 'vendor/autoload.php';
 
 $productService = new Product($modx);
-
 $output = $productService->getTagsByAlphabet($_POST['query']);
-
 if($tplChar && $tplTag && $tplEmpty){
     $layout = '';
     $pdoTools = $modx->getParser()->pdoTools;
@@ -14,8 +12,10 @@ if($tplChar && $tplTag && $tplEmpty){
     foreach($output as $char => $data){
         $tags = '';
         foreach($data as $label => $name){
-            $tags .= $pdoTools->parseChunk($tplTag, ['label' => $label, 'name' => $name, 'props' => $scriptProperties]);
+            $params = array_merge($scriptProperties, ['label' => $label, 'name' => $name]);
+            $tags .= $pdoTools->parseChunk($tplTag, $params);
         }
+        $params = array_merge($scriptProperties, ['char' => $char, 'tags' => $tags]);
         $layout .= $pdoTools->parseChunk($tplChar, ['char' => $char, 'tags' => $tags]);
     }
 

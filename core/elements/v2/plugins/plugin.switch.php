@@ -1,4 +1,5 @@
 <?php
+
 use CustomServices\Designer;
 use CustomServices\Product;
 
@@ -8,12 +9,13 @@ switch ($modx->event->name) {
     case 'OnLoadWebDocument':
         $designerService = new Designer($modx);
         $designerService->getProgress($modx->user->get('id'));
-        if ($modx->resource->template === 18) {
+        $cacheKey = 'offerPageKey::cache';
+        if (!$offerPageKey = $modx->cacheManager->get($cacheKey)) {
             if ($offerResource = $modx->getObject('modResource', 51976)) {
-                $modx->setPlaceholder('offerPageKey', 'offer' . $offerResource->get('introtext'));
+                $offerPageKey = 'offer' . $offerResource->get('introtext');
+                $modx->cacheManager->set($cacheKey, $offerPageKey, 10800);
             }
         }
-
         break;
 
     case 'OnBeforeDocFormSave':
@@ -32,13 +34,22 @@ switch ($modx->event->name) {
         break;
 
     case 'ffOnBeforeFilter':
-        if (in_array($configData['id'], [1,2]) && $_REQUEST['query']) {
+        if (in_array($configData['id'], [1, 2]) && $_REQUEST['query']) {
             $FlatFilters->values['query'] = $_REQUEST['query'];
         }
         break;
+    case 'ffOnBeforeSetFilterConditions':
+        if ($modx->user->isMember(['Designers'])) {
+            $conditions[] = '`createdby` = ' . $modx->user->get('id');
+        }
+        if ($configData['id'] === 2 && $modx->user->isMember(['Moderators', 'Managers'])) {
+            $conditions[] = '`status` != 7';
+        }
+        $modx->event->returnedValues['conditions'] = $conditions;
+        break;
     case 'ffOnAfterFilter':
-        if($_REQUEST['query']){
-            switch ($configData['id']){
+        if ($_REQUEST['query']) {
+            switch ($configData['id']) {
                 case 1:
                     $designerService = new Designer($modx);
                     $designerService->searchUsers($_REQUEST['query'], $rids, $configData['id']);
@@ -52,13 +63,19 @@ switch ($modx->event->name) {
         break;
 
     case 'ffOnBeforeRender':
-        $modx->setPlaceholder('statuses', $modx->getParser()->pdoTools->runSnippet('@FILE snippets/base/snippet.getstatuses.php', []));
-        if ($offerResource = $modx->getObject('modResource', 51976)) {
-            $modx->setPlaceholder('offerPageKey', 'offer' . $offerResource->get('introtext'));
+        $pdoTools = $modx->getParser()->pdoTools;
+        $cacheKey = 'offerPageKey::cache';
+        if (!$offerPageKey = $modx->cacheManager->get($cacheKey)) {
+            if ($offerResource = $modx->getObject('modResource', 51976)) {
+                $offerPageKey = 'offer' . $offerResource->get('introtext');
+                $modx->cacheManager->set($cacheKey, $offerPageKey, 10800);
+            }
         }
+        $statuses = $pdoTools->runSnippet('@FILE snippets/base/snippet.getstatuses.php', []);
+        $modx->event->returnedValues['props'] = array_merge($props, ['statuses' => $statuses, 'offerPageKey' => $offerPageKey]);
         break;
     case 'ffOnBeforeSetIndexValue':
-        if(in_array($key, ['color', 'tags'])){
+        if (in_array($key, ['color', 'tags'])) {
             $modx->event->returnedValues['value'] = $value ?: 'не задан';
         }
         break;

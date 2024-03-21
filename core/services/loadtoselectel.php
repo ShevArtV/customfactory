@@ -61,16 +61,12 @@ class LoadToSelectel extends Base
             $this->modx->log(1, '[LoadToSelectel::initialize] Не удалось получить медиа источник.');
             return false;
         }
-        if (!$parentsData = $this->getParents()) {
+        if (!$parents = $this->getParents()) {
             $this->modx->log(1, '[LoadToSelectel::initialize] Не удалось получить список родителей.');
             return false;
         }
-        $parents = [];
-        foreach($parentsData as $data){
-            $parents[] = $data['id'];
-        }
 
-        $products = $this->getNewProducts($parents);
+        $products = $this->getProducts($parents);
         $this->prepareLoading($products);
         return true;
     }
@@ -79,12 +75,12 @@ class LoadToSelectel extends Base
      * @param array $parents
      * @return \xPDOIterator
      */
-    private function getNewProducts(array $parents): \xPDOIterator
+    private function getProducts(array $parents): \xPDOIterator
     {
         $q = $this->modx->newQuery('modResource');
         $q->leftJoin('msProductData', 'msProductData', 'modResource.id = msProductData.id');
         $q->where([
-            'msProductData.status' => 0,
+            'msProductData.status:IN' => [0, 7],
             'modResource.parent:IN' => $parents,
             'modResource.class_key' => 'msProduct',
             'modResource.template' => 13
@@ -100,6 +96,8 @@ class LoadToSelectel extends Base
     private function prepareLoading(\xPDOIterator $products): void
     {
         foreach ($products as $product) {
+            $status = $product->get('status') ?: 1;
+            $workflow = [];
             $filelist = $product->get('temp_files');
             $flag = 0;
             if (empty($filelist)) {
@@ -127,6 +125,7 @@ class LoadToSelectel extends Base
 
                 if (!empty($files)) {
                     $product->set($key, implode('|', $files));
+                    $workflow[$key] = implode('|', $files);
                     $this->removeFiles($filesData[$key]);
                     $this->removeEmptyDir(dirname($filesData[$key][0]['tmp_name']));
                     $flag++;
@@ -134,7 +133,14 @@ class LoadToSelectel extends Base
             }
 
             if($flag === 2){
-                $status = $product->get('status') ?: 1;
+                if($status === 7){
+                    $workflow['designer_date'] = date('Y-m-d H:i:s');
+                    $workflow['designer_comment'] = $product->get('introtext');
+                    $status = $product->get('prev_status');
+                    $product->set('prev_status', 7);
+                    $this->setModerateLog('status', 7, $status, $product->get('id'), 'products', $product->get('createdby'));
+                    $this->setWorkflow($workflow, $product);
+                }
                 $product->set('status', $status);
                 $product->set('published', 1);
                 $product->set('temp_files', '');

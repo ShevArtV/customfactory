@@ -66,10 +66,7 @@ class Report extends Base
 
     private function setParents()
     {
-        $parents = $this->getParents();
-        foreach ($parents as $p) {
-            $this->parents[$p['id']] = $p['pagetitle'];
-        }
+        $this->parents = $this->getParents();
     }
 
     public function generate(array $data)

@@ -10,6 +10,9 @@ class Base
     /** @var \FlatFilters */
     protected \FlatFilters $flatfilters;
 
+    /** @var int $cacheTime */
+    protected int $cacheTime;
+
     public function __construct(\modX $modx)
     {
         $this->modx = $modx;
@@ -20,6 +23,7 @@ class Base
     {
         $this->flatfilters = $this->modx->getService('flatfilters', 'Flatfilters', MODX_CORE_PATH . 'components/flatfilters/');
         $this->modx->addPackage('moderatorlog', MODX_CORE_PATH . 'components/moderatorlog/model/');
+        $this->cacheTime = 10800;
     }
 
     public function getStatuses()
@@ -59,8 +63,11 @@ class Base
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
-            $output = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
-            $this->modx->cacheManager->set($cacheKey, $output);
+            $result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+            foreach($result as $row) {
+                $output[$row['id']] = $row['pagetitle'];
+            }
+            $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime);
             return $output;
         }
     }
@@ -78,8 +85,11 @@ class Base
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
-            $output = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
-            $this->modx->cacheManager->set($cacheKey, $output);
+            $result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+            foreach($result as $row) {
+                $output[$row['id']] = $row['pagetitle'];
+            }
+            $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime);
             return $output;
         }
     }
@@ -96,10 +106,10 @@ class Base
         $this->modx->event->returnedValues['rids'] = implode(',', $rids);
     }
 
-    public function setModerateLog(string $fieldKey, $oldValue, $newValue, $rid, $type = 'products')
+    public function setModerateLog(string $fieldKey, $oldValue, $newValue, $rid, $type = 'products', int $user_id = 0)
     {
         $params = [
-            'user_id' => $this->modx->user->get('id'),
+            'user_id' => $user_id ?: $this->modx->user->get('id'),
             'rid' => $rid,
             'field' => $fieldKey,
             'old_value' => $oldValue,
@@ -109,5 +119,21 @@ class Base
         $event = $this->modx->newObject('moderatorlogEvent');
         $event->fromArray($params);
         $event->save();
+    }
+
+    public function setWorkflow($workflow, $product){
+        $tvvalue = $product->getTVValue('workflow', $workflow);
+        $tvvalue = json_decode($tvvalue, true) ?: [];
+        $lastIndex = count($tvvalue) - 1;
+
+        if($workflow['moderator_comment']){
+            $tvvalue[$lastIndex]['moderator_comment'] = $workflow['moderator_comment'];
+            $tvvalue[$lastIndex]['moderator_date'] = $workflow['moderator_date'];
+            $tvvalue[$lastIndex]['screens'] = $workflow['screens'];
+        }else{
+            $tvvalue[] = $workflow;
+        }
+
+        $product->setTVValue('workflow', json_encode($tvvalue));
     }
 }

@@ -166,7 +166,7 @@
                                         </li>
                                         <li>
                                             Дата принятия
-                                            оферты: {$extended[('offerPageKey' | placeholder)] ? '<span data-copy title="Нажмите для копирования">'~$extended[('offerPageKey' | placeholder)]~'</span>' : '<span class="red">Не принята</span>'}
+                                            оферты: {$extended[$offerPageKey] ? '<span data-copy title="Нажмите для копирования">'~$extended[('offerPageKey' | placeholder)]~'</span>' : '<span class="red">Не принята</span>'}
                                         </li>
                                         <li>
                                             Фактический
@@ -413,7 +413,7 @@
                     <div class="modal-content">
                         <div class="input-group">
                             <label class="input-label">Введите запрос</label>
-                            <input type="text" class="input" name="query" data-query form="filterForm" value="{$.get.query}">
+                            <input type="text" class="input" name="query" data-ff-filter="query" data-query form="filterForm" value="{$.get.query}">
                             <small class="error" data-si-error="query"></small>
                         </div>
                     </div>

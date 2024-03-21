@@ -283,6 +283,26 @@ document.addEventListener('DOMContentLoaded', () => {
         checkedFor(target) {
             const checkbox = document.querySelector(target.dataset.for);
             checkbox && (checkbox.checked = true);
+        },
+        async loadWorkflow(target) {
+            const rid = target.dataset.loadWorkflow;
+            const params = new FormData();
+            params.append('rid', rid);
+            SendIt?.setComponentCookie('sitrusted', 1);
+            await SendIt?.Sending?.prepareSendParams(document, 'load_workflow', 'click', 'send', params);
+        },
+
+        insertWorkflow(data) {
+            const workflow = document.querySelector('#workflow');
+            workflow && (workflow.innerHTML = data.html);
+            (typeof Fancybox !== 'undefined') && Fancybox.show([{src: '#workflow', type: "inline"}]);
+            CustomSelect.create(project.customSelectConfig);
+            SendIt?.FileUploaderFactory?.addInstances(workflow);
+        },
+
+        duplicateField(target){
+            const field = document.querySelector(target.dataset.sync);
+            field && (field.value = target.value);
         }
     }
 
@@ -362,6 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.closest('[data-period-value]') && project.selectPeriod(e.target.closest('[data-period-value]'))
         e.target.closest('[data-apply-period]') && project.triggerChangePeriod();
         e.target.closest('[data-for]') && project.checkedFor(e.target.closest('[data-for]'));
+        e.target.closest('[data-load-workflow]') && project.loadWorkflow(e.target.closest('[data-load-workflow]'));
         e.target.closest('[name="selected_id[]"]') && document.querySelector('[data-select-all]') && (document.querySelector('[data-select-all]').checked = false);
     })
 
@@ -376,6 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.closest('[data-select-all]') && project.selectAll(e.target.closest('[data-select-all]'))
         e.target.closest('[data-list-status]') && project.enterComment(e.target.closest('[data-list-status]'));
         e.target.closest('[data-key]') && project.selectCaption(e.target.closest('[data-key]'));
+        e.target.closest('[data-sync]') && project.duplicateField(e.target.closest('[data-sync]'));
     })
 
     document.addEventListener('ff:values:disabled', (e) => {
@@ -450,6 +472,8 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'changeTags':
             case 'changeColor':
             case 'changeDeleted':
+            case 'toRework':
+            case 'reloadFiles':
                 project.updateFiltersView();
                 break;
 
@@ -466,6 +490,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 //const generateModal = target.closest('.modal');
                 project.modalClose();
                 break;
+
+            case 'load_workflow':
+                project.insertWorkflow(result.data);
+                break;
         }
 
         if (target === document) return false;
@@ -474,7 +502,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const errorBlock = document.querySelector(Sending.config.errorBlockSelector.replace('${fieldName}', result.data.allowFiles));
             errorBlock && (errorBlock.textContent = '')
         }
-        (typeof Fancybox !== 'undefined') && Fancybox.close();
+        if(!['upload_screens', 'upload_design', 'removeFile'].includes(headers['X-SIPRESET'])) {
+            (typeof Fancybox !== 'undefined') && Fancybox.close();
+        }
     })
 
     document.addEventListener('fu:uploading:start', (e) => {
@@ -503,7 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
         switch (headers['X-SIPRESET']) {
             case 'setStatusUsers':
             case 'changeStatus':
-                if (result.data.errors.comment || result.data.errors.content) {
+                if (result.data.formName !== 'modalProductStatus' && (result.data.errors.comment || result.data.errors.content)) {
                     Fancybox.show([{src: '#modal-comment', type: "inline"}]);
                 }
                 break;
@@ -557,6 +587,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         const countField = document.querySelector('[name="data[count_files]"]');
                         count = sizeSelect.options[sizeSelect.selectedIndex].dataset.count;
                         countField && (countField.value = count);
+                    }else{
+                        const countField = document.querySelector('[name="maxcount"]');
+                        count = countField ? countField.value : 0;
                     }
                     fetchOptions.body.set('params', JSON.stringify({maxCount: count}));
                     break;

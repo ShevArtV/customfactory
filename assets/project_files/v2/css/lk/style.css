@@ -2360,11 +2360,6 @@ h3 {
   opacity: .5;
 }
 
-@media (max-width: 767px) {
-  .pagination .toggler {
-    width: auto;
-  }
-}
 
 .pagination .toggler:not(.disabled):hover {
   background-color: var(--color-light);
@@ -4199,7 +4194,27 @@ input[disabled], textarea[disabled], select[disabled] {
     gap: 0;
   }
 }
-.checkbox:disabled + .checkbox-text{
-  pointer-events:none;
-  opacity:.5;
+
+.checkbox:disabled + .checkbox-text {
+  pointer-events: none;
+  opacity: .5;
+}
+
+#workflow .file-form__text {
+  transform: translate(0, -50%);
+  left: 0;
+  text-align: center;
+  width: 100%;
+}
+
+#workflow .file-form {
+  min-height: 200px;
+}
+
+#workflow [data-fu-wrap] {
+  gap: 0;
+}
+
+#workflow .file-attachment {
+  grid-template-columns: 1fr;
 }
