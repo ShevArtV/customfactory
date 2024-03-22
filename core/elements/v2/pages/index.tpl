@@ -4,6 +4,10 @@
     {if $path}
         {include $path}
     {else}
-        {$_modx->resource.content}
+        <div class="showcase">
+            <div class="container">
+                {$_modx->resource.content}
+            </div>
+        </div>
     {/if}
 {/block}

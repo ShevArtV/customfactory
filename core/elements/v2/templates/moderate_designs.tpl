@@ -209,14 +209,14 @@
                         <div class="card-design__content">
                             <div class="card-design__title">{$pagetitle} <small>(id:{$id})</small></div>
                             <ul class="card-design__params">
-                                <li>Номер ЛК: {$profilenum} ({$createdby})</li>
+                                <li>Номер ЛК: {$profilenum?:'Не задан'} ({$createdby})</li>
                             </ul>
                         </div>
                         <div class="card-design__footer">
                             <ul class="card-design__params">
                                 <li class="active">Статус: {$statuses['product'][$status]['caption']}</li>
                                 <li>Категория: <a href="#" data-modal-show="#modal-parent-{$id}"
-                                                  data-for="#sel-product-{$id}">{$parent ? $categories[$parent] : 'Не задан'}</a>
+                                                  data-for="#sel-product-{$id}">{$parent ? $categories[$parent] : 'Не задана'}</a>
                                 </li>
                                 <li>Тип товара: <a href="#" data-modal-show="#modal-root-{$id}"
                                                    data-for="#sel-product-{$id}">{$root_id ? $types[$root_id] : 'Не задан'}</a>
@@ -353,7 +353,7 @@
                 <div data-pn-pagination class="pagination {$totalPages < 2 ? 'd-none' : ''}">
                     <button type="button" class="toggler start" data-pn-first="1"></button>
                     <button type="button" class="toggler prev" data-pn-prev></button>
-                    <input type="number" name="page" data-pn-current form="filterForm" min="1" max="{$totalPages}" value="{$.get.page?:1}">
+                    <input type="number" name="page" data-pn-current form="filterForm" data-si-preset="flatfilters" min="1" max="{$totalPages}" value="{$.get.page?:1}">
 
                     <span data-pn-total>{$totalPages}</span>
                     <button type="button" class="toggler next" data-pn-next></button>

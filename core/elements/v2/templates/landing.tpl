@@ -9,9 +9,9 @@
             <div class="showcase-layout__content">
                 <h1 class="showcase-title" data-mpc-field="title">Зарабатывайте на дизайне товаров для маркетплейсов</h1>
                 <div class="showcase-text"data-mpc-field="subtitle">Постоянный доход на всю жизнь для дизайнеров, художников, иллюстраторов</div>
-                <img alt="" width="712" height="740" class="showcase-image" data-mpc-field="img" src="assets/project_files/img/landing/showcase.png">
+                <img alt="" width="712" height="740" class="showcase-image" data-mpc-field="img" src="assets/project_files/v2/img/landing/showcase.png">
                 <div class="showcase-button">
-                    <a href="registracziya" data-mpc-field="target" class="btn">
+                    <a href="registratsiya" data-mpc-field="target" class="btn">
                        <span data-mpc-field="btn_text" data-mpc-unwrap="1">Попробовать сейчас</span>
                     </a>
                 </div>
@@ -86,7 +86,7 @@
                     <div data-mpc-item="" class="work-item">
                         <div class="work-item__aside">
                             <div class="work-item__icon">
-                                <img src="assets/project_files/img/landing/work-icon-1.svg" alt="" width="130" height="130" data-mpc-field-1="img">
+                                <img src="assets/project_files/v2/img/landing/work-icon-1.svg" alt="" width="130" height="130" data-mpc-field-1="img">
                             </div>
                         </div>
                         <div class="work-item__content">
@@ -102,7 +102,7 @@
                     <div data-mpc-item="" class="work-item">
                         <div class="work-item__aside">
                             <div class="work-item__icon">
-                                <img data-mpc-field-1="img" src="assets/project_files/img/landing/work-icon-2.svg" alt="" width="130" height="130">
+                                <img data-mpc-field-1="img" src="assets/project_files/v2/img/landing/work-icon-2.svg" alt="" width="130" height="130">
                             </div>
                         </div>
                         <div class="work-item__content">
@@ -118,7 +118,7 @@
                     <div data-mpc-item="" class="work-item">
                         <div class="work-item__aside">
                             <div class="work-item__icon">
-                                <img data-mpc-field-1="img" src="assets/project_files/img/landing/work-icon-3.svg" alt="" width="130" height="130">
+                                <img data-mpc-field-1="img" src="assets/project_files/v2/img/landing/work-icon-3.svg" alt="" width="130" height="130">
                             </div>
                         </div>
                         <div class="work-item__content">
@@ -133,7 +133,7 @@
                     <div data-mpc-item="" class="work-item">
                         <div class="work-item__aside">
                             <div class="work-item__icon">
-                                <img data-mpc-field-1="img" src="assets/project_files/img/landing/work-icon-4.svg" alt="" width="130" height="130">
+                                <img data-mpc-field-1="img" src="assets/project_files/v2/img/landing/work-icon-4.svg" alt="" width="130" height="130">
                             </div>
                         </div>
                         <div class="work-item__content">
@@ -173,7 +173,7 @@
                 <div class="column {$idx < 4 ? 'col-4 md-col-12': 'col-6 md-col-12'}" data-mpc-chunk="pdoresources/main_categories/item.tpl" data-mpc-rid="14">
                     <div class="item">
                         {$is_hit ? '<div class="item-label">Хит продаж</div>' : ''}
-                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/img/landing/category-new/podushka.png');"></div>
+                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/v2/img/landing/category-new/podushka.png');"></div>
                         <div class="item-title" data-mpc-type="res" data-mpc-field="pagetitle">Декоративные подушки</div>
                         <div class="item-price">
                             Выплаты: <span data-mpc-type="res" data-mpc-field="introtext">25—60 рублей с продажи</span>
@@ -182,7 +182,7 @@
                 </div>
                 <div class="column col-4 md-col-12" data-mpc-chunk="pdoresources/main_categories/item.tpl" data-mpc-rid="15">
                     <div class="item">
-                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/img/landing/category-new/kartina.png');">
+                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/v2/img/landing/category-new/kartina.png');">
 
                         </div>
                         <div class="item-title" data-mpc-type="res" data-mpc-field="pagetitle">Интерьерные картины</div>
@@ -193,7 +193,7 @@
                 </div>
                 <div class="column col-4 md-col-12" data-mpc-chunk="pdoresources/main_categories/item.tpl" data-mpc-rid="16">
                     <div class="item">
-                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/img/landing/category-new/dorozhka.png');">
+                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/v2/img/landing/category-new/dorozhka.png');">
 
                         </div>
                         <div class="item-title" data-mpc-type="res" data-mpc-field="pagetitle">Дорожки</div>
@@ -204,7 +204,7 @@
                 </div>
                 <div class="column col-6 md-col-12" data-mpc-chunk="pdoresources/main_categories/item.tpl" data-mpc-rid="17">
                     <div class="item">
-                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/img/landing/category-new/dorozhka.png');">
+                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/v2/img/landing/category-new/dorozhka.png');">
 
                         </div>
                         <div class="item-title" data-mpc-type="res" data-mpc-field="pagetitle">Фотообои</div>
@@ -215,7 +215,7 @@
                 </div>
                 <div class="column col-6 md-col-12" data-mpc-chunk="pdoresources/main_categories/item.tpl" data-mpc-rid="18">
                     <div class="item">
-                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/img/landing/category-new/poster.png');">
+                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/v2/img/landing/category-new/poster.png');">
 
                         </div>
                         <div class="item-title" data-mpc-type="res" data-mpc-field="pagetitle">Постеры</div>
@@ -234,12 +234,12 @@
 
         <div class="joining-bnr">
             <div class="joining-bnr__aside">
-                <img data-mpc-field="img" src="assets/project_files/img/landing/joining-bnr.jpg" alt="" width="438" height="255">
+                <img data-mpc-field="img" src="assets/project_files/v2/img/landing/joining-bnr.jpg" alt="" width="438" height="255">
             </div>
             <div class="joining-bnr__content" data-mpc-field="content">
                 <h3>Присоединяйтесь к нам</h3>
                 <p>Творите и зарабатывайте, продавая товары со своим дизайном на WB, Ozon, ЯндексМаркете</p>
-                <a href="registracziya" class="btn">Зарегистироваться</a>
+                <a href="registratsiya" class="btn">Зарегистироваться</a>
             </div>
         </div>
 
@@ -256,7 +256,7 @@
                         <div class="cases-title" data-mpc-field-1="title"></div>
                         <!--cases-box-->
                         <div class="{$item1.subtitle}">
-                            <div class="{$item1.subtitle}__image" data-mpc-field-1="img" style="background:url('assets/project_files/img/landing/caces/bars.png');"></div>
+                            <div class="{$item1.subtitle}__image" data-mpc-field-1="img" style="background:url('assets/project_files/v2/img/landing/caces/bars.png');"></div>
                             <div class="{$item1.subtitle === 'cases-item' ? 'cases-item__content' : 'cases-box__row'}" data-mpc-field-1="content">
                                 <div class="cases-item__price">
                                     10 250 ₽ <span>в месяц</span>
@@ -279,7 +279,7 @@
                         <div class="cases-title" data-mpc-field-1="title">Картины «Правила дома и кухни»</div>
                         <!--cases-box-->
                         <div class="cases-box">
-                            <div class="cases-box__image" data-mpc-field-1="img" style="background:url('assets/project_files/img/landing/temp/cases.jpg');"></div>
+                            <div class="cases-box__image" data-mpc-field-1="img" style="background:url('assets/project_files/v2/img/landing/temp/cases.jpg');"></div>
                             <div class="cases-box__row" data-mpc-field-1="content">
                                 <div class="cases-box__item">
                                     <div class="cases-box__price">1 421 шт</div>
@@ -314,7 +314,7 @@
                         <div class="cases-title" data-mpc-field-1="title"></div>
                         <!--cases-box-->
                         <div class="cases-item">
-                            <div class="cases-item__image" data-mpc-field-1="img" style="background:url('assets/project_files/img/landing/caces/kot.png');"></div>
+                            <div class="cases-item__image" data-mpc-field-1="img" style="background:url('assets/project_files/v2/img/landing/caces/kot.png');"></div>
                             <div class="cases-item__content" data-mpc-field-1="content">
                                 <div class="cases-item__price">
                                     32 500 ₽ <span>в месяц</span>
@@ -337,7 +337,7 @@
                         <div class="cases-title" data-mpc-field-1="title"></div>
                         <!--cases-box-->
                         <div class="cases-item">
-                            <div class="cases-item__image" data-mpc-field-1="img" style="background:url('assets/project_files/img/landing/caces/parizh.png');"></div>
+                            <div class="cases-item__image" data-mpc-field-1="img" style="background:url('assets/project_files/v2/img/landing/caces/parizh.png');"></div>
                             <div class="cases-item__content" data-mpc-field-1="content">
                                 <div class="cases-item__price">
                                     8 125 ₽ <span>в месяц</span>
@@ -360,7 +360,7 @@
                         <div class="cases-title" data-mpc-field-1="title">Подарочная декоративная подушка 40х40 см</div>
                         <!--cases-box-->
                         <div class="cases-box">
-                            <div class="cases-box__image" data-mpc-field-1="img" style="background:url('assets/project_files/img/landing/caces/podushka40.png');"></div>
+                            <div class="cases-box__image" data-mpc-field-1="img" style="background:url('assets/project_files/v2/img/landing/caces/podushka40.png');"></div>
                             <div class="cases-box__row" data-mpc-field-1="content">
                                 <div class="cases-box__item">
                                     <div class="cases-box__price">1 173 шт</div>
@@ -414,9 +414,9 @@
                             </div>
                             <div class="benefits-layout__image">
                                 <picture class="shadow radius" data-mpc-field-1="picture">
-                                    <source srcset="assets/project_files/img/landing/benefits-1.png" media="(min-width: 768px)">
-                                    <source srcset="assets/project_files/img/landing/benefits-1-mobile.png" media="(min-width: 320px)">
-                                    <img src="assets/project_files/img/landing/benefits-1.png" alt="">
+                                    <source srcset="assets/project_files/v2/img/landing/benefits-1.png" media="(min-width: 768px)">
+                                    <source srcset="assets/project_files/v2/img/landing/benefits-1-mobile.png" media="(min-width: 320px)">
+                                    <img src="assets/project_files/v2/img/landing/benefits-1.png" alt="">
                                 </picture>
                             </div>
                         </div>
@@ -429,8 +429,8 @@
                             </div>
                             <div class="benefits-layout__image">
                                 <picture class="shadow" data-mpc-field-1="picture">
-                                    <source srcset="assets/project_files/img/landing/benefits-2.png" media="(min-width: 320px)">
-                                    <img src="assets/project_files/img/landing/benefits-2.png" alt="">
+                                    <source srcset="assets/project_files/v2/img/landing/benefits-2.png" media="(min-width: 320px)">
+                                    <img src="assets/project_files/v2/img/landing/benefits-2.png" alt="">
                                 </picture>
                             </div>
                         </div>
@@ -444,8 +444,8 @@
                             </div>
                             <div class="benefits-layout__image">
                                 <picture class="shadow" data-mpc-field-1="picture">
-                                    <source srcset="assets/project_files/img/landing/benefits-3.gif" media="(min-width: 320px)">
-                                    <img src="assets/project_files/img/landing/benefits-3.gif" alt="">
+                                    <source srcset="assets/project_files/v2/img/landing/benefits-3.gif" media="(min-width: 320px)">
+                                    <img src="assets/project_files/v2/img/landing/benefits-3.gif" alt="">
                                 </picture>
                             </div>
                         </div>
@@ -461,9 +461,9 @@
                             </div>
                             <div class="benefits-layout__image">
                                 <picture class="shadow" data-mpc-field-1="picture">
-                                    <source srcset="assets/project_files/img/landing/benefits-4.png" media="(min-width: 768px)">
-                                    <source srcset="assets/project_files/img/landing/benefits-4-mobile.png" media="(min-width: 320px)">
-                                    <img src="assets/project_files/img/landing/benefits-4.png" alt="">
+                                    <source srcset="assets/project_files/v2/img/landing/benefits-4.png" media="(min-width: 768px)">
+                                    <source srcset="assets/project_files/v2/img/landing/benefits-4-mobile.png" media="(min-width: 320px)">
+                                    <img src="assets/project_files/v2/img/landing/benefits-4.png" alt="">
                                 </picture>
                             </div>
                         </div>
@@ -480,9 +480,9 @@
                             </div>
                             <div class="benefits-layout__image">
                                 <picture class="shadow" data-mpc-field-1="picture">
-                                    <source srcset="assets/project_files/img/landing/benefits-5.png" media="(min-width: 768px)">
-                                    <source srcset="assets/project_files/img/landing/benefits-5-mobile.png" media="(min-width: 320px)">
-                                    <img src="assets/project_files/img/landing/benefits-5.png" alt="">
+                                    <source srcset="assets/project_files/v2/img/landing/benefits-5.png" media="(min-width: 768px)">
+                                    <source srcset="assets/project_files/v2/img/landing/benefits-5-mobile.png" media="(min-width: 320px)">
+                                    <img src="assets/project_files/v2/img/landing/benefits-5.png" alt="">
                                 </picture>
                             </div>
                         </div>
@@ -499,8 +499,8 @@
                             </div>
                             <div class="benefits-layout__image">
                                 <picture class="shadow" data-mpc-field-1="picture">
-                                    <img src="assets/project_files/img/landing/benefits-6.png" alt="">
-                                    <source srcset="assets/project_files/img/landing/benefits-6.png" media="(min-width: 320px)">
+                                    <img src="assets/project_files/v2/img/landing/benefits-6.png" alt="">
+                                    <source srcset="assets/project_files/v2/img/landing/benefits-6.png" media="(min-width: 320px)">
                                 </picture>
                             </div>
                         </div>
@@ -524,7 +524,7 @@
                     <div data-mpc-item="" class="reviews-item">
                         <div class="reviews-item__aside">
                             <div class="reviews-item__avatar">
-                                <img data-mpc-field-1="img" src="assets/project_files/img/landing/disigner/photo_2022-09-02_11-32-34.jpg" alt="">
+                                <img data-mpc-field-1="img" src="assets/project_files/v2/img/landing/disigner/photo_2022-09-02_11-32-34.jpg" alt="">
                             </div>
                             <div data-mpc-field-1="title" class="reviews-item__name">Александр Амосов</div>
                         </div>
@@ -541,7 +541,7 @@
                     <div data-mpc-item="" class="reviews-item">
                         <div class="reviews-item__aside">
                             <div class="reviews-item__avatar">
-                                <img data-mpc-field-1="img" src="assets/project_files/img/landing/disigner/photo_2022-09-02_11-46-13.jpg" alt="">
+                                <img data-mpc-field-1="img" src="assets/project_files/v2/img/landing/disigner/photo_2022-09-02_11-46-13.jpg" alt="">
                             </div>
                             <div data-mpc-field-1="title" class="reviews-item__name">Мария Бастракова</div>
                         </div>
@@ -556,7 +556,7 @@
                     <div data-mpc-item="" class="reviews-item">
                         <div class="reviews-item__aside">
                             <div class="reviews-item__avatar">
-                                <img data-mpc-field-1="img" src="assets/project_files/img/landing/disigner/photo_2022-09-02_15-06-11.jpg" alt="">
+                                <img data-mpc-field-1="img" src="assets/project_files/v2/img/landing/disigner/photo_2022-09-02_15-06-11.jpg" alt="">
                             </div>
                             <div data-mpc-field-1="title" class="reviews-item__name">Алексей Зайцев</div>
                         </div>
@@ -573,7 +573,7 @@
                     <div data-mpc-item="" class="reviews-item">
                         <div class="reviews-item__aside">
                             <div class="reviews-item__avatar">
-                                <img data-mpc-field-1="img" src="assets/project_files/img/landing/disigner/photo_2022-09-02_13-06-30.jpg" alt="">
+                                <img data-mpc-field-1="img" src="assets/project_files/v2/img/landing/disigner/photo_2022-09-02_13-06-30.jpg" alt="">
                             </div>
                             <div data-mpc-field-1="title" class="reviews-item__name">Анна Назаревич</div>
                         </div>
@@ -588,7 +588,7 @@
                     <div data-mpc-item="" class="reviews-item">
                         <div class="reviews-item__aside">
                             <div class="reviews-item__avatar">
-                                <img data-mpc-field-1="img" src="assets/project_files/img/landing/disigner/photo_2022-09-02_11-46-08.jpg" alt="">
+                                <img data-mpc-field-1="img" src="assets/project_files/v2/img/landing/disigner/photo_2022-09-02_11-46-08.jpg" alt="">
                             </div>
                             <div data-mpc-field-1="title" class="reviews-item__name">Ольга Грисюк</div>
                         </div>
@@ -604,7 +604,7 @@
                     <div data-mpc-item="" class="reviews-item">
                         <div class="reviews-item__aside">
                             <div class="reviews-item__avatar">
-                                <img data-mpc-field-1="img" src="assets/project_files/img/landing/disigner/photo_2022-09-13_13-16-29.jpg" alt="">
+                                <img data-mpc-field-1="img" src="assets/project_files/v2/img/landing/disigner/photo_2022-09-13_13-16-29.jpg" alt="">
                             </div>
                             <div data-mpc-field-1="title" class="reviews-item__name">Антон Сутырин</div>
                         </div>
@@ -630,7 +630,7 @@
                 <h3>Хотите проявить свой творческий потенциал и заработать?</h3>
             </div>
             <div class="info-bnr__aside">
-                <a href="registracziya" class="btn btn--white">Начните сейчас</a>
+                <a href="registratsiya" class="btn btn--white">Начните сейчас</a>
             </div>
         </div>
 
@@ -656,7 +656,7 @@
                         </div>
                         <div class="faq-item__content" data-mpc-field-1="content">
 
-                            <p>Для начала работы вам необходимо <a href="https://customfactory.ru/registracziya">зарегистрироваться в личном кабинете</a>, принять оферту и
+                            <p>Для начала работы вам необходимо <a href="https://customfactory.ru/registratsiya">зарегистрироваться в личном кабинете</a>, принять оферту и
                                 прислать сканы документов на проверку. </p>
 
                             <p><b>Документы для самозанятых:</b></p>

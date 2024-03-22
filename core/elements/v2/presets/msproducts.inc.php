@@ -2,7 +2,7 @@
 
 return [
     'popular' => [
-        'parents' => 15,
+        'parents' => 13,
         'tpl' => '#/msproducts/popular/item.tpl',
         'limit' => 0,
         'includeTVs' => 'img',

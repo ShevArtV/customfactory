@@ -217,8 +217,11 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         async updateFiltersView() {
             const selectAll = document.querySelector('[data-select-all]');
+            const filters = document.querySelector('#filterForm');
+            const fileForm = document.querySelector('#fileForm');
             selectAll && (selectAll.checked = false);
-            await FlatFilters.MainHandler.update();
+            filters && await FlatFilters.MainHandler.update();
+            fileForm && FlatFilters.PaginationHandler.goto(1);
         },
         enterComment(target) {
             if (Number(target.value) === Number(target.dataset.listStatus)) {
@@ -299,10 +302,18 @@ document.addEventListener('DOMContentLoaded', () => {
             CustomSelect.create(project.customSelectConfig);
             SendIt?.FileUploaderFactory?.addInstances(workflow);
         },
+        insertProducts(data){
+            const results = document.querySelector('[data-results]');
+            results && (results.innerHTML = data.html);
+        },
 
         duplicateField(target){
             const field = document.querySelector(target.dataset.sync);
             field && (field.value = target.value);
+        },
+        toggleMenu(target){
+            const menu = document.querySelector(target.dataset.toggle);
+            menu && menu.classList.toggle('sidebar-hidden');
         }
     }
 
@@ -383,6 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.closest('[data-apply-period]') && project.triggerChangePeriod();
         e.target.closest('[data-for]') && project.checkedFor(e.target.closest('[data-for]'));
         e.target.closest('[data-load-workflow]') && project.loadWorkflow(e.target.closest('[data-load-workflow]'));
+        e.target.closest('[data-toggle]') && project.toggleMenu(e.target.closest('[data-toggle]'));
         e.target.closest('[name="selected_id[]"]') && document.querySelector('[data-select-all]') && (document.querySelector('[data-select-all]').checked = false);
     })
 
@@ -438,6 +450,10 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'search_tag':
                 const tagsModal = target.closest('.modal');
                 tagsModal && tagsModal.querySelector('[data-checkbox-wrap]') && (tagsModal.querySelector('[data-checkbox-wrap]').innerHTML = result.result)
+                break;
+            case 'getfilesproducts':
+            case 'default_products':
+                project.insertProducts(result.data);
                 break;
         }
     })
@@ -649,4 +665,15 @@ document.addEventListener('DOMContentLoaded', () => {
             el.classList[el.dataset.qfStep !== '1' ? 'remove' : 'add']('active');
         })
     })
+
+    if(typeof jQuery !== 'undefined'){
+        const collapseTitle = $('.js-collapse-title')
+        collapseTitle.on('click', function () {
+            $(this)
+                .toggleClass('active')
+                .next()
+                .stop()
+                .slideToggle(200);
+        })
+    }
 })

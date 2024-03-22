@@ -144,6 +144,7 @@ class LoadToSelectel extends Base
                 $product->set('status', $status);
                 $product->set('published', 1);
                 $product->set('temp_files', '');
+                $product->set('introtext', '');
                 $product->save();
                 $this->flatfilters->indexingDocument($product);
             }

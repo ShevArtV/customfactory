@@ -65,8 +65,8 @@ return [
         'method' => 'update',
         'successMessage' => 'Оферта принята.',
         'clearFieldsOnSuccess' => 0,
-        'validate' => 'offer:checkbox:required',
-        'offer.vTextRequired' => 'Примите оферту.'
+        'validate' => 'extended[offer]:checkbox:required',
+        'extended[offer].vTextRequired' => 'Примите оферту.'
     ],
     'editpass' => [
         'hooks' => 'Identification',
@@ -97,9 +97,9 @@ return [
         'clearFieldsOnSuccess' => 0,
         'allowFiles' => 'extended[selfemployed_img],extended[pass_one_img],extended[pass_two_img],extended[insurance_img],extended[certificate_img],extended[inn_img]',
         'validate' => 'email:required:email,
-        extended[surname]:required,
-        extended[name]:required,
-        extended[fathername]:required,
+        extended[surname]:onlyCyrillic:required,
+        extended[name]:onlyCyrillic:required,
+        extended[fathername]:onlyCyrillic:required,
         phone:required,
         pass_series:required,
         pass_num:required,
@@ -138,6 +138,14 @@ return [
         'maxSize' => 0.5,
         'maxCount' => 3,
         'allowExt' => 'jpg,png,jpeg,webp',
+        'portion' => 0.1,
+        'threadsQuantity' => 12,
+    ],
+    'upload_excel' => [
+        'hooks' => '',
+        'maxSize' => 1,
+        'maxCount' => 1,
+        'allowExt' => 'xls,xlsx',
         'portion' => 0.1,
         'threadsQuantity' => 12,
     ],
@@ -257,4 +265,23 @@ return [
         'snippet' => '@FILE snippets/product/snippet.loadworkflow.php',
         'successMessage' => '',
     ],
+    'getfilesproducts' => [
+        'hooks' => '',
+        'snippet' => '@FILE snippets/product/snippet.getproductsfromfile.php',
+        'successMessage' => '',
+    ],
+    'base_form' => [
+        'hooks' => 'FormItSaveForm,email',
+        'validationErrorMessage' => 'Исправьте, пожалуйста, ошибки!',
+        'successMessage' => 'Форма успешно отправлена! Менеджер свяжется с Вами в течение 5 минут.',
+        'emailTo' => 'support@customfactory.ru,shev.art.v@yandex.ru',
+        'emailFrom' => 'robot@customfactory.ru',
+        'validate' => 'email:email:required,name:required,message:required:minLength=^10^:maxLength=^200^',
+        'fieldNames' => 'name==Имя,email==Email,message==Сообщение,phone==Телефон',
+    ],
+    'default_products' => [
+        'hooks' => '',
+        'snippet' => '@FILE snippets/product/snippet.getdefaultproducts.php',
+        'successMessage' => '',
+    ]
 ];

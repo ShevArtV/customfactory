@@ -1511,19 +1511,20 @@ h3 {
 
 .faq-tab-wrapper {
   overflow: hidden;
-  display: grid;
 }
 
 .faq-tab {
-  grid-column: 1/1;
-  grid-row: 1/1;
   background-color: #fff;
   transform: translateX(-100%);
   transition: transform .4s;
+  opacity: 0;
+  position: absolute;
 }
 
 .faq-tab.active {
   transform: translateX(0);
+  opacity: 1;
+  position: relative;
 }
 
 .faq-item {
@@ -4217,4 +4218,15 @@ input[disabled], textarea[disabled], select[disabled] {
 
 #workflow .file-attachment {
   grid-template-columns: 1fr;
+}
+
+.ondelfile{
+  width: 400px;
+  max-width: 100%;
+}
+.ondelfile .file-attachment{
+  min-height: 46px;
+}
+.ondelfile .file-form__text{
+  min-width: max-content;
 }

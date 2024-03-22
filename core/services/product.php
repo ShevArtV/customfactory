@@ -4,6 +4,8 @@ namespace CustomServices;
 
 use CustomServices\LoadToSelectel;
 
+use \PhpOffice\PhpSpreadsheet\IOFactory;
+
 class Product extends Base
 {
     /**
@@ -59,7 +61,12 @@ class Product extends Base
         $q->leftJoin('modResource', 'Parent', 'Product.parent = Parent.id');
         $q->where(['Product.template' => 14, 'Parent.published' => 1, 'Parent.deleted' => 0]);
         $q->andCondition('Data.size IS NOT NULL');
-        $q->andCondition(['Parent.id:NOT IN' => $prohibited_categories, 'Parent.old_id:NOT IN' => $prohibited_categories]);
+        $q->andCondition([
+            'Parent.id:NOT IN' => $prohibited_categories,
+            'Parent.old_id:NOT IN' => $prohibited_categories,
+            'Product.id:NOT IN' => $prohibited_categories,
+            'Product.old_id:NOT IN' => $prohibited_categories,
+        ]);
         $q->sortby('Parent.menuindex');
 
         $tstart = microtime(true);
@@ -234,10 +241,13 @@ class Product extends Base
             $workflow['screens'] = $product->get('temp_files');
             $productData['temp_files'] = '';
             $this->setWorkflow($workflow, $product);
+            $this->toggleMark('rework', $product, 'add');
+        } else {
+            $this->toggleMark('rework', $product);
         }
 
-        if($productData['deleted']){
-            $productData['editedon'] = time();
+        if ($productData['deleted']) {
+            $productData['delete_at'] = date('d.m.Y', strtotime('+7 days'));
         }
 
         if ($productData['root_id'] && $root = $this->modx->getObject('msProduct', $productData['root_id'])) {
@@ -246,7 +256,7 @@ class Product extends Base
                 $productData['root_id'] = $monitoredFields['root_id'];
             }
         }
-
+        $productData['editedon'] = time();
         $product->fromArray($productData);
         $product->save();
 
@@ -258,6 +268,20 @@ class Product extends Base
             'msg' => 'Дизайн обновлен.',
             'rid' => $productData['id']
         ];
+    }
+
+    public function toggleMark($mark, $product, $method = 'remove')
+    {
+        if ($profile = $this->modx->getObject('modUserProfile', ['internalKey' => $product->get('createdby')])) {
+            $extended = $profile->get('extended');
+            if ($method === 'add') {
+                $extended[$mark] = 1;
+            } else {
+                unset($extended[$mark]);
+            }
+            $profile->set('extended', $extended);
+            $profile->save();
+        }
     }
 
     public function removeProduct(\msProduct $product): array
@@ -438,7 +462,7 @@ class Product extends Base
         ];
     }
 
-    public function renderProducts($properties): string
+    public function renderProducts($properties): array
     {
         if (!$properties['tpl']) {
             return $properties['resources'];
@@ -449,30 +473,38 @@ class Product extends Base
             'types' => $this->getProductTypes(),
             'colors' => $this->getColors(),
             'allTags' => $this->getTagsByAlphabet(),
+            'statuses' => $this->getStatuses(),
         ];
-        $output = '';
+        $html = '';
         $q = $this->modx->newQuery('msProduct');
         $q->setClassAlias('Product');
         $q->leftJoin('msProductData', 'Data');
         $q->leftJoin('modTemplateVarResource', 'TV', 'Product.id = TV.contentid AND TV.tmplvarid = 15');
         $q->select(['Product.*', 'Data.*', 'TV.value as workflow']);
         $q->where(['Product.id:IN' => $resources]);
+        if ($properties['where']) {
+            $q->andCondition($properties['where']);
+        }
         $q->sortby('FIELD(Product.id, ' . $properties['resources'] . ')', '');
         $tstart = microtime(true);
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
+            $count = $q->stmt->rowCount();
             $result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+            if (isset($properties['limit']) && isset($properties['offset'])) {
+                $result = array_slice($result, $properties['offset'] ?: 0, $properties['limit']);
+            }
             foreach ($result as $row) {
                 $row = array_merge($properties, $row, $lists);
                 $row['color'] = $row['color'] ? json_decode($row['color'], true) : [];
                 $row['tags'] = $row['tags'] ? json_decode($row['tags'], true) : [];
                 $row['workflow'] = $row['workflow'] ? json_decode($row['workflow'], true) : [];
-                $output .= $this->pdoTools->getChunk($properties['tpl'], $row);
+                $html .= $this->pdoTools->getChunk($properties['tpl'], $row);
             }
         }
 
-        return $output;
+        return ['html' => $html, 'count' => $count];
     }
 
     public function getColors(): array
@@ -537,5 +569,87 @@ class Product extends Base
             'msg' => '',
             'html' => $html
         ];
+    }
+
+    public function getProductsFromFile(string $path, int $page = 1, int $limit = 6)
+    {
+        $offset = $page === 1 ? 0 : $limit * ($page - 1);
+        $senditTempPath = $this->modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');
+        $senditTempPath = str_replace('[[+asseetsUrl]]', $this->assetsPath, $senditTempPath);
+        $fullPath = $senditTempPath . session_id() . '/' . $path;
+        $ids = [];
+        $spreadsheet = IOFactory::load($fullPath);
+        $worksheet = $spreadsheet->getActiveSheet();
+        $highestRow = $worksheet->getHighestRow();
+
+        for ($row = 2; $row <= $highestRow; $row++) {
+            $ids[] = $worksheet->getCell('A' . $row)->getValue(); // Получаем значение из первого столбца
+        }
+
+        if (empty($ids)) {
+            return [
+                'success' => false,
+                'msg' => 'Файл пуст',
+                'html' => ''
+            ];
+        }
+
+        $result = $this->renderProducts([
+            'tpl' => '@FILE chunks/getproductsfromfile/default/item.tpl',
+            'resources' => implode(',', $ids),
+            'where' => ['Product.deleted:!=' => 1],
+            'limit' => $limit,
+            'offset' => $offset
+        ]);
+
+        return [
+            'success' => true,
+            'msg' => '',
+            'html' => $result['html'],
+            'totalPages' => ceil($result['count'] / 6),
+            'currentPage' => $page
+        ];
+    }
+
+    public function getDefaultProducts($data)
+    {
+        $output = [];
+        $q = $this->modx->newQuery('msProductData');
+        $q->setClassAlias('Data');
+        $q->select(
+            "Data.popular AS popular, 
+                    Data.new AS new,
+                    Data.price AS price,
+                    Product.uri AS uri,
+                    Product.pagetitle AS pagetitle,
+                    Parent.pagetitle AS category, 
+                    Parent.menuindex AS menuindex,
+                    TV.value as img, 
+                    Product.parent AS parent"
+        );
+        $q->leftJoin('modResource', 'Product', 'Data.id = Product.id');
+        $q->leftJoin('modResource', 'Parent', 'Product.parent = Parent.id');
+        $q->leftJoin('modTemplateVarResource', 'TV', 'Product.id = TV.contentid AND TV.tmplvarid = 1');
+        $q->where(['Product.template' => 14, 'Parent.published' => 1, 'Parent.deleted' => 0]);
+        if ($data['parent']) {
+            $q->andCondition(['Product.parent:IN' => json_decode($data['parent'], true)]);
+        }
+        $q->sortby('Parent.menuindex');
+        if ($data['sortby']) {
+            $sortby = explode('|', $data['sortby']);
+            $q->sortby($sortby[0], $sortby[1]);
+        } else {
+            $q->sortby('Product.id', 'DESC');
+        }
+        $tstart = microtime(true);
+        if ($q->prepare() && $q->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+            $result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+            foreach ($result as $item) {
+                $output[$item['category']][] = $item;
+            }
+        }
+        return $this->pdoTools->getChunk('@FILE chunks/getdefaultproducts/default/item.tpl', ['categories' => $output]);
     }
 }

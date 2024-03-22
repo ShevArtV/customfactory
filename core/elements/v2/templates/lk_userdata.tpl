@@ -56,7 +56,7 @@
 
                     <div class="column col-4 md-col-12 md-order-1">
                         <div class="blockquote blockquote_success ##$_modx->user.status == 2 ? '' : 'd-none'}">
-                            Ваши данные успешно прошли модерацию. Для внесения изменений обратитесь в техническую поддержку.
+                            Ваши данные успешно прошли модерацию. Для внесения изменений обратитесь в <a href="{51973 | resource: 'content'}">техническую поддержку</a>.
                         </div>
                         <div class="blockquote blockquote_warning ##$_modx->user.status == 1 ? '' : 'd-none'}">
                             Ваши данные проходят модерацию. О результатах Вы получите уведомление.
@@ -68,7 +68,8 @@
                             <p><strong>Причина:</strong> ##$_modx->user.comment}</p>
                             ##/if}
 
-                            <p>ВНИМАНИЕ! После успешной проверки исправить данные можно будет только обратившись в техническую поддержку.</p>
+                            <p>ВНИМАНИЕ! После успешной проверки исправить данные можно будет только обратившись в
+                                <a href="{51973 | resource: 'content'}">техническую поддержку</a>.</p>
                         </div>
                     </div>
                 </div>
@@ -142,7 +143,7 @@
                                 <small class="error" data-si-error="address_fact"></small>
                             </div>
                         </div>
-                        <label class="checkbox-label">
+                        <label class="checkbox-label" style="margin-top:30px;">
                             ##if $_modx->user.address_fact == $_modx->user.address && $_modx->user.address_fact && $_modx->user.address}
                             ##set $checked = 'checked'}
                             ##/if}
@@ -265,7 +266,7 @@
                                     <label class="input-label">Адрес регистрации ИП*</label>
                                     <input type="text" class="input" name="extended[address_ip]" value="##$extended[address_ip]}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                     <small class="error" data-si-error="extended[address_ip]"></small>
-                                    <label class="checkbox-label">
+                                    <label class="checkbox-label" style="margin-top:30px;">
                                         ##if $extended.address_ip == $extended.pass_address && $extended.pass_address && $extended.address_ip}
                                         ##set $checked = 'checked'}
                                         ##/if}

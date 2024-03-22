@@ -26,5 +26,18 @@ return [
     'help_aside_short' => [
         'extends' => 'pdoresources.help_aside',
         'resources' => '51973,51974',
+    ],
+    'footer_contacts' => [
+        'parents' => 51971,
+        'tpl' => '#/pdoresources/footer_contacts/item.tpl',
+        'where' => ['class_key' => 'modWebLink'],
+        'includeContent' => 1,
+        'sortby' => ['menuindex' => 'ASC']
+    ],
+    'legal_info' => [
+        'parents' => 2,
+        'tpl' => '#/pdoresources/legal_info/item.tpl',
+        'where' => ['hidemenu:!=' => 1],
+        'sortby' => ['menuindex' => 'ASC']
     ]
 ];

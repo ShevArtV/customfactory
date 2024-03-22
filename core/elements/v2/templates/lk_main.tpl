@@ -1,6 +1,6 @@
 <!--##{"templatename":"Мой кабинет","pagetitle":"Страница Мой кабинет","icon":"icon-qrcode","extends":"12"}##-->
 
-<!-- /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web lk_main.tpl -->
+<!-- /usr/local/php/php-7.4/bin/php /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web lk_main.tpl -->
 
 <!--Вопросы-ответы-->
 <div id="{$id}" data-mpc-section="user_progress" data-mpc-name="Прогресс пользователя">
@@ -54,14 +54,14 @@
                     <span data-mpc-field-1="subtitle" data-mpc-remove="">prods</span>
                     <div class="step-list__title" data-mpc-field-1="title">Создайте свой товар</div>
                     <div class="step-list__text" data-mpc-field-1="content">
-                        На основе простых шаблонов. Создание товаров доступно только
+                        На основе <a href="{13 | url}">простых шаблонов</a>. Создание товаров доступно только
                         после полной регистрации и проверки ваших данных модератором
                     </div>
                 </li>
             </ul>
 
             <div class="page" data-mpc-field="content">
-                Прочитайте <a href="">Условия использования</a> и <a href="">Правила допустимого содержания</a>
+                Прочитайте <a href="{54743 | url}">Условия использования</a> и <a href="{54746 | url}">Правила допустимого содержания</a>
             </div>
         </div>
 
@@ -95,22 +95,18 @@
     </div>
 
     <div data-mpc-snippet="msProducts|popular" data-mpc-unwrap="1"></div>
-    {if $popular}
+    ##if $popular}
         <div class="offset-top">
             <h2 data-mpc-field="title">Популярные товары</h2>
 
             <div class="columns">
-                {$popular}
+                ##$popular}
                 <div class="column col-4 sm-col-6" data-mpc-remove="1" data-mpc-chunk="msproducts/popular/item.tpl">
                     <a href="{$uri}" class="element">
                         {if $popular}
                             <div class="element-label">Бестселлер</div>
                         {/if}
                         <div class="element-image">
-                            {set $img = $id | resource: 'img'}
-                            {if !$img}
-                                {set $img = $parent | resource: 'default_img'}
-                            {/if}
                             <img src="{$img}" width="305" height="344" alt="{$pagetitle}">
                         </div>
                         <div class="element-content">
@@ -122,7 +118,7 @@
             </div>
 
         </div>
-    {/if}
+    ##/if}
     ##/if}
 </div>
 

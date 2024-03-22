@@ -164,5 +164,81 @@ switch ($argv[1]) {
             $orderProduct->save();
         }
         break;
+
+    case 'product_templates':
+        $filename = 'product_templates.json';
+        $data = json_decode(file_get_contents(MODX_CORE_PATH . 'elements/v2/import/' . $filename), 1);
+
+        foreach($data as $item){
+            $config = json_decode($item['tvs']['config'], true);
+            $newConfig = [];
+            if(!is_array($config)){
+                continue;
+            }
+            foreach ($config as $c) {
+                if(isset($c['list_with_img'])){
+                    $images = json_decode($c['list_with_img'],1);
+                    $list_simple_img = [];
+                    foreach($images as $i){
+                        $list_simple_img[] = [
+                            'MIGX_id' => $i['MIGX_id'],
+                            'img' => str_replace('assets/project_files/img/', 'assets/project_files/v2/img/', $i['img']),
+                            'img_w' => '',
+                            'img_h' => '',
+                        ];
+                    }
+                    $c['list_simple_img'] = json_encode($list_simple_img);
+                    unset($c['list_with_img']);
+                }
+                switch($c['MIGX_formname']){
+                    case 'popular_products':
+                    case 'product_card':
+                        $newConfig[] = [
+                            'MIGX_id' => $c['MIGX_id'],
+                            'MIGX_formname' => $c['MIGX_formname'],
+                            'id' => $c['id'],
+                            'section_name' => $c['section_name'],
+                            'file_name' => $c['file_name'],
+                            'is_static' => false,
+                        ];
+                        break;
+                    case 'design_examples':
+                        $newConfig[] = [
+                            'MIGX_id' => $c['MIGX_id'],
+                            'MIGX_formname' => $c['MIGX_formname'],
+                            'id' => $c['id'],
+                            'section_name' => $c['section_name'],
+                            'file_name' => $c['file_name'],
+                            'is_static' => false,
+                            'title' => $c['title'],
+                            'subtitle' => $c['subtitle'],
+                            'list_simple_img' => $c['list_simple_img'],
+                        ];
+                        break;
+                    case 'technical_demands':
+                        $newConfig[] = [
+                            'MIGX_id' => $c['MIGX_id'],
+                            'MIGX_formname' => $c['MIGX_formname'],
+                            'id' => $c['id'],
+                            'section_name' => $c['section_name'],
+                            'file_name' => $c['file_name'],
+                            'is_static' => false,
+                            'title' => $c['title'],
+                            'list_double' => $c['list_double'],
+                        ];
+                        break;
+
+                }
+            }
+            if($product = $modx->getObject('modResource', ['old_id' => $item['id']])){
+                $product->setTVValue('config', json_encode($newConfig));
+                $product->setTVValue('img', str_replace('assets/project_files/img/', 'assets/project_files/v2/img/', $item['tvs']['img']));
+                $product->setTVValue('tplfile', str_replace('assets/project_files/img/', 'assets/project_files/v2/img/', $item['tvs']['tplfile']));
+                $product->set('template', 14);
+                $product->save();
+                $modx->log(1, print_r($newConfig, 1));
+            }
+        }
+        break;
 }
 echo 'Import Finished from ' . $filename . PHP_EOL;

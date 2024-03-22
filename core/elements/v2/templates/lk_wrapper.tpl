@@ -60,36 +60,36 @@
     <script src="assets/project_files/v2/js/lk/jquery-3.6.0.js"></script>
 
 
-    {$_modx->setPlaceholder('statuses', $_modx->runSnippet('@FILE snippets/base/snippet.getstatuses.php', []))}
+   {$_modx->setPlaceholder('statuses', $_modx->runSnippet('@FILE snippets/base/snippet.getstatuses.php', []))}
 </head>
 
 <body>
 <div data-mpc-section="lk_wrapper" class="wrapper">
 
     <!--sidebar-->
-    <div class="sidebar sidebar-hidden">
-        <div class="sidebar-close lg-visible js-sidebar-toggle"></div>
+    <div class="sidebar sidebar-hidden" id="sidebar">
+        <div class="sidebar-close lg-visible" data-toggle="#sidebar"></div>
 
         <div class="sidebar-wrap">
-            <div class="sidebar-label js-sidebar-toggle"></div>
+            <div class="sidebar-label" data-toggle="#sidebar"></div>
 
             <div class="sidebar-header">
                 <a href="" class="logotype">
-                    <img src="img/logo-img.svg" alt="" width="35" height="35" class="logotype-img">
-                    <img src="img/logo-text.svg" alt="" width="136" height="13" class="logotype-text">
+                    <img src="assets/project_files/v2/img/lk/logo-img.svg" alt="" width="35" height="35" class="logotype-img">
+                    <img src="assets/project_files/v2/img/lk/logo-text.svg" alt="" width="136" height="13" class="logotype-text">
                 </a>
             </div>
 
             <div class="sidebar-content scrollbar">
                 <ul class="sidebar-menu lg-visible">
                     <li>
-                        <div class="sidebar-menu__link">Евгений Малышенко</div>
+                        <div class="sidebar-menu__link">{$_modx->user.fullname}</div>
                     </li>
                 </ul>
                 <ul class="sidebar-menu">
                     <li>
                         <a href="" class="sidebar-menu__link" rel="Мой кабинет">
-                            <img src="img/icon-home.svg" alt="" width="35" height="35">
+                            <img src="assets/project_files/v2/img/lk/icon-home.svg" alt="" width="35" height="35">
                             Мой кабинет
                         </a>
                         <ul>
@@ -99,7 +99,7 @@
                     </li>
                     <li>
                         <a href="" class="sidebar-menu__link" rel="Товары">
-                            <img src="img/icon-basket.svg" alt="" width="35" height="35">
+                            <img src="assets/project_files/v2/img/lk/icon-basket.svg" alt="" width="35" height="35">
                             Товары
                         </a>
                         <ul>
@@ -110,7 +110,7 @@
                     </li>
                     <li>
                         <a href="" class="sidebar-menu__link" rel="Юридическая информация">
-                            <img src="img/icon-file.svg" alt="" width="35" height="35">
+                            <img src="assets/project_files/v2/img/lk/icon-file.svg" alt="" width="35" height="35">
                             Юридическая информация
                         </a>
                         <ul>
@@ -123,7 +123,7 @@
                     </li>
                     <li>
                         <a href="" class="sidebar-menu__link" rel="Помощь">
-                            <img src="img/icon-question.svg" alt="" width="35" height="35">
+                            <img src="assets/project_files/v2/img/lk/icon-question.svg" alt="" width="35" height="35">
                             Помощь
                         </a>
                         <ul>
@@ -138,7 +138,7 @@
                     <ul class="sidebar-menu">
                         <li>
                             <a href="" class="sidebar-menu__link" rel="Выход">
-                                <img src="img/icon-exit.svg" alt="" width="35" height="35">
+                                <img src="assets/project_files/v2/img/lk/icon-exit.svg" alt="" width="35" height="35">
                                 Выход
                             </a>
                         </li>
@@ -156,8 +156,8 @@
             <div class="header-content">
 
                 <a href="" class="logotype lg-visible">
-                    <img src="img/logo-img.svg" alt="" width="35" height="35" class="logotype-img">
-                    <img src="img/logo-text.svg" alt="" width="136" height="13" class="logotype-text">
+                    <img src="assets/project_files/v2/img/lk/logo-img.svg" alt="" width="35" height="35" class="logotype-img">
+                    <img src="assets/project_files/v2/img/lk/logo-text.svg" alt="" width="136" height="13" class="logotype-text">
                 </a>
 
                 <div class="burger lg-visible js-sidebar-toggle"></div>
@@ -184,7 +184,7 @@
     <main class="wrap">
         <div class="container">
 
-            <h1>Добро пожаловать, Евгений Малышенко!</h1>
+            <h1>Добро пожаловать, {$_modx->user.fullname}!</h1>
 
             <div data-mpc-content>
                 <!--CONTENT-->
@@ -202,7 +202,7 @@
 
                 <div class="footer-top__aside">
                     <div class="footer-logotype">
-                        <img src="img/logo-footer.svg" alt="" width="176" height="35">
+                        <img src="assets/project_files/v2/img/lk/logo-footer.svg" alt="" width="176" height="35">
                     </div>
                     <div class="footer-copyright">
                         Создание и продажа дизайнерских товаров через маркетплейсы
@@ -221,7 +221,7 @@
 
                     <div class="social">
                         <a href="" class="social-item">
-                            <img src="img/icon-tg.svg" alt="" width="22" height="18">
+                            <img src="assets/project_files/v2/img/lk/icon-tg.svg" alt="" width="22" height="18">
                         </a>
                     </div>
 
