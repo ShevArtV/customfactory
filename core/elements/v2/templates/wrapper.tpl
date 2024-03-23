@@ -78,19 +78,24 @@
                 <ul class="header-auth">
                     {if $_modx->user.id > 0}
                         <li>
-                            <form>
+                            <form data-si-form data-si-preset="logout">
                                 <button type="submit" class="header-auth__item">
-                                    {$btn_text?:'Выход'}
+                                    Выход
                                 </button>
                             </form>
                         </li>
                         <li>
-                            {set $dashboardUrl = (46 | url)}
-                            <a href="{$dashboardUrl}" class="header-auth__item">{32 | resource: 'menutitle'}</a>
+                            {if $_modx->user.id | ismember: "Designers"}
+                            {set $dashboardUrl = (28 | url)}
+                            <a href="{$dashboardUrl}" class="header-auth__item">{28 | resource: 'menutitle'}</a>
+                            {else}
+                                {set $dashboardUrl = (54750 | url)}
+                                <a href="{$dashboardUrl}" class="header-auth__item">{54750 | resource: 'menutitle'}</a>
+                            {/if}
                         </li>
                     {else}
-                        {set $authUrl = (29 | url)}
-                        {set $regUrl = (30 | url)}
+                        {set $authUrl = (23 | url)}
+                        {set $regUrl = (22 | url)}
                         <li>
                             <svg width="24" height="25" viewBox="0 0 24 25" fill="none">
                                 <path fill-rule="evenodd" clip-rule="evenodd"
@@ -98,7 +103,7 @@
                                 <path fill-rule="evenodd" clip-rule="evenodd"
                                       d="M11.9999 4.16833C10.1015 4.16833 8.56256 5.62452 8.56256 7.42083C8.56256 9.21713 10.1015 10.6733 11.9999 10.6733C13.8983 10.6733 15.4372 9.21713 15.4372 7.42083C15.4372 5.62452 13.8983 4.16833 11.9999 4.16833ZM6.271 7.42083C6.271 4.42699 8.83591 2 11.9999 2C15.1639 2 17.7288 4.42699 17.7288 7.42083C17.7288 10.4147 15.1639 12.8417 11.9999 12.8417C8.83591 12.8417 6.271 10.4147 6.271 7.42083Z"/>
                             </svg>
-                            <a href="{$authUrl}" class="header-auth__item">{29 | resource: 'menutitle'}</a>
+                            <a href="{$authUrl}" class="header-auth__item">{23 | resource: 'menutitle'}</a>
                         </li>
                         <li>
                             <svg width="24" height="25" viewBox="0 0 24 25" fill="none">
@@ -111,7 +116,7 @@
                                 <path fill-rule="evenodd" clip-rule="evenodd"
                                       d="M21.999 16.8149C21.999 17.4967 21.4388 18.0495 20.7476 18.0495L12.7386 18.0495C12.0475 18.0495 11.4872 17.4967 11.4872 16.8149C11.4872 16.1331 12.0475 15.5803 12.7386 15.5803L20.7476 15.5803C21.4388 15.5803 21.999 16.1331 21.999 16.8149Z"/>
                             </svg>
-                            <a href="{$regUrl}" class="header-auth__item active">{30 | resource: 'menutitle'}</a>
+                            <a href="{$regUrl}" class="header-auth__item active">{22 | resource: 'menutitle'}</a>
                         </li>
                     {/if}
                 </ul>

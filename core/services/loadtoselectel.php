@@ -2,9 +2,6 @@
 
 namespace CustomServices;
 
-/**
- *
- */
 class LoadToSelectel extends Base
 {
     /* @var string */

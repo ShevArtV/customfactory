@@ -1094,6 +1094,10 @@ h3 {
   position: relative;
   text-decoration: none;
   transition: background-color 0.15s;
+  border: none;
+  background-color: transparent;
+  width: 100%;
+  cursor: pointer;
 }
 
 .sidebar-menu__link::before {
@@ -1370,13 +1374,15 @@ h3 {
   background-color: var(--color-light);
 }
 
-.popup-menu a {
+.popup-menu button, .popup-menu a {
   display: block;
   padding: 4px 15px;
   font-size: 16px;
   line-height: 20px;
   white-space: nowrap;
   color: var(--color-text);
+  border: none;
+  background-color: transparent;
 }
 
 .popup-menu--checked li {
@@ -1519,6 +1525,7 @@ h3 {
   transition: transform .4s;
   opacity: 0;
   position: absolute;
+  top: 0;
 }
 
 .faq-tab.active {
@@ -4220,13 +4227,19 @@ input[disabled], textarea[disabled], select[disabled] {
   grid-template-columns: 1fr;
 }
 
-.ondelfile{
+.ondelfile {
   width: 400px;
   max-width: 100%;
 }
-.ondelfile .file-attachment{
+
+.ondelfile .file-attachment {
   min-height: 46px;
 }
-.ondelfile .file-form__text{
+
+.ondelfile .file-form__text {
   min-width: max-content;
+}
+.disabled {
+  pointer-events: none;
+  opacity: .5;
 }

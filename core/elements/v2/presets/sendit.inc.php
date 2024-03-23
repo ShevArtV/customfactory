@@ -37,13 +37,20 @@ return [
 
         'method' => 'login',
 
-        'redirectTo' => 27,
+        'redirectTo' => 28,
         'redirectTimeout' => 3000,
         'usernameField' => 'email',
 
         'email.vTextRequired' => 'Укажите email.',
         'password.vTextRequired' => 'Введите пароль.',
         'errorFieldName' => 'errorLogin'
+    ],
+    'logout' => [
+        'hooks' => 'Identification',
+        'method' => 'logout',
+        'successMessage' => 'До новых встреч!',
+        'redirectTo' => 1,
+        'errorFieldName' => 'errorLogout'
     ],
     'forgot' => [
         'hooks' => 'Identification,FormItSaveForm,FormItAutoResponder',

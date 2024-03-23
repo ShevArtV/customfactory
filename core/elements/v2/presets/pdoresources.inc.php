@@ -20,6 +20,7 @@ return [
         'tpl' => '#/pdoresources/help_aside/item.tpl',
         'resources' => '51972,51973,51974',
         'includeTVs' => 'img',
+        'includeContent' => 1,
         'tvPrefix' => '',
         'sortby' => ['menuindex' => 'ASC']
     ],
@@ -29,6 +30,7 @@ return [
     ],
     'footer_contacts' => [
         'parents' => 51971,
+        'resources' => '54757,51974',
         'tpl' => '#/pdoresources/footer_contacts/item.tpl',
         'where' => ['class_key' => 'modWebLink'],
         'includeContent' => 1,
@@ -39,5 +41,10 @@ return [
         'tpl' => '#/pdoresources/legal_info/item.tpl',
         'where' => ['hidemenu:!=' => 1],
         'sortby' => ['menuindex' => 'ASC']
+    ],
+    'footer_nav' => [
+        'parents' => 0,
+        'resources' => '51982,54748,54752,54757,51972',
+        'tpl' => '#/pdoresources/footer_nav/item.tpl',
     ]
 ];

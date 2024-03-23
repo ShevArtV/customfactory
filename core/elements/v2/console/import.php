@@ -24,7 +24,9 @@ switch ($argv[1]) {
         $filename = 'users.json';
         $userData = json_decode(file_get_contents(MODX_CORE_PATH . 'elements/v2/import/' . $filename), 1);
         foreach ($userData as $data) {
-            if (!$data['active']) continue;
+            if (!$data['active']) {
+                continue;
+            }
             $profileData = $data['profile'];
             $profileData['old_id'] = (int)$data['id'];
             unset($data['id'], $data['profile'], $profileData['id'], $profileData['internalKey']);
@@ -90,7 +92,7 @@ switch ($argv[1]) {
                     $data['designer'] = 'unknown';
                 }
             }
-            if($data['colors']){
+            if ($data['colors']) {
                 $data['color'] = explode(';', $data['colors']);
                 unset($data['colors']);
             }
@@ -140,28 +142,31 @@ switch ($argv[1]) {
         break;
 
     case 'orders':
-        $orders = $modx->getIterator('msOrder');
-        foreach ($orders as $order) {
-            if (!$profile = $modx->getObject('modUserProfile', ['old_id' => $order->get('user_id')])) {
-                continue;
-            }
-            $address = $modx->getObject('msOrderAddress', $order->get('id'));
-            $order->set('user_id', $profile->get('internalKey'));
-            $address->set('user_id', $profile->get('internalKey'));
-            $address->set('order_id', $order->get('id'));
-            $order->save();
-            $address->save();
+        $profiles = $modx->getIterator('modUserProfile');
+        foreach ($profiles as $profile) {
+            $user_id = $profile->get('internalKey');
+            $old_id = $profile->get('old_id');
+            //$sql = "UPDATE `cust_ms2_orders` SET `user_id` = {$user_id}, `type` = 1 WHERE `user_id` = {$old_id} AND `type` = 0";
+            $sql2 = "UPDATE `cust_ms2_order_addresses` SET `user_id` = {$user_id}, `comment` = 1  WHERE `user_id` = {$old_id} AND `comment` != 1";
+            //$modx->query($sql);
+            $modx->query($sql2);
         }
+        //$countOrders = $modx->getCount('msOrder', ['type' => 0]);
+        $countAddresses = $modx->getCount('msOrderAddress', ['comment:!=' => 1]);
+
+        //$modx->log(1, print_r($countOrders, 1));
+        $modx->log(1, print_r($countAddresses, 1));
+
+        //UPDATE modx_ms2_order_addresses SET order_id = id;
         break;
 
     case 'order_products':
-        $orderProducts = $modx->getIterator('msOrderProduct');
-        foreach ($orderProducts as $orderProduct) {
-            if (!$product = $modx->getObject('msProduct', ['old_id' => $orderProduct->get('product_id')])) {
-                continue;
-            }
-            $orderProduct->set('product_id', $product->get('id'));
-            $orderProduct->save();
+        $products = $modx->getIterator('msProduct');
+        foreach ($products as $product) {
+            $old_id =$product->get('old_id');
+            $id = $product->get('id');
+            $sql = "UPDATE `cust_ms2_order_products` SET `product_id` = {$id}, `weight` = 1 WHERE `product_id` = {$old_id} AND `weight` = 0";
+            $modx->query($sql);
         }
         break;
 
@@ -169,17 +174,17 @@ switch ($argv[1]) {
         $filename = 'product_templates.json';
         $data = json_decode(file_get_contents(MODX_CORE_PATH . 'elements/v2/import/' . $filename), 1);
 
-        foreach($data as $item){
+        foreach ($data as $item) {
             $config = json_decode($item['tvs']['config'], true);
             $newConfig = [];
-            if(!is_array($config)){
+            if (!is_array($config)) {
                 continue;
             }
             foreach ($config as $c) {
-                if(isset($c['list_with_img'])){
-                    $images = json_decode($c['list_with_img'],1);
+                if (isset($c['list_with_img'])) {
+                    $images = json_decode($c['list_with_img'], 1);
                     $list_simple_img = [];
-                    foreach($images as $i){
+                    foreach ($images as $i) {
                         $list_simple_img[] = [
                             'MIGX_id' => $i['MIGX_id'],
                             'img' => str_replace('assets/project_files/img/', 'assets/project_files/v2/img/', $i['img']),
@@ -190,7 +195,7 @@ switch ($argv[1]) {
                     $c['list_simple_img'] = json_encode($list_simple_img);
                     unset($c['list_with_img']);
                 }
-                switch($c['MIGX_formname']){
+                switch ($c['MIGX_formname']) {
                     case 'popular_products':
                     case 'product_card':
                         $newConfig[] = [
@@ -227,10 +232,9 @@ switch ($argv[1]) {
                             'list_double' => $c['list_double'],
                         ];
                         break;
-
                 }
             }
-            if($product = $modx->getObject('modResource', ['old_id' => $item['id']])){
+            if ($product = $modx->getObject('modResource', ['old_id' => $item['id']])) {
                 $product->setTVValue('config', json_encode($newConfig));
                 $product->setTVValue('img', str_replace('assets/project_files/img/', 'assets/project_files/v2/img/', $item['tvs']['img']));
                 $product->setTVValue('tplfile', str_replace('assets/project_files/img/', 'assets/project_files/v2/img/', $item['tvs']['tplfile']));

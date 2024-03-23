@@ -2,8 +2,6 @@
 
 namespace CustomServices;
 
-use CustomServices\Product;
-
 class Designer extends Base
 {
 
@@ -30,13 +28,18 @@ class Designer extends Base
 
     public function getProgress(int $id = 0)
     {
-        $user = $id ? $this->modx->getObject('modUser', $id) : $this->modx->user;
-        $offerResource = $this->modx->getObject('modResource', 51976);
+        if($id === 0){
+            return;
+        }
+        $user = $this->modx->getObject('modUser', $id);
+
+        if($offerResource = $this->modx->getObject('modResource', 51976)){
+            $offer_key = 'offer' . $offerResource->get('introtext');
+        }
         $progress = 0;
         $total = 0;
         $steps = ['reg' => 0, 'email' => 0, 'status' => 0, 'offer' => 0, 'prods' => 0];
         $allow = 0;
-        $offer_key = 'offer' . $offerResource->get('introtext');
 
         if ($user) {
             $progress += 40;
@@ -398,5 +401,33 @@ class Designer extends Base
                 rmdir($dir);
             }
         }
+    }
+
+    public function getGroupMemberDocs(array $groups = []): string
+    {
+        if (empty($groups)) {
+            if ($this->modx->user->isMember('Designers')) {
+                $groups = [1];
+            }
+            if ($this->modx->user->isMember('Managers')) {
+                $groups = [2];
+            }
+            if ($this->modx->user->isMember('Moderators')) {
+                $groups = [3];
+            }
+        }
+
+        $ids = [];
+        $q = $this->modx->newQuery('modResourceGroupResource');
+        $q->select('document');
+        $q->where(['document_group:IN' => $groups]);
+        $tstart = microtime(true);
+        if ($q->prepare() && $q->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+            $ids = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
+        }
+
+        return implode(',', $ids);
     }
 }

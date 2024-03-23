@@ -314,6 +314,18 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleMenu(target){
             const menu = document.querySelector(target.dataset.toggle);
             menu && menu.classList.toggle('sidebar-hidden');
+        },
+        getParentAndType() {
+            const url = window.location.href;
+            const params = new URLSearchParams(window.location.search);
+            const parent = params.get('parent');
+            const type = params.get('type');
+            if(parent || type){
+                params.delete('type');
+                params.delete('parent');
+                window.history.replaceState({}, '', url.split('?')[0] + '?' + params.toString());
+            }
+            return {parent, type}
         }
     }
 
@@ -652,6 +664,8 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 
     document.addEventListener('si:quiz:reset', (e) => {
+        const {parent, type} = project.getParentAndType();
+        if(parent && type) return;
         const {root} = e.detail;
         const parentRadio = root.querySelectorAll('[name="parent"]');
         const rootIdSelect = root.querySelectorAll('[name="data[root_id]"]');

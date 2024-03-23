@@ -6,21 +6,12 @@ use CustomServices\Product;
 require_once MODX_CORE_PATH . 'vendor/autoload.php';
 
 switch ($modx->event->name) {
-    case 'OnHandleRequest':
-        if (isset($_GET['userid'])) {
-            if ($user = $modx->getObject('modUser', (int)$_GET['userid'])) {
-                if ($modx->user->hasSessionContext('mgr') &&$_GET['login']) {
-                    $user->addSessionContext('web');
-                    $modx->user = $user;
-                    $url = $modx->makeUrl(28);
-                    $modx->sendRedirect($url);
-                }
-                if ($_GET['logout']) {
-                    $modx->log(1, print_r($modx->user->get('id'), 1));
-                    $user->removeSessionContext('web');
-                    $url = $modx->makeUrl(1);
-                    $modx->sendRedirect($url);
-                }
+    case 'OnBeforeReturnResponse':
+        if($_POST['email'] && in_array($presetName, ['auth', 'register'])){
+            $user = $modx->getObject('modUser', ['username' => $_POST['email']]);
+            if ($user && !$user->isMember('Designers')) {
+                $response['data']['redirectUrl'] = $modx->makeUrl(54750, '', '', 'full');
+                $modx->event->returnedValues['response'] = $response;
             }
         }
         break;

@@ -28,7 +28,7 @@
         <input type="hidden" name="data[profilenum]" value="{$_modx->user.profile_num}">
 
         <ul class="timeline md-hidden">
-            <li data-qf-step="1" class="active">Товар</li>
+            <li data-qf-step="1" class="active {($.get.parent && $.get.type) ? 'complete':''}">Товар</li>
             <li data-qf-step="2" class="">Файл</li>
             <li data-qf-step="3" class="">Тэг</li>
             <li data-qf-step="4" class="">Цвета</li>
@@ -36,7 +36,7 @@
         </ul>
 
         <!--Товар-->
-        <div data-qf-item="1" class="timeline-pane container-small">
+        <div data-qf-item="1" data-mpc-attr="{($.get.parent && $.get.type) ? 'data-qf-complete=1':''}" class="timeline-pane container-small">
 
             <h3 class="md-visible">Товар</h3>
 
@@ -58,14 +58,14 @@
                         <tr>
                             <td>
                                 <label class="type-table__link">
-                                    <input type="radio" name="parent" value="##$data.parent}" data-size-target="#sizes-##$data.parent}">
+                                    <input type="radio" name="parent" value="##$data.parent}" data-mpc-attr="##$.get.parent==$data.parent?'checked': ''}" data-size-target="#sizes-##$data.parent}">
                                     <span>##$title}</span>
                                 </label>
                             </td>
                             <td>
-                                <select class="type-table__select" disabled name="data[root_id]" id="sizes-##$data.parent}">
+                                <select class="type-table__select" data-mpc-attr="##$.get.parent != $data.parent ?'disabled': ''}"  name="data[root_id]" id="sizes-##$data.parent}">
                                     ##foreach $data.sizes as $size => $d}
-                                        <option value="##$d.root_id}" data-count="##$d.count_files}">##$size}</option>
+                                        <option value="##$d.root_id}" data-count="##$d.count_files}" data-mpc-attr="##$.get.type==$d.root_id?'selected': ''}">##$size}</option>
                                     ##/foreach}
                                 </select>
                             </td>

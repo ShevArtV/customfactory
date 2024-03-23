@@ -2,9 +2,13 @@
 
 // /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL /home/host1860015/art-sites.ru/htdocs/customfactory/core/elements/v2/console/manage.php
 
+use CustomServices\Statistic\StatisticBase;
+use CustomServices\Statistic\StatisticOzon;
+use CustomServices\Statistic\StatisticWb;
+
 define('MODX_API_MODE', true);
 require_once dirname(__FILE__, 5) . '/index.php';
-
+require_once MODX_CORE_PATH . 'vendor/autoload.php';
 $modx->getService('error', 'error.modError');
 $modx->setLogLevel(modX::LOG_LEVEL_ERROR);
 if (file_exists(MODX_CORE_PATH . 'cache/logs/error.log')) {
@@ -144,6 +148,14 @@ switch ($argv[1]) {
             $r->set('profilenum', $r->get('profile_num'));
             $r->save();
         }
+        break;
+
+        case 'statisctic':
+            $ozon = new StatisticOzon($modx);
+            $wb = new StatisticWb($modx);
+            //$ozon->run();
+            $wb->run();
+            //$wb->setStatictic();
         break;
 
 }

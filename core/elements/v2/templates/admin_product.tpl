@@ -22,7 +22,7 @@
             <a href="{$resource.tvs.tplfile}" download class="btn">Скачать файл шаблона</a>
             {/if}
             ##set $allow_add = $_modx->getPlaceholder('user_allow_add')}
-            <a href="{51982 | url}" class="btn btn--line" datampc-atrr="##!$allow_add ? 'disabled': ''}">Загрузить дизайн</a>
+            <a href="{51982 | url}?parent={$resource.parent}&type={$resource.id}" class="btn btn--line" data-mpc-atrr="##!$allow_add ? 'disabled': ''}">Загрузить дизайн</a>
         </div>
 
     </div>

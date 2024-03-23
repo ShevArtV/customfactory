@@ -2,8 +2,6 @@
 
 namespace CustomServices;
 
-require_once dirname(__FILE__, 2) . '/vendor/autoload.php';
-
 use \PhpOffice\PhpSpreadsheet\Spreadsheet;
 use \PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 

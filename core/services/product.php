@@ -2,8 +2,6 @@
 
 namespace CustomServices;
 
-use CustomServices\LoadToSelectel;
-
 use \PhpOffice\PhpSpreadsheet\IOFactory;
 
 class Product extends Base

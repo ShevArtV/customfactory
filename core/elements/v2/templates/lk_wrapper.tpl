@@ -17,19 +17,16 @@
     {set $template = $rid | resource: 'template'}
 
     {* символика *}
-    {set $logo = $_modx->config.logo}
+    {set $logo_lk = $_modx->config.logo_lk}
     {set $logo_alt = $_modx->config.logo_alt}
-    {set $logo_mini = $_modx->config.logo_mini}
     {set $favicon = $_modx->config.favicon}
     {set $favicon_apple = $_modx->config.favicon_apple}
 
     {*контакты *}
     {set $cp_id = $_modx->config.contacts_page_id}
-    {set $contacts = 'getContacts' | snippet:[]}
 
     {* метрики *}
     {set $metrics = $_modx->config.metrics | replace: '{' : '{ '}
-    {set $ym_id = $_modx->config.ym_id}
 
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -60,7 +57,7 @@
     <script src="assets/project_files/v2/js/lk/jquery-3.6.0.js"></script>
 
 
-   {$_modx->setPlaceholder('statuses', $_modx->runSnippet('@FILE snippets/base/snippet.getstatuses.php', []))}
+    {$_modx->setPlaceholder('statuses', $_modx->runSnippet('@FILE snippets/base/snippet.getstatuses.php', []))}
 </head>
 
 <body>
@@ -75,77 +72,60 @@
 
             <div class="sidebar-header">
                 <a href="" class="logotype">
-                    <img src="assets/project_files/v2/img/lk/logo-img.svg" alt="" width="35" height="35" class="logotype-img">
-                    <img src="assets/project_files/v2/img/lk/logo-text.svg" alt="" width="136" height="13" class="logotype-text">
+                    <img src="{$logo_lk}" alt="" width="35" height="35" class="logotype-img">
+                    <img src="{$logo_alt}" alt="" width="136" height="13" class="logotype-text">
                 </a>
             </div>
-
-            <div class="sidebar-content scrollbar">
-                <ul class="sidebar-menu lg-visible">
-                    <li>
-                        <div class="sidebar-menu__link">{$_modx->user.fullname}</div>
-                    </li>
-                </ul>
-                <ul class="sidebar-menu">
-                    <li>
-                        <a href="" class="sidebar-menu__link" rel="Мой кабинет">
-                            <img src="assets/project_files/v2/img/lk/icon-home.svg" alt="" width="35" height="35">
-                            Мой кабинет
-                        </a>
-                        <ul>
-                            <li><a href="">Мой профиль</a></li>
-                            <li><a href="">Шаблоны и техтребования</a></li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="" class="sidebar-menu__link" rel="Товары">
-                            <img src="assets/project_files/v2/img/lk/icon-basket.svg" alt="" width="35" height="35">
-                            Товары
-                        </a>
-                        <ul>
-                            <li><a href="">Загрузить новый</a></li>
-                            <li><a href="">Мои товары</a></li>
-                            <li><a href="">Статистика продаж</a></li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="" class="sidebar-menu__link" rel="Юридическая информация">
-                            <img src="assets/project_files/v2/img/lk/icon-file.svg" alt="" width="35" height="35">
-                            Юридическая информация
-                        </a>
-                        <ul>
-                            <li><a href="">Оферта</a></li>
-                            <li><a href="">История оферт</a></li>
-                            <li><a href="">Условия использования</a></li>
-                            <li><a href="">Персональные данные</a></li>
-                            <li><a href="">Правила допустимого содержания</a></li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="" class="sidebar-menu__link" rel="Помощь">
-                            <img src="assets/project_files/v2/img/lk/icon-question.svg" alt="" width="35" height="35">
-                            Помощь
-                        </a>
-                        <ul>
-                            <li><a href="">Частые вопросы</a></li>
-                            <li><a href="">Написать в поддержку</a></li>
-                            <li><a href="">Сообщество дизайнеров</a></li>
-                        </ul>
-                    </li>
-                </ul>
-
-                <div class="sidebar-footer">
-                    <ul class="sidebar-menu">
+            {set $resources = $_modx->runSnippet('@FILE snippets/designer/snippet.getgroupmemberdocs.php', [])}
+            <div data-mpc-unwrap="1" data-mpc-snippet="!pdoMenu|main" data-mpc-symbol="{ ">
+                <div class="sidebar-content scrollbar" data-mpc-chunk="pdomenu/tplOuter.tpl">
+                    <ul class="sidebar-menu lg-visible">
                         <li>
-                            <a href="" class="sidebar-menu__link" rel="Выход">
-                                <img src="assets/project_files/v2/img/lk/icon-exit.svg" alt="" width="35" height="35">
-                                Выход
+                            <div class="sidebar-menu__link">{$_modx->user.fullname}</div>
+                        </li>
+                    </ul>
+                    <ul class="sidebar-menu">
+                        {$wrapper}
+                        <li data-mpc-remove="1" data-mpc-chunk="pdomenu/tplParentRow.tpl">
+                            <a data-mpc-attr="{$id == 28 ? 'href='~$uri : ''}" class="sidebar-menu__link" rel=" {$pagetitle}">
+                                <img src="{$link_attributes}" alt="" width="35" height="35">
+                                {$pagetitle}
+                            </a>
+                            <ul>
+                                {$wrapper}
+                                <li class="{(!$_modx->user.extended['offer'] && $parent == 51978) ? 'disabled' : ''}{(!('user_allow_add' | placeholder) && $parent == 12) ? 'disabled' : ''}"
+                                    data-mpc-remove="1" data-mpc-chunk="pdomenu/tplInnerRow.tpl">
+                                    <a href="{$uri}" data-mpc-attr="{($class_key == 'modWebLink' ? 'target=_blank' : '')}">
+                                        {$pagetitle}
+                                        {if $id == 54748 && $_modx->user.extended['rework']}
+                                            <span class="good-item__status status--cancel"></span>
+                                        {/if}
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li data-mpc-remove="1" data-mpc-chunk="pdomenu/tpl.tpl">
+                            <a href="{$uri}" class="sidebar-menu__link" rel="{$pagetitle}">
+                                <img src="{$link_attributes}" alt="" width="35" height="35">
+                                {$pagetitle}
                             </a>
                         </li>
                     </ul>
+
+                    <div class="sidebar-footer">
+                        <ul class="sidebar-menu">
+                            <li>
+                                <form data-si-form data-si-preset="logout">
+                                    <button type="submit" class="sidebar-menu__link" rel="Выход">
+                                        <img src="assets/project_files/v2/img/lk/icon-exit.svg" alt="" width="35" height="35">
+                                        Выход
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-
         </div>
     </div>
 
@@ -165,14 +145,25 @@
                 <div class="header-lk lg-hidden">
 
                     <div class="header-user">
-                        <div class="header-user__name" data-popup-link="lk-user">Евгений</div>
+                        <div class="header-user__name" data-popup-link="lk-user">{$_modx->user.extended.name}</div>
                         <div class="popup-menu" data-popup="lk-user">
                             <ul>
-                                <li><a href="">Профиль</a></li>
-                                <li><a href="">Выход</a></li>
+                                {if $_modx->user.id | ismember: 'Designers'}
+                                    <li><a href="{51979 | url}">{51979 | resource: 'menutitle'}</a></li>
+                                {/if}
+                                <li>
+                                    <form data-si-form data-si-preset="logout">
+                                        <button type="submit">
+                                            Выход
+                                        </button>
+                                    </form>
+                                </li>
                             </ul>
                         </div>
                     </div>
+                    {if ('user_allow_add' | placeholder) && ($template in list [16,22,17,20])}
+                        <a href="{13 | url}" class="btn btn--line">Загрузить новый</a>
+                    {/if}
                 </div>
 
             </div>
@@ -184,7 +175,7 @@
     <main class="wrap">
         <div class="container">
 
-            <h1>Добро пожаловать, {$_modx->user.fullname}!</h1>
+            <h1>{$longtitle}</h1>
 
             <div data-mpc-content>
                 <!--CONTENT-->
@@ -209,29 +200,27 @@
                     </div>
                 </div>
 
-                <div class="footer-top__content">
+                {if $_modx->user.id | ismember: 'Designers'}
+                    <div class="footer-top__content">
+                        <ul class="footer-menu" data-mpc-snippet="pdoResources|footer_nav" data-mpc-symbol="{ ">
+                            <li data-mpc-remove="1" data-mpc-chunk="pdoresources/footer_nav/item.tpl">
+                                <a href="{$uri}" data-mpc-attr="{($class_key == 'modWebLink' ? 'target=_blank' : '')}">{$menutitle}</a>
+                            </li>
+                        </ul>
 
-                    <ul class="footer-menu">
-                        <li><a href="">Загрузить новый</a></li>
-                        <li><a href="">Мои товары</a></li>
-                        <li><a href="">Статистика продаж</a></li>
-                        <li><a href="">Сообщество</a></li>
-                        <li><a href="">Частые вопросы</a></li>
-                    </ul>
-
-                    <div class="social">
-                        <a href="" class="social-item">
-                            <img src="assets/project_files/v2/img/lk/icon-tg.svg" alt="" width="22" height="18">
-                        </a>
+                        <div class="social">
+                            <a href="{51973|resource: 'content'}" target="_blank" class="social-item">
+                                <img src="assets/project_files/v2/img/lk/icon-tg.svg" alt="" width="22" height="18">
+                            </a>
+                        </div>
                     </div>
-
-                </div>
+                {/if}
 
             </div>
 
             <div class="footer-bottom">
                 <div class="footer-copyright">
-                    © 2022 Все права защищены. 121 121 Россия, Иваново, пр-т Ленина, дом 21, литер Л
+                    © {'' | date: 'Y'} Все права защищены. 121 Россия, Иваново, пр-т Ленина, дом 21, литер Л
                 </div>
             </div>
 
