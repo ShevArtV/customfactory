@@ -211,12 +211,39 @@ class Designer extends Base
 
         $this->flatfilters->removeResourceIndex((int)$data['id']);
         $this->flatfilters->indexingUser($user);
+        $this->sendModerateNotify($profile);
 
         return [
             'success' => true,
             'msg' => 'Данные пользователя обновлены.',
             'user_id' => (int)$data['id']
         ];
+    }
+
+    public function sendModerateNotify($profile)
+    {
+        $status = (int)$profile->get('status');
+        $chunk = '';
+        $params = [];
+        if(in_array($status, [2,3])){
+            switch ($status){
+                case 3:
+                    $params = ['reasons' => $profile->get('comment')];
+                    $chunk = '@FILE elements/chunks/emails/userModerateRejected.tpl';
+                    break;
+                case 2:
+                    $chunk =  '@FILE elements/chunks/emails/userModerateSuccess.tpl';
+                    break;
+            }
+            if($chunk){
+                $this->sendEmail([
+                    'to' => $profile->get('email'),
+                    'chunk' => $chunk,
+                    'params' => $params,
+                    'subject' => 'Результаты модерации аккаунта.'
+                ]);
+            }
+        }
     }
 
     public function unactiveUsers($data)
@@ -429,5 +456,31 @@ class Designer extends Base
         }
 
         return implode(',', $ids);
+    }
+
+    public function getOffers(): array
+    {
+        $cacheKey = 'getOffers::cache';
+        if ($output = $this->modx->cacheManager->get($cacheKey)) {
+            return $output;
+        }
+        $q = $this->modx->newQuery('modResource');
+        $q->leftJoin('modTemplateVarResource', 'TV', 'TV.contentid = modResource.id AND TV.tmplvarid = 11');
+        $q->select('modResource.introtext, TV.value as offers');
+        $q->where(['modResource.id' => 51976]);
+        $output = [];
+        $tstart = microtime(true);
+        if ($q->prepare() && $q->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+            $result = $q->stmt->fetch(\PDO::FETCH_ASSOC);
+            $output[] = $result['introtext'];
+            $offers = json_decode($result['offers'], true);
+            foreach ($offers as $offer) {
+                $output[] = $offer['id'];
+            }
+        }
+        $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime, $this->cacheOptions);
+        return $output;
     }
 }

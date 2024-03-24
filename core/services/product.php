@@ -7,17 +7,17 @@ use \PhpOffice\PhpSpreadsheet\IOFactory;
 class Product extends Base
 {
     /**
-     * @var array|mixed|string
+     * @var string
      */
-    private $basePath;
+    private string $basePath;
     /**
-     * @var array|mixed|string
+     * @var string
      */
-    private $corePath;
+    private string $corePath;
     /**
-     * @var array|mixed|string
+     * @var string
      */
-    private $assetsPath;
+    private string $assetsPath;
 
     /** @var array $statuses */
     private array $statuses;
@@ -32,9 +32,9 @@ class Product extends Base
         $this->corePath = $this->modx->getOption('core_path');
         $this->assetsPath = $this->modx->getOption('assets_path');
         $this->statuses = $this->getStatuses();
-        $this->pdoTools = $this->modx->getParser()->pdoTools;
         $this->loadToSelectel = new LoadToSelectel($this->modx);
         $this->modx->addPackage('tagger', $this->corePath . 'components/tagger/model/');
+        $this->modx->addPackage('salesstatistics', MODX_CORE_PATH . 'components/salesstatistics/model/');
     }
 
     public function getDesignTemplates($prohibited_categories = '9999999999'): array
@@ -78,7 +78,7 @@ class Product extends Base
                 $output[$item['pagetitle']]['sizes'][$size[0]] = $item;
             }
         }
-        $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime);
+        $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime, $this->cacheOptions);
         return $output;
     }
 
@@ -110,7 +110,7 @@ class Product extends Base
                 ksort($output);
             }
         }
-        $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime);
+        $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime, $this->cacheOptions);
         return $output;
     }
 
@@ -258,6 +258,8 @@ class Product extends Base
         $product->fromArray($productData);
         $product->save();
 
+        $this->sendModerateNotify($product);
+
         $this->flatfilters->removeResourceIndex((int)$productData['id']);
         $this->flatfilters->indexingDocument($product);
 
@@ -266,6 +268,69 @@ class Product extends Base
             'msg' => 'Дизайн обновлен.',
             'rid' => $productData['id']
         ];
+    }
+
+    public function sendModerateNotify($product)
+    {
+        $status = $product->get('status');
+        $prevStatus = $product->get('prev_status');
+        $filePrefix = 'https://311725.selcdn.ru/custom_factory/';
+        if($prevStatus === 7){
+            return;
+        }
+        switch ($status) {
+            case '5':
+                if ($profile = $this->modx->getObject('modUserProfile', array('internalKey' => $product->get('createdby')))) {
+                    $preview = explode('|', $product->get('preview'));
+                    $this->sendEmail([
+                        'to' => $profile->get('email'),
+                        'chunk' => '@FILE elements/chunks/emails/designModerateRejected.tpl',
+                        'params' => [
+                            'reasons' => $product->get('content'),
+                            'pagetitle' => $product->get('pagetitle'),
+                            'preview' => $preview,
+                            'filePrefix' => $filePrefix
+                        ],
+                        'subject' => 'Результаты модерации дизайна.'
+                    ]);
+                }
+                break;
+            case '2':
+                if ($profile = $this->modx->getObject('modUserProfile', array('default_moderator' => 1))) {
+                    $this->sendEmail([
+                        'to' => $profile->get('email'),
+                        'chunk' => '@FILE elements/chunks/emails/designModerateNeedCheckParams.tpl',
+                        'params' => array('pagetitle' => $product->get('pagetitle')),
+                        'subject' => 'Результаты модерации дизайна.'
+                    ]);
+                }
+                break;
+            case '3':
+                if ($profile = $this->modx->getObject('modUserProfile', $product->get('manager_id'))) {
+                    $this->sendEmail([
+                        'to' => $profile->get('email'),
+                        'chunk' => '@FILE elements/chunks/emails/designModerateSuccessManager.tpl',
+                        'params' => array('pagetitle' => $product->get('pagetitle')),
+                        'subject' => 'Результаты проверки технических требований к дизайну.'
+                    ]);
+                }
+                break;
+            case '4':
+                if ($profileUser = $this->modx->getObject('modUserProfile', array('internalKey' => $product->get('createdby')))) {
+                    $this->sendEmail([
+                        'to' => $profileUser->get('email'),
+                        'chunk' => '@FILE elements/chunks/emails/designModerateSuccessUser.tpl',
+                        'params' => array(
+                            'article_wb' => $product->get('article_wb'),
+                            'article_ya' => $product->get('article_ya'),
+                            'article_oz' => $product->get('article_oz'),
+                            'pagetitle' => $product->get('pagetitle')
+                        ),
+                        'subject' => 'Результаты модерации дизайна.'
+                    ]);
+                }
+                break;
+        }
     }
 
     public function toggleMark($mark, $product, $method = 'remove')
@@ -410,6 +475,7 @@ class Product extends Base
         return $newValue;
     }
 
+
     public function getArticle(array $productData): array
     {
         if (!$setting = $this->modx->getObject('cgSetting', ['key' => 'design_order_number'])) {
@@ -427,6 +493,7 @@ class Product extends Base
         $setting->save();
         return ['success' => true, 'article' => $article];
     }
+
 
     private function checkDouble($articlePrefix, $tagLabel, $number, $profile_num, $rid)
     {
@@ -505,6 +572,94 @@ class Product extends Base
         return ['html' => $html, 'count' => $count];
     }
 
+    public function renderOrders($properties): array
+    {
+        if (!$properties['tpl']) {
+            return $properties['resources'];
+        }
+        $resources = explode(',', $properties['resources']);
+        $html = '';
+        $statistic = $this->getStatistic($resources);
+
+        $q = $this->modx->newQuery('msProduct');
+        $q->setClassAlias('Product');
+        $q->leftJoin('msProductData', 'Data');
+        $q->leftJoin('SalesStatisticsItem', 'Sales', 'Sales.product_id = Data.id');
+        $q->leftJoin('SalesStatisticsItem', 'Returns', 'Returns.product_id = Data.id');
+        $q->leftJoin('SalesStatisticsItem', 'Orders', 'Orders.product_id = Data.id');
+        $q->leftJoin('SalesStatisticsItem', 'Pays', 'Pays.product_id = Data.id');
+        $q->select([
+            'Product.pagetitle AS pagetitle',
+            'Product.id AS id',
+            'Product.createdon AS createdon',
+            'Data.preview AS preview',
+            'Data.article AS article',
+            'Data.price AS price',
+        ]);
+        $q->where(['Product.id:IN' => $resources]);
+        if ($properties['where']) {
+            $q->andCondition($properties['where']);
+        }
+        $q->sortby('FIELD(Product.id, ' . $properties['resources'] . ')', '');
+        $q->groupby('Product.id');
+        $tstart = microtime(true);
+        if ($q->prepare() && $q->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+
+            $result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+            foreach ($result as $row) {
+                $row = array_merge($properties, $row, $statistic[$row['id']]);
+                $html .= $this->pdoTools->getChunk($properties['tpl'], $row);
+            }
+        }
+
+        return ['html' => $html];
+    }
+
+    public function getStatistic($resources, $total = ''): array
+    {
+        $statistic = [];
+        $this->modx->log(1, print_r($_REQUEST, 1));
+        $q = $this->modx->newQuery('SalesStatisticsItem');
+        $q->select([
+            "product_id as {$total}id",
+            "SUM(`sales`) AS {$total}sales",
+            "SUM(`returns`) AS {$total}returns",
+            "SUM(`orders`) AS {$total}orders",
+            "SUM(`pays`) as {$total}pays",
+            "MIN(`date`) as {$total}min",
+            "MAX(`date`) as {$total}max",
+        ]);
+        $q->where(['product_id:IN' => $resources]);
+        if ($_REQUEST['date']) {
+            $dates = explode(',', $_REQUEST['date']);
+            $start = strtotime($dates[0]);
+            $end = strtotime($dates[1]);
+            $q->andCondition("date BETWEEN $start AND $end");
+        }
+        if (!$total) {
+            $q->groupby('product_id');
+        }
+        $q->prepare();
+        $this->modx->log(1, print_r($q->toSQL(), 1));
+        $tstart = microtime(true);
+        if ($q->prepare() && $q->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+            $result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+            foreach ($result as $item) {
+                $prefix = $total ? str_replace('_', '', $total) : '';
+                $item[$total . 'min'] = date('d.m.Y', $item[$total . 'min']);
+                $item[$total . 'max'] = date('d.m.Y', $item[$total . 'max']);
+                $statistic[$prefix . $item['id']] = $item;
+            }
+        }
+
+        return $statistic;
+    }
+
     public function getColors(): array
     {
         $cacheKey = 'getColors::cache';
@@ -521,7 +676,7 @@ class Product extends Base
             $this->modx->executedQueries++;
             $result = $q->stmt->fetch(\PDO::FETCH_COLUMN);
             $output = explode(',', $result);
-            $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime);
+            $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime, $this->cacheOptions);
             return $output;
         }
         return [];

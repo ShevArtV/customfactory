@@ -290,5 +290,10 @@ return [
         'hooks' => '',
         'snippet' => '@FILE snippets/product/snippet.getdefaultproducts.php',
         'successMessage' => '',
+    ],
+    'get_totals' => [
+        'hooks' => '',
+        'snippet' => '@FILE snippets/product/snippet.getstatistictotal.php',
+        'successMessage' => '',
     ]
 ];

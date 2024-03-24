@@ -349,7 +349,7 @@
                 </div>
             </div>
 
-            <div class="d-flex justify-content-between" style="gap:20px;flex-wrap:wrap;margin-top:60px;">
+            <div data-mpc-chunk="fffiltering/designs/pagination.tpl" data-mpc-include="1" class="d-flex justify-content-between" style="gap:20px;flex-wrap:wrap;margin-top:60px;">
                 <div data-pn-pagination class="pagination {$totalPages < 2 ? 'd-none' : ''}">
                     <button type="button" class="toggler start" data-pn-first="1"></button>
                     <button type="button" class="toggler prev" data-pn-prev></button>

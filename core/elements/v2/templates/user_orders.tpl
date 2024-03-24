@@ -4,208 +4,167 @@
 
 <div id="{$id}" data-mpc-section="user_orders" data-mpc-name="Статистика продаж">
     <div class="container-small">
-        <div class="page">
+        <div class="page" data-mpc-field="content">
             Чтобы посмотреть статистику по заказам за конкретную дату,
             выберите нужную дату и следующую за ней. Например, чтобы посмотреть
             статистику за 05.07.2023, нужно выбрать 05.07.2023 и 06.07.2023.
         </div>
     </div>
 
-    <div class="container-small">
+    ##set $parents = $_modx->runSnippet('@FILE snippets/product/snippet.getparents.php')}
+    ##set $types = $_modx->runSnippet('@FILE snippets/product/snippet.gettypes.php')}
+    <div data-mpc-unwrap="1" data-mpc-snippet="!ffFiltering|orders">
+        <tr data-mpc-chunk="fffiltering/orders/ffempty.tpl">
+            <td>
+                <p class="page input-group">Дизайнов удовлетворяющих заданным параметрам не найдено.</p>
+            </td>
+        </tr>
 
-        <!--statistic-showcase-->
-        <div class="statistic-showcase">
-            <div class="statistic-showcase__item">
-                <div class="statistic-showcase__title">
-                    Всего за период <br>
-                    с <span>30.01.2023</span> по <span>06.10.2023</span>
-                </div>
-            </div>
-            <div class="statistic-showcase__item">
-                <div class="statistic-showcase__title">Заказов:</div>
-                <div class="statistic-showcase__value">43 шт.</div>
-            </div>
-            <div class="statistic-showcase__item">
-                <div class="statistic-showcase__title">Продаж:</div>
-                <div class="statistic-showcase__value">34 шт.</div>
-            </div>
-            <div class="statistic-showcase__item">
-                <div class="statistic-showcase__title">Возвратов:</div>
-                <div class="statistic-showcase__value">1 шт.</div>
-            </div>
-            <div class="statistic-showcase__item active">
-                <div class="statistic-showcase__title">Выплат:</div>
-                <div class="statistic-showcase__value">15 850 ₽</div>
-            </div>
-        </div>
-
-    </div>
-
-    <!--filter-->
-    <div class="filter">
-        <div class="filter-column">
-            <div class="filter-item">
-                <div class="filter-name">Дизайнов: <span>55</span></div>
-            </div>
-            <div class="filter-item">
-                <ul class="filter-list">
-                    <li>
-                        <div class="filter-name filter-name--select" data-popup-link="filter-status">
-                            Статус
+        <div data-mpc-chunk="fffiltering/orders/outer.tpl">
+            <div class="container-small">
+                <!--statistic-showcase-->
+                <div class="statistic-showcase">
+                    <div class="statistic-showcase__item">
+                        <div class="statistic-showcase__title">
+                            Всего за период <br>
+                            с <span data-total="total_min">30.01.2023</span> по <span data-total="total_max">06.10.2023</span>
                         </div>
-                        <div class="popup-menu popup-menu--checked" data-popup="filter-status">
-                            <ul>
-                                <li>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" class="checkbox">
-                                        <span class="checkbox-text checkbox-text--small">В продаже</span>
-                                    </label>
-                                </li>
-                                <li>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" class="checkbox">
-                                        <span class="checkbox-text checkbox-text--small">На проверке тех.требований</span>
-                                    </label>
-                                </li>
-                                <li>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" class="checkbox">
-                                        <span class="checkbox-text checkbox-text--small">Отклонён</span>
-                                    </label>
-                                </li>
-                                <li>
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" class="checkbox">
-                                        <span class="checkbox-text checkbox-text--small">Присвоение артикулов</span>
-                                    </label>
-                                </li>
+                    </div>
+                    <div class="statistic-showcase__item">
+                        <div class="statistic-showcase__title">Заказов:</div>
+                        <div class="statistic-showcase__value"><span data-total="total_orders">0</span> шт.</div>
+                    </div>
+                    <div class="statistic-showcase__item">
+                        <div class="statistic-showcase__title">Продаж:</div>
+                        <div class="statistic-showcase__value"><span data-total="total_sales">0</span> шт.</div>
+                    </div>
+                    <div class="statistic-showcase__item">
+                        <div class="statistic-showcase__title">Возвратов:</div>
+                        <div class="statistic-showcase__value"><span data-total="total_returns">0</span> шт.</div>
+                    </div>
+                    <div class="statistic-showcase__item active">
+                        <div class="statistic-showcase__title">Выплат:</div>
+                        <div class="statistic-showcase__value"><span data-total="total_pays">0</span> ₽</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <form id="filterForm" data-ff-form="filterDesignForm" class="filter">
+                <input type="hidden" name="configId" value="{$configId}">
+                <div class="filter-column filter-column-design">
+                    <div class="filter-item">
+                        <div class="filter-name">Дизайнов: <span id="total">{$totalResources?:0}</span></div>
+                    </div>
+                    {$filters}
+                    <div class="filter-item">
+                        <div class="filter-name filter-name--select" data-popup-link="datepicker">
+                            {if $.get.date == ('' | period: 'week')}
+                                7 дней
+                            {elseif $.get.date == ('' | period: 'month')}
+                                Месяц
+                            {elseif $.get.date == ('' | period: 'year')}
+                                Год
+                            {elseif $.get.date != ''}
+                                {$.get.date | replace: ',' : '-'}
+                            {else}
+                                Не выбрано
+                            {/if}
+                        </div>
+                    </div>
+                    <div class="filter-item filter-item--search">
+                        <button type="button" class="filter-search" data-modal-show="modal-search"></button>
+                    </div>
+                </div>
+
+                <!--datepicker-popup-->
+                <div class="datepicker-popup js-datepicker" data-popup="datepicker">
+                    <div class="datepicker-popup__layout">
+                        <div class="datepicker-popup__aside">
+                            <ul class="datepicker-popup__date">
+                                <li data-period-value="{'' | period: 'week'}" class="active">7 дней</li>
+                                <li data-period-value="{'' | period: 'month'}">Месяц</li>
+                                <li data-period-value="{'' | period: 'year'}">Год</li>
                             </ul>
                         </div>
-                    </li>
-                    <li>
-                        <div class="filter-name filter-name--select">Категория</div>
-                    </li>
-                    <li>
-                        <div class="filter-name filter-name--select">
-                            Товар
+                        <div class="datepicker-popup__content">
+                            <input type="text" class="v_hidden" name="date" data-ff-filter="date" value="{$.get.date}" data-datepicker>
                         </div>
-                    </li>
-                    <li>
-                        <div class="filter-name">Тэг</div>
-                    </li>
-                    <li>
-                        <div class="filter-name">Цвет</div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="filter-column">
-            <div class="filter-item">
-                <div class="filter-name filter-name--select">
-                    <span>Последние 7 дней</span>
+                    </div>
+                    <div class="datepicker-popup__footer">
+                        {set $date = $.get.date | split: ','}
+                        <ul class="datepicker-popup__range">
+                            <li>
+                                <input type="text" class="input center input--small js-datepicker-min" value="{$date[0]}" readonly>
+                            </li>
+                            <li>
+
+                            </li>
+                            <li>
+                                <input type="text" class="input center input--small js-datepicker-max" value="{$date[1]}" readonly>
+                            </li>
+                        </ul>
+
+                        <button type="button" class="btn btn--small" data-apply-period>Применить</button>
+                    </div>
                 </div>
+
+            </form>
+
+            <!--filter balloons-->
+            <div class="filter-balloons" data-ff-selected>
+                <template data-ff-tpl>
+                    <button class="filter-balloon" data-ff-item="$key-$value">$caption</button>
+                </template>
+                <button class="filter-balloon filter-balloon--reset" type="reset" form="filterDesignForm" data-ff-reset>Сбросить всё</button>
             </div>
-            <div class="filter-item filter-item--search">
-                <button type="button" class="filter-search"></button>
-            </div>
+
+            <table class="statistic-table">
+                <tbody data-ff-results>
+                {$resources}
+                <tr data-mpc-remove="1" data-mpc-chunk="fffiltering/orders/item.tpl">
+                    <td>
+                        <div class="statistic-table__wrap">
+                            <ul class="statistic-table__images">
+                                {set $previews = $preview | split: '|'}
+                                {if $previews}
+                                    {foreach $previews as $path}
+                                        <li>
+                                            <img src="https://311725.selcdn.ru/custom_factory/{$path}" alt="">
+                                        </li>
+                                    {/foreach}
+                                {/if}
+                            </ul>
+                            <div class="statistic-table__content">
+                                <div class="statistic-table__title">{$pagetitle} <small>(id:{$id})</small></div>
+                                <ul class="statistic-table__params">
+                                    <li>Создан {$createdon | date: 'd.m.Y H:i'}</li>
+                                    <li>Артикул: {$article}</li>
+                                    <li>Вознаграждение: {$price}₽</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <ul class="statistic-table__info">
+                            <li>Заказов: {$orders?:0}</li>
+                            <li>Выкупов: {$sales?:0}</li>
+                            <li>Возвратов: {$returns?:0}</li>
+                        </ul>
+                    </td>
+                    <td>
+                        <div class="statistic-table__total">
+                            Сумма выплат:
+                            <span class="red">{$pays?:0} ₽</span>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div data-mpc-chunk="fffiltering/designs/pagination.tpl" data-mpc-include="1" data-mpc-copy="moderate_designs.tpl" class="d-flex justify-content-between" style="gap:20px;flex-wrap:wrap;margin-top:60px;"></div>
         </div>
     </div>
 
-    <table class="statistic-table">
-        <tbody>
-        <!---->
-        <tr>
-            <td>
-                <div class="statistic-table__wrap">
-                    <ul class="statistic-table__images">
-                        <li>
-                            <img src="img/2023-12-23_123120.jpg" alt="">
-                        </li>
-                    </ul>
-                    <div class="statistic-table__content">
-                        <div class="statistic-table__title">Интерьерная картина 30х40см</div>
-                        <ul class="statistic-table__params">
-                            <li>Создан 30.09.2023 11:15</li>
-                            <li>Артикул: 47/251-0001929-70066</li>
-                            <li>Вознаграждение: 25.00₽</li>
-                        </ul>
-                    </div>
-                </div>
-            </td>
-            <td>
-                <ul class="statistic-table__info">
-                    <li>Заказов: 2</li>
-                    <li>Выкупов: 2</li>
-                    <li>Возвратов: 0</li>
-                </ul>
-            </td>
-            <td>
-                <div class="statistic-table__total">
-                    Сумма выплат:
-                    <span class="red">25 ₽</span>
-                </div>
-            </td>
-        </tr>
-        <!---->
-        <tr>
-            <td>
-                <div class="statistic-table__wrap">
-                    <ul class="statistic-table__images">
-                        <li>
-                            <img src="img/2023-12-23_123120.jpg" alt="">
-                        </li>
-                        <li>
-                            <img src="img/2023-12-23_123120.jpg" alt="">
-                        </li>
-                        <li>
-                            <img src="img/2023-12-23_123120.jpg" alt="">
-                        </li>
-                    </ul>
-                    <div class="statistic-table__content">
-                        <div class="statistic-table__title">Интерьерная картина 30х40см</div>
-                        <ul class="statistic-table__params">
-                            <li>Создан 30.09.2023 11:15</li>
-                            <li>Артикул: 47/251-0001929-70066</li>
-                            <li>Вознаграждение: 25.00₽</li>
-                        </ul>
-                    </div>
-                </div>
-            </td>
-            <td>
-                <ul class="statistic-table__info">
-                    <li>Заказов: 2</li>
-                    <li>Выкупов: 2</li>
-                    <li>Возвратов: 0</li>
-                </ul>
-            </td>
-            <td>
-                <div class="statistic-table__total">
-                    Сумма выплат:
-                    <span class="red">25 ₽</span>
-                </div>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-
-    <!--pagination-->
-    <div class="pagination-wrap">
-        <div class="pagination-list">
-            Страница
-            <span>1</span>
-            из 21
-        </div>
-
-        <ul class="pagination">
-            <li><a href="" class="disabled start"></a></li>
-            <li><a href="" class="disabled prev"></a></li>
-            <li><a href="">1</a></li>
-            <li><a href="" class="active">2</a></li>
-            <li><a href="">3</a></li>
-            <li><a href="">4</a></li>
-            <li><a href="">5</a></li>
-            <li><a href="" class="next"></a></li>
-            <li><a href="" class="end"></a></li>
-        </ul>
-    </div>
+    <div id="modal-search" aria-hidden="true" data-mpc-chunk="common/search_modal.tpl" data-mpc-include="1" data-mpc-copy="moderate_users.tpl" class="modal"></div>
 </div>

@@ -302,16 +302,16 @@ document.addEventListener('DOMContentLoaded', () => {
             CustomSelect.create(project.customSelectConfig);
             SendIt?.FileUploaderFactory?.addInstances(workflow);
         },
-        insertProducts(data){
+        insertProducts(data) {
             const results = document.querySelector('[data-results]');
             results && (results.innerHTML = data.html);
         },
 
-        duplicateField(target){
+        duplicateField(target) {
             const field = document.querySelector(target.dataset.sync);
             field && (field.value = target.value);
         },
-        toggleMenu(target){
+        toggleMenu(target) {
             const menu = document.querySelector(target.dataset.toggle);
             menu && menu.classList.toggle('sidebar-hidden');
         },
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             const parent = params.get('parent');
             const type = params.get('type');
-            if(parent || type){
+            if (parent || type) {
                 params.delete('type');
                 params.delete('parent');
                 window.history.replaceState({}, '', url.split('?')[0] + '?' + params.toString());
@@ -424,6 +424,12 @@ document.addEventListener('DOMContentLoaded', () => {
         e.target.closest('[data-sync]') && project.duplicateField(e.target.closest('[data-sync]'));
     })
 
+    document.addEventListener('ff:init', (e) => {
+        const total = document.querySelector('[data-total]');
+        total && SendIt.setComponentCookie('sitrusted', 1);
+        total && SendIt.Sending.prepareSendParams(FlatFilters.MainHandler.form, 'get_totals', 'change');
+    })
+
     document.addEventListener('ff:values:disabled', (e) => {
         const customSelectEl = e.detail.element.closest('.js-custom-select');
         if (CustomSelect.instances.has(customSelectEl)) {
@@ -432,7 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 
     document.addEventListener('ff:before:render', (e) => {
-        if (e.detail.eventOptions.key === 'createdon') {
+        if (['createdon', 'date'].includes(e.detail.eventOptions.key)) {
             e.preventDefault();
         }
     })
@@ -452,7 +458,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('ff:results:loaded', (e) => {
         CustomSelect.create(project.customSelectConfig);
         const updField = document.querySelector('[name="upd"]');
+        const total = document.querySelector('[data-total]');
         updField && (updField.value = '');
+        total && SendIt.Sending.prepareSendParams(FlatFilters.MainHandler.form, 'get_totals', 'change');
     })
 
     document.addEventListener('si:send:after', (e) => {
@@ -522,6 +530,12 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'load_workflow':
                 project.insertWorkflow(result.data);
                 break;
+            case 'get_totals':
+                if (result.data && result.data.total) {
+                    const totals = document.querySelectorAll('[data-total]');
+                    totals && totals.forEach(total => (total.textContent = result.data.total[total.dataset.total]));
+                }
+                break;
         }
 
         if (target === document) return false;
@@ -530,7 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const errorBlock = document.querySelector(Sending.config.errorBlockSelector.replace('${fieldName}', result.data.allowFiles));
             errorBlock && (errorBlock.textContent = '')
         }
-        if(!['upload_screens', 'upload_design', 'removeFile'].includes(headers['X-SIPRESET'])) {
+        if (!['upload_screens', 'upload_design', 'removeFile'].includes(headers['X-SIPRESET'])) {
             (typeof Fancybox !== 'undefined') && Fancybox.close();
         }
     })
@@ -615,7 +629,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const countField = document.querySelector('[name="data[count_files]"]');
                         count = sizeSelect.options[sizeSelect.selectedIndex].dataset.count;
                         countField && (countField.value = count);
-                    }else{
+                    } else {
                         const countField = document.querySelector('[name="maxcount"]');
                         count = countField ? countField.value : 0;
                     }
@@ -665,7 +679,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.addEventListener('si:quiz:reset', (e) => {
         const {parent, type} = project.getParentAndType();
-        if(parent && type) return;
+        if (parent && type) return;
         const {root} = e.detail;
         const parentRadio = root.querySelectorAll('[name="parent"]');
         const rootIdSelect = root.querySelectorAll('[name="data[root_id]"]');
@@ -680,7 +694,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
     })
 
-    if(typeof jQuery !== 'undefined'){
+    if (typeof jQuery !== 'undefined') {
         const collapseTitle = $('.js-collapse-title')
         collapseTitle.on('click', function () {
             $(this)

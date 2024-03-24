@@ -13,6 +13,12 @@ class Base
     /** @var int $cacheTime */
     protected int $cacheTime;
 
+    /** @var array $cacheOptions */
+    protected array $cacheOptions;
+
+    /** @var \pdoTools $pdoTools */
+    protected \pdoTools $pdoTools;
+
     public function __construct(\modX $modx)
     {
         $this->modx = $modx;
@@ -24,6 +30,8 @@ class Base
         $this->flatfilters = $this->modx->getService('flatfilters', 'Flatfilters', MODX_CORE_PATH . 'components/flatfilters/');
         $this->modx->addPackage('moderatorlog', MODX_CORE_PATH . 'components/moderatorlog/model/');
         $this->cacheTime = 10800;
+        $this->pdoTools = $this->modx->getParser()->pdoTools;
+        $this->cacheOptions = [\xPDO::OPT_CACHE_KEY => 'customservices'];
     }
 
     public function getStatuses()
@@ -64,10 +72,10 @@ class Base
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
             $result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
-            foreach($result as $row) {
+            foreach ($result as $row) {
                 $output[$row['id']] = $row['pagetitle'];
             }
-            $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime);
+            $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime, $this->cacheOptions);
             return $output;
         }
     }
@@ -86,15 +94,16 @@ class Base
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
             $result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
-            foreach($result as $row) {
+            foreach ($result as $row) {
                 $output[$row['id']] = $row['pagetitle'];
             }
-            $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime);
+            $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime, $this->cacheOptions);
             return $output;
         }
     }
 
-    public function executeSearch(\xPDOQuery $query, int $configId, array $rids, array $params){
+    public function executeSearch(\xPDOQuery $query, int $configId, array $rids, array $params)
+    {
         $tstart = microtime(true);
         if ($query->prepare() && $query->stmt->execute($params)) {
             $this->modx->queryTime += microtime(true) - $tstart;
@@ -121,19 +130,72 @@ class Base
         $event->save();
     }
 
-    public function setWorkflow($workflow, $product){
+    public function setWorkflow($workflow, $product)
+    {
         $tvvalue = $product->getTVValue('workflow', $workflow);
         $tvvalue = json_decode($tvvalue, true) ?: [];
         $lastIndex = count($tvvalue) - 1;
 
-        if($workflow['moderator_comment']){
+        if ($workflow['moderator_comment']) {
             $tvvalue[$lastIndex]['moderator_comment'] = $workflow['moderator_comment'];
             $tvvalue[$lastIndex]['moderator_date'] = $workflow['moderator_date'];
             $tvvalue[$lastIndex]['screens'] = $workflow['screens'];
-        }else{
+        } else {
             $tvvalue[] = $workflow;
         }
 
         $product->setTVValue('workflow', json_encode($tvvalue));
+    }
+
+    public function sendEmail(array $data)
+    {
+        list($chunk, $to, $subject, $from, $reply, $fromName, $params) = $data;
+        if(!$chunk){
+            $this->modx->log(1, 'Письмо не отправлено. Не передан чанк');
+            return false;
+        }
+
+        if(!$to){
+            $this->modx->log(1, 'Письмо не отправлено. Не передан email получателя');
+            return false;
+        }else{
+            $to = explode (',',$to);
+        }
+
+        if(!$subject){$subject = 'noreply@'.$_SERVER['HTTP_HOST'];}
+        if(!$from){
+            $from = $this->modx->getOption('mail_use_smtp')
+                ? $this->modx->getOption('mail_smtp_user')
+                : 'noreply@' . $_SERVER['HTTP_HOST'];
+        }
+        if(!$reply){$reply = $from;}
+        if(!$fromName){$fromName = $this->modx->getOption('site_name');}
+        if(!$params){
+            $params = [];
+        }elseif(!is_array($params)){
+            $params = json_decode($params, true);
+        }
+
+        $this->modx->getService('mail', 'mail.modPHPMailer');
+
+        $message = $this->pdoTools->getChunk($chunk, $params);
+        $this->modx->mail->set(\modMail::MAIL_BODY,$message);
+        $this->modx->mail->set(\modMail::MAIL_FROM, $from);
+        $this->modx->mail->set(\modMail::MAIL_FROM_NAME, $fromName);
+        $this->modx->mail->set(\modMail::MAIL_SUBJECT, $subject);
+        foreach($to as $t){
+            $this->modx->mail->address('to',$t);
+        }
+        $this->modx->mail->address('reply-to', $reply);
+        if(isset($attachment)){
+            $this->modx->mail->attach($attachment);
+        }
+
+        $this->modx->mail->setHTML(true);
+        if (!$this->modx->mail->send()) {
+            $this->modx->log(1,'При отправке письма произошла ошибка: '.$this->modx->mail->mailer->ErrorInfo);
+        }
+
+        $this->modx->mail->reset();
     }
 }

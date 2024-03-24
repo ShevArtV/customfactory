@@ -43,7 +43,7 @@ switch ($modx->event->name) {
         break;
 
     case 'ffOnBeforeFilter':
-        if (in_array($configData['id'], [1, 2]) && $_REQUEST['query']) {
+        if (in_array($configData['id'], [1, 2, 4]) && $_REQUEST['query']) {
             $FlatFilters->values['query'] = $_REQUEST['query'];
         }
         break;
@@ -56,6 +56,12 @@ switch ($modx->event->name) {
         }
         $modx->event->returnedValues['conditions'] = $conditions;
         break;
+    case 'ffOnBeforeGetFilterValues':
+        if ($modx->user->isMember(['Designers'])) {
+            $conditions[] = '`createdby` = ' . $modx->user->get('id');
+        }
+        $modx->event->returnedValues['conditions'] = $conditions;
+        break;
     case 'ffOnAfterFilter':
         if ($_REQUEST['query']) {
             switch ($configData['id']) {
@@ -64,6 +70,7 @@ switch ($modx->event->name) {
                     $designerService->searchUsers($_REQUEST['query'], $rids, $configData['id']);
                     break;
                 case 2:
+                case 4:
                     $productService = new Product($modx);
                     $productService->searchProducts($_REQUEST['query'], $rids, $configData['id']);
                     break;
@@ -86,6 +93,21 @@ switch ($modx->event->name) {
     case 'ffOnBeforeSetIndexValue':
         if (in_array($key, ['color', 'tags'])) {
             $modx->event->returnedValues['value'] = $value ?: 'не задан';
+        }
+        break;
+    case 'ffOnGetFieldKeys':
+        if($type === 'statistic'){
+            $modx->event->returnedValues = array_merge(
+                $FlatFilters->getTableKeys('site_content'),
+                $FlatFilters->getTableKeys('ms2_products'),
+                $FlatFilters->getTableKeys('salesstatistics_items')
+            );
+        }
+        break;
+    case 'ffOnGetIndexingQuery':
+        if($configData['id'] === 4){
+            $query->leftJoin('msProductData', 'Data');
+            $query->where(['Data.status' => 4]);
         }
         break;
 }

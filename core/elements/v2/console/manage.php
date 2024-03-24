@@ -154,8 +154,8 @@ switch ($argv[1]) {
             $ozon = new StatisticOzon($modx);
             $wb = new StatisticWb($modx);
             //$ozon->run();
-            $wb->run();
-            //$wb->setStatictic();
+            //$wb->run();
+            $wb->setStatictic();
         break;
 
 }

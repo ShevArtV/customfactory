@@ -39,4 +39,14 @@ return [
         'extends' => 'fffiltering.designs',
         'tpl' => '#/fffiltering/products/item.tpl',
     ],
+    'orders' => [
+        'configId' => 4,
+        'extends' => 'fffiltering.designs',
+        'wrapper' => '#/fffiltering/orders/outer.tpl',
+        'empty' => '#/fffiltering/orders/ffempty.tpl',
+        'tpl' => '#/fffiltering/orders/item.tpl',
+        'dateTplOuter' => '',
+        'dateTplRow' => '',
+        'element' => '@FILE snippets/product/snippet.renderorders.php',
+    ]
 ];
