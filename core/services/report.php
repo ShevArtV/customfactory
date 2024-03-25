@@ -13,9 +13,6 @@ class Report extends Base
     /** @var string $filename */
     private string $filename;
 
-    /** @var string $file */
-    private string $file;
-
     /** @var array $names */
     private array $names;
 
@@ -54,6 +51,7 @@ class Report extends Base
         $this->setParents();
     }
 
+
     private function setProductTypes()
     {
         $products = $this->getProductTypes();
@@ -67,8 +65,9 @@ class Report extends Base
         $this->parents = $this->getParents();
     }
 
-    public function generate(array $data)
+    public function generate(array $data): string
     {
+        $this->filename = $data['filename'] ?? $this->filename;
         $this->className = $data['className'];
         $this->ids = $data['ids'] ?? $_SESSION['flatfilters'][$data['configId']]['rids'] ? explode(',', $_SESSION['flatfilters'][$data['configId']]['rids']) : [];
         $this->names = !is_array($data['names']) ? json_decode($data['names'], true) : $data['names'];

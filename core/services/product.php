@@ -275,7 +275,7 @@ class Product extends Base
         $status = $product->get('status');
         $prevStatus = $product->get('prev_status');
         $filePrefix = 'https://311725.selcdn.ru/custom_factory/';
-        if($prevStatus === 7){
+        if ($prevStatus === 7) {
             return;
         }
         switch ($status) {
@@ -352,10 +352,27 @@ class Product extends Base
         $id = $product->get('id');
         $preview = $product->get('preview') ? explode('|', $product->get('preview')) : [];
         $print = $product->get('print') ? explode('|', $product->get('print')) : [];
+        $workflow = $product->getTVValue('workflow') ? json_decode($product->getTVValue('workflow'), true) : [];
         $files = array_merge($preview, $print);
         if (!empty($files)) {
             foreach ($files as $path) {
                 $this->loadToSelectel->removeContainer($path);
+            }
+        }
+
+        if (!empty($workflow)) {
+            $pathToScreens = $this->basePath . 'screenshots/';
+            foreach ($workflow as $w) {
+                if (!$w['screens']) {
+                    continue;
+                }
+                $screens = explode('|', $w['screens']);
+                foreach ($screens as $path) {
+                    $fullpath = $pathToScreens . $path;
+                    if (file_exists($fullpath)) {
+                        unlink($fullpath);
+                    }
+                }
             }
         }
 
@@ -523,6 +540,10 @@ class Product extends Base
                 'status' => 'Статус',
                 'prev_status' => 'Предыдущий Статус',
                 'price' => 'Цена',
+            ],
+            'Футболки' => [
+                'article_barcode' => 'Артикул для штрих кода',
+                'name_barcode' => 'Название для штрихкода'
             ]
         ];
     }
@@ -724,25 +745,44 @@ class Product extends Base
         ];
     }
 
-    public function getProductsFromFile(string $path, int $page = 1, int $limit = 6)
+    public function getProductsFromFile(string $path, int $page = 1, int $limit = 6): array
     {
         $offset = $page === 1 ? 0 : $limit * ($page - 1);
         $senditTempPath = $this->modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');
         $senditTempPath = str_replace('[[+asseetsUrl]]', $this->assetsPath, $senditTempPath);
         $fullPath = $senditTempPath . session_id() . '/' . $path;
-        $ids = [];
+        $articles = [];
         $spreadsheet = IOFactory::load($fullPath);
         $worksheet = $spreadsheet->getActiveSheet();
         $highestRow = $worksheet->getHighestRow();
 
         for ($row = 2; $row <= $highestRow; $row++) {
-            $ids[] = $worksheet->getCell('A' . $row)->getValue(); // Получаем значение из первого столбца
+            $articles[] = trim($worksheet->getCell('A' . $row)->getValue());
+        }
+
+        if (empty($articles)) {
+            return [
+                'success' => false,
+                'msg' => 'Файл пуст',
+                'html' => ''
+            ];
+        }
+        $ids = [];
+        $q = $this->modx->newQuery('msProductData');
+        $q->setClassAlias('Data');
+        $q->select('Data.id');
+        $q->where(['Data.article:IN' => $articles]);
+        $tstart = microtime(true);
+        if ($q->prepare() && $q->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+            $ids = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
         }
 
         if (empty($ids)) {
             return [
                 'success' => false,
-                'msg' => 'Файл пуст',
+                'msg' => 'Не найдено ни одного товара.',
                 'html' => ''
             ];
         }
@@ -764,7 +804,7 @@ class Product extends Base
         ];
     }
 
-    public function getDefaultProducts($data)
+    public function getDefaultProducts(array $data): string
     {
         $output = [];
         $q = $this->modx->newQuery('msProductData');
@@ -804,5 +844,44 @@ class Product extends Base
             }
         }
         return $this->pdoTools->getChunk('@FILE chunks/getdefaultproducts/default/item.tpl', ['categories' => $output]);
+    }
+
+    public function importArticles(): void
+    {
+        $path = $this->assetsPath . 'obmen/номенклатура.json';
+        if (!file_exists($path)) {
+            return;
+        }
+        if (!$importData = file_get_contents($path)) {
+            return;
+        }
+        $importData = json_decode($importData, true);
+
+        foreach ($importData as $data) {
+            if ($r = $this->modx->getObject('msProductData', ['article' => $data['Артикул']])) {
+                $r->set('article_wb', $data['АртикулWB']);
+                $r->set('article_oz', $data['OzonID']);
+                $r->set('article_ya', $data['Артикул']);
+                $r->save();
+            }
+        }
+    }
+
+    public function getReportData(array $fields, array $conditions = []): array
+    {
+        $data['className'] = 'msProduct';
+        $data['names'] = array_keys($fields);
+        $data['captions'] = $fields;
+        $q = $this->modx->newQuery('msProduct');
+        $q->leftJoin('msProductData', 'Data');
+        $q->select('id');
+        $q->where($conditions);
+        $tstart = microtime(true);
+        if ($q->prepare() && $q->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+            $data['ids'] = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
+        }
+        return $data;
     }
 }

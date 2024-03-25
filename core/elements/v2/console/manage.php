@@ -153,8 +153,8 @@ switch ($argv[1]) {
         case 'statisctic':
             $ozon = new StatisticOzon($modx);
             $wb = new StatisticWb($modx);
-            //$ozon->run();
-            //$wb->run();
+            $ozon->run();
+            $wb->run();
             $wb->setStatictic();
         break;
 

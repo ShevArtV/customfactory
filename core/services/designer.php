@@ -283,7 +283,7 @@ class Designer extends Base
     {
         $id = $user->get('id');
 
-        $this->removeUserFiles($id, $user->get('old_id'));
+        $this->removeUserDir($id, $user->get('old_id'));
 
         $this->removeUserProducts($id);
 
@@ -298,7 +298,7 @@ class Designer extends Base
         ];
     }
 
-    public function removeUserFiles(int $id, int $old_id)
+    public function removeUserDir(int $id, int $old_id)
     {
         $targetFolder = $this->assetsPath . 'userfiles/' . $id . '/';
         $targetFolderAlt = $this->assetsPath . 'userfiles/' . $old_id . '/';
@@ -411,6 +411,9 @@ class Designer extends Base
 
     public function removeDir(string $dir): void
     {
+        if(strpos($dir, 'assets/') === false){
+            return;
+        }
         if (is_dir($dir)) {
             $objects = scandir($dir);
             foreach ($objects as $object) {
@@ -482,5 +485,51 @@ class Designer extends Base
         }
         $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime, $this->cacheOptions);
         return $output;
+    }
+
+    public function removeUnactiveUsers()
+    {
+        $date = new \DateTime(date('d.m.Y'));
+        $limit = $date->modify('-7 days');
+        $limit = strtotime($limit->format('d.m.Y'));
+        $q = $this->modx->newQuery('modUser');
+        $q->leftJoin('modUserProfile', 'Profile');
+        $q->where(['Profile.createdon:<=' => $limit, 'User.active:!=' => 1]);
+        $users = $this->modx->getIterator('modUser', $q);
+        foreach($users as $user) {
+            $this->removeUser($user);
+        }
+    }
+
+    public function removeUserFiles($where = [])
+    {
+        $q = $this->modx->newQuery('modUserProfile');
+        $q->setClassAlias('Profile');
+        if(!empty($where)){
+            $q->where($where);
+        }
+        $profiles = $this->modx->getIterator('modUserProfile', $q);
+        $filesFields = [
+            'certificate_img',
+            'inn_img',
+            'selfemployed_img',
+            'pass_one_img',
+            'pass_two_img',
+            'insurance_img',
+        ];
+        foreach ($profiles as $profile) {
+            $extended = $profile->get('extended');
+            foreach ($filesFields as $field) {
+                if(empty($extended[$field])) {
+                    continue;
+                }
+                $path = $this->basePath . $extended[$field];
+                if(file_exists($path)) {
+                    unlink($path);
+                }
+            }
+            $profile->set('files_deleted', 1);
+            $profile->save();
+        }
     }
 }

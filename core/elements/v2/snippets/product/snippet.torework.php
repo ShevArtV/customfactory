@@ -8,7 +8,7 @@ $productService = new Product($modx);
 $filelist = isset($_POST['filelist']) ? explode(',', $_POST['filelist']) : [];
 $ids = json_decode($_POST['selected_id'],true);
 if(!empty($filelist)){
-    $productService->prepareFiles($filelist, (int)$ids[0]);
+    $productService->prepareFiles($filelist, (int)$ids[0], 'screenshots/');
 }
 $result = $productService->updateProduct(['status' => $_POST['status'], 'id' => (int)$ids[0], 'content' => $_POST['content']]);
 if($result['success']){
