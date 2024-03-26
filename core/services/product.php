@@ -244,6 +244,13 @@ class Product extends Base
             $this->toggleMark('rework', $product);
         }
 
+        if($this->modx->user->isMember('Managers') && !$product->get('manager_id')) {
+            $productData['manager_id'] = $this->modx->user->get('id');
+        }
+        if($this->modx->user->isMember('Moderators') && !$product->get('moderator_id')) {
+            $productData['moderator_id'] = $this->modx->user->get('id');
+        }
+
         if ($productData['deleted']) {
             $productData['delete_at'] = date('d.m.Y', strtotime('+7 days'));
         }

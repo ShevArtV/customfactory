@@ -28,7 +28,7 @@
         <input type="hidden" name="data[profilenum]" value="{$_modx->user.profile_num}">
 
         <ul class="timeline md-hidden">
-            <li data-qf-step="1" class="active {($.get.parent && $.get.type) ? 'complete':''}">Товар</li>
+            <li data-qf-step="1" class="active">Товар</li>
             <li data-qf-step="2" class="">Файл</li>
             <li data-qf-step="3" class="">Тэг</li>
             <li data-qf-step="4" class="">Цвета</li>
@@ -36,7 +36,7 @@
         </ul>
 
         <!--Товар-->
-        <div data-qf-item="1" data-mpc-attr="{($.get.parent && $.get.type) ? 'data-qf-complete=1':''}" class="timeline-pane container-small">
+        <div data-qf-item="1" class="timeline-pane container-small">
 
             <h3 class="md-visible">Товар</h3>
 

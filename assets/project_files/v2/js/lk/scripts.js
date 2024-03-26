@@ -320,10 +320,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
             const parent = params.get('parent');
             const type = params.get('type');
+            const firstStep = document.querySelector('[data-qf-step="1"]');
             if (parent || type) {
                 params.delete('type');
                 params.delete('parent');
                 window.history.replaceState({}, '', url.split('?')[0] + '?' + params.toString());
+            }
+            if(parent && type) {
+                firstStep.classList.add('complete');
             }
             return {parent, type}
         }
@@ -536,6 +540,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     totals && totals.forEach(total => (total.textContent = result.data.total[total.dataset.total]));
                 }
                 break;
+            case 'upload_quiz':
+                const steps = document.querySelectorAll('[data-qf-step]');
+                steps.length && steps.forEach(el => {
+                    el.classList.remove('complete');
+                })
+                break;
         }
 
         if (target === document) return false;
@@ -689,7 +699,6 @@ document.addEventListener('DOMContentLoaded', () => {
         rootIdSelect.length && rootIdSelect.forEach(el => el.disabled = true)
         checkboxValues.length && checkboxValues.forEach(el => el.remove())
         steps.length && steps.forEach(el => {
-            el.classList.remove('complete');
             el.classList[el.dataset.qfStep !== '1' ? 'remove' : 'add']('active');
         })
     })

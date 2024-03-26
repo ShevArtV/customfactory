@@ -1,9 +1,12 @@
 <?php
 
 use CustomServices\Product;
+use CustomServices\Designer;
 
 require_once MODX_CORE_PATH . 'vendor/autoload.php';
 
+$designerService = new Designer($modx);
+$designerService->getProgress($modx->user->get('id'));
 if ($modx->user->get('id') !== 1 && !$modx->getPlaceholder('user_allow_add')) {
     return $SendIt->error('Вам пока не доступна эта функция!');
 }
