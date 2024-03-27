@@ -1,10 +1,10 @@
 <!--##{"templatename":"Личные данные","pagetitle":"Страница Личных данных","icon":"icon-user","extends":"12"}##-->
 
 <!-- /usr/local/php/php-7.4/bin/php /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web lk_userdata.tpl -->
-
+<!-- php7.4 www/core/components/migxpageconfigurator/console/mgr_tpl.php web lk_userdata.tpl -->
 <div id="{$id}" data-mpc-section="userdata" data-mpc-name="Данные пользователя">
     <form data-si-preset="dataedit" data-si-form="userData" enctype="multipart/form-data">
-        <input type="hidden" name="status" value="##$_modx->user.status ?: 1}">
+        <input type="hidden" name="status" value="1">
         <div class="container-small">
             ##set $extended = $_modx->user.extended}
             <div class="profile-header">

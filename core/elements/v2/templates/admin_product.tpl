@@ -1,7 +1,7 @@
 <!--##{"templatename":"Товар Админа","pagetitle":"Страница Товара Админа","icon":"icon-star", "extends": "12"}##-->
 
 <!-- /usr/local/php/php-7.4/bin/php /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web admin_product.tpl -->
-
+<!-- php7.4 www/core/components/migxpageconfigurator/console/mgr_tpl.php web admin_product.tpl -->
 
 <!--card-->
 <div id="{$id}" data-mpc-section="product_card" data-mpc-name="Карточка товара" class="card">
@@ -22,7 +22,7 @@
             <a href="{$resource.tvs.tplfile}" download class="btn">Скачать файл шаблона</a>
             {/if}
             ##set $allow_add = $_modx->getPlaceholder('user_allow_add')}
-            <a href="{51982 | url}?parent={$resource.parent}&type={$resource.id}" class="btn btn--line" data-mpc-atrr="##!$allow_add ? 'disabled': ''}">Загрузить дизайн</a>
+            <a href="{51982 | url}?parent={$resource.parent}&type={$resource.id}" class="btn btn--line ##!$allow_add ? 'disabled': ''}">Загрузить дизайн</a>
         </div>
 
     </div>

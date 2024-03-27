@@ -1,7 +1,8 @@
 <?php
 
 // /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL /home/host1860015/art-sites.ru/htdocs/customfactory/core/elements/v2/console/manage.php
-
+// php7.4 www/core/elements/v2/console/manage.php sendemail
+use CustomServices\Base;
 use CustomServices\Statistic\StatisticBase;
 use CustomServices\Statistic\StatisticOzon;
 use CustomServices\Statistic\StatisticWb;
@@ -35,7 +36,9 @@ switch ($argv[1]) {
         ]);
         foreach ($products as $k => $product) {
             $rood_id = $product->get('root_id');
-            if ($rood_id === $comparison[$rood_id]) continue;
+            if ($rood_id === $comparison[$rood_id]) {
+                continue;
+            }
             $product->set('root_id', $comparison[$rood_id]);
             $product->save();
         }
@@ -60,7 +63,9 @@ switch ($argv[1]) {
             $q->prepare();
             if ($statement = $modx->query($q->toSQL())) {
                 $tag = $statement->fetchAll(PDO::FETCH_ASSOC);
-                if (isset($output[$product->get('id')])) continue;
+                if (isset($output[$product->get('id')])) {
+                    continue;
+                }
                 $product->set('tags', [$tag[0]['tag']]);
                 $product->set('tag_label', $tag[0]['label']);
                 $product->save();
@@ -105,7 +110,9 @@ switch ($argv[1]) {
         ]);
         foreach ($products as $k => $r) {
             $colors = $r->get("colors");
-            if (!$colors) continue;
+            if (!$colors) {
+                continue;
+            }
             $colors = explode(';', $colors);
             $r->set('color', $colors);
             $r->save();
@@ -143,19 +150,58 @@ switch ($argv[1]) {
             $profile = $modx->getObject('modUserProfile', [
                 'internalKey' => $r->get('createdby')
             ]);
-            if (!$profile) continue;
+            if (!$profile) {
+                continue;
+            }
 
             $r->set('profilenum', $r->get('profile_num'));
             $r->save();
         }
         break;
 
-        case 'statisctic':
-            $ozon = new StatisticOzon($modx);
-            $wb = new StatisticWb($modx);
-            $ozon->run();
-            $wb->run();
-            $wb->setStatictic();
+    case 'statisctic':
+        // php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/elements/v2/console/manage.php statisctic
+        //$ozon = new StatisticOzon($modx);
+        $wb = new StatisticWb($modx);
+        //$ozon->run();
+        //$wb->run();
+        $wb->setStatictic();
         break;
 
+    case 'nopreview':
+        $q = $modx->newQuery('msProductData');
+        $q->leftJoin('modResource', 'Resource', 'Resource.id = msProductData.id');
+        $q->select('Resource.old_id');
+        $q->where('preview IS NULL AND Resource.old_id > 0');
+        if ($q->prepare() && $q->stmt->execute()) {
+            $modx->log(1, print_r($q->toSQL(), 1));
+            $result = $q->stmt->fetchAll(PDO::FETCH_COLUMN);
+            file_put_contents(MODX_ASSETS_PATH . 'nopreview.json', json_encode($result, JSON_UNESCAPED_UNICODE));
+        }
+        break;
+
+    case 'addpreview':
+        $previews = json_decode(file_get_contents(MODX_ASSETS_PATH . 'previews.json'), true);
+        $q = $modx->newQuery('msProduct');
+        $q->leftJoin('msProductData', 'Data');
+        $q->where('Data.preview IS NULL AND msProduct.old_id > 0 AND msProduct.class_key = "msProduct"');
+        //$q->limit(500);
+        $products = $modx->getIterator('msProduct', $q);
+        foreach ($products as $product) {
+            if(!$previews[$product->get('old_id')]) continue;
+            $sql = "UPDATE `cust_ms2_products` SET `preview` = '{$previews[$product->get('old_id')]}' WHERE `id` = {$product->get('id')}";
+            $modx->query($sql);
+        }
+        echo 'Finished';
+        break;
+
+    case 'sendemail':
+        $baseService = new \CustomServices\Base($modx);
+        $baseService->sendEmail([
+            'chunk' => '@FILE chunks/emails/userModerateSuccess.tpl',
+            'to' => 'shev.art.v@yandex.ru',
+            'params' => [],
+            'subject' => 'Результаты модерации аккаунта.'
+        ]);
+        break;
 }

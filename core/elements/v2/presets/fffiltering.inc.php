@@ -30,7 +30,7 @@ return [
         'createdonTplRow' => '',
         'tpl' => '#/fffiltering/designs/item.tpl',
 
-        'sortby' => ['createdon' => 'DESC'],
+        'sortby' => ['Resource.id' => 'DESC'],
         'element' => '@FILE snippets/product/snippet.render.php',
         'categories' => '$parents',
         'types' => '$types',

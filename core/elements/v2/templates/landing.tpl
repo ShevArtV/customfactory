@@ -171,56 +171,12 @@
         <div class="offset-top">
             <div class="columns" data-mpc-snippet="pdoResources|main_categories">
                 <div class="column {$idx < 4 ? 'col-4 md-col-12': 'col-6 md-col-12'}" data-mpc-chunk="pdoresources/main_categories/item.tpl" data-mpc-rid="14">
-                    <div class="item">
+                    <div class="item" data-mpc-chunk="pdoresources/main_categories/item.tpl">
                         {$is_hit ? '<div class="item-label">Хит продаж</div>' : ''}
-                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/v2/img/landing/category-new/podushka.png');"></div>
-                        <div class="item-title" data-mpc-type="res" data-mpc-field="pagetitle">Декоративные подушки</div>
+                        <div class="item-image" style="background-image:url({$img});"></div>
+                        <div class="item-title">{$pagetitle}</div>
                         <div class="item-price">
-                            Выплаты: <span data-mpc-type="res" data-mpc-field="introtext">25—60 рублей с продажи</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="column col-4 md-col-12" data-mpc-chunk="pdoresources/main_categories/item.tpl" data-mpc-rid="15">
-                    <div class="item">
-                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/v2/img/landing/category-new/kartina.png');">
-
-                        </div>
-                        <div class="item-title" data-mpc-type="res" data-mpc-field="pagetitle">Интерьерные картины</div>
-                        <div class="item-price">
-                            Выплаты: <span data-mpc-type="res" data-mpc-field="introtext">25—90 рублей с продажи</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="column col-4 md-col-12" data-mpc-chunk="pdoresources/main_categories/item.tpl" data-mpc-rid="16">
-                    <div class="item">
-                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/v2/img/landing/category-new/dorozhka.png');">
-
-                        </div>
-                        <div class="item-title" data-mpc-type="res" data-mpc-field="pagetitle">Дорожки</div>
-                        <div class="item-price">
-                            Выплаты: <span data-mpc-type="res" data-mpc-field="introtext">25 рублей с продажи</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="column col-6 md-col-12" data-mpc-chunk="pdoresources/main_categories/item.tpl" data-mpc-rid="17">
-                    <div class="item">
-                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/v2/img/landing/category-new/dorozhka.png');">
-
-                        </div>
-                        <div class="item-title" data-mpc-type="res" data-mpc-field="pagetitle">Фотообои</div>
-                        <div class="item-price">
-                            Выплаты: <span data-mpc-type="res" data-mpc-field="introtext">125—425 рублей с продажи</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="column col-6 md-col-12" data-mpc-chunk="pdoresources/main_categories/item.tpl" data-mpc-rid="18">
-                    <div class="item">
-                        <div class="item-image" data-mpc-type="tv|image" data-mpc-field="img" style="background-image:url('assets/project_files/v2/img/landing/category-new/poster.png');">
-
-                        </div>
-                        <div class="item-title" data-mpc-type="res" data-mpc-field="pagetitle">Постеры</div>
-                        <div class="item-price">
-                            Выплаты: <span data-mpc-type="res" data-mpc-field="introtext">50 рублей с продажи</span>
+                            Выплаты: <span>{$introtext}</span>
                         </div>
                     </div>
                 </div>
@@ -256,7 +212,7 @@
                         <div class="cases-title" data-mpc-field-1="title"></div>
                         <!--cases-box-->
                         <div class="{$item1.subtitle}">
-                            <div class="{$item1.subtitle}__image" data-mpc-field-1="img" style="background:url('assets/project_files/v2/img/landing/caces/bars.png');"></div>
+                            <div class="{$item1.subtitle}__image" style="background:url({$item1.img});"></div>
                             <div class="{$item1.subtitle === 'cases-item' ? 'cases-item__content' : 'cases-box__row'}" data-mpc-field-1="content">
                                 <div class="cases-item__price">
                                     10 250 ₽ <span>в месяц</span>

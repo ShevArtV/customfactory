@@ -176,4 +176,34 @@ class StatisticBase
 
         return is_array($result) ? $result : [];
     }
+
+    public function indexing(){
+        $FF = $this->modx->getService('flatfilters', 'Flatfilters', MODX_CORE_PATH . 'components/flatfilters/');
+        if ($config = $this->modx->getObject('ffConfiguration', 4)) {
+            $configData = $config->toArray();
+            $configData['filters'] = json_decode($configData['filters'], 1);
+            $configData['default_filters'] = json_decode($configData['default_filters'], 1);
+
+            $className = "ffIndex4";
+            $tableName = $this->modx->getTableName($className);
+            $sql = "TRUNCATE TABLE {$tableName}";
+            $this->modx->exec($sql);
+
+            $tableName = $this->modx->getTableName('ffConfigResource');
+            $sql = "DELETE FROM {$tableName} WHERE config_id = 4";
+            $this->modx->exec($sql);
+
+            if(!$Indexing = $FF->loadClass($configData, 'indexing')){
+                $this->logging->writeLog("Base::indexing", "Ошибка получения класса индексации.");
+                return false;
+            }
+            $result = $Indexing->indexConfig();
+            $config->fromArray($result);
+            $config->save();
+            $this->logging->writeLog("Base::indexing", "Статистика проиндексирована.");
+            return true;
+        }
+        $this->logging->writeLog("Base::indexing", "Конфигурация не найдена.");
+        return false;
+    }
 }

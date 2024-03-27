@@ -19,6 +19,9 @@ class Base
     /** @var \pdoTools $pdoTools */
     protected \pdoTools $pdoTools;
 
+    /** @var string $httpHosst */
+    protected string $httpHost;
+
     public function __construct(\modX $modx)
     {
         $this->modx = $modx;
@@ -30,6 +33,7 @@ class Base
         $this->flatfilters = $this->modx->getService('flatfilters', 'Flatfilters', MODX_CORE_PATH . 'components/flatfilters/');
         $this->modx->addPackage('moderatorlog', MODX_CORE_PATH . 'components/moderatorlog/model/');
         $this->cacheTime = 10800;
+        $this->httpHost = $this->modx->getOption('http_host', '', 'unknown');
         $this->pdoTools = $this->modx->getParser()->pdoTools;
         $this->cacheOptions = [\xPDO::OPT_CACHE_KEY => 'customservices'];
     }
@@ -149,51 +153,65 @@ class Base
 
     public function sendEmail(array $data)
     {
-        list($chunk, $to, $subject, $from, $reply, $fromName, $params) = $data;
-        if(!$chunk){
+        $chunk = $data['chunk'];
+        $to = $data['to'];
+        $subject = $data['subject'];
+        $from = $data['from'];
+        $reply = $data['reply'];
+        $fromName = $data['fromName'];
+        $params = $data['params'];
+
+        if (!$chunk) {
             $this->modx->log(1, 'Письмо не отправлено. Не передан чанк');
             return false;
         }
 
-        if(!$to){
+        if (!$to) {
             $this->modx->log(1, 'Письмо не отправлено. Не передан email получателя');
             return false;
-        }else{
-            $to = explode (',',$to);
+        } else {
+            $to = explode(',', $to);
         }
 
-        if(!$subject){$subject = 'noreply@'.$_SERVER['HTTP_HOST'];}
-        if(!$from){
+        if (!$subject) {
+            $subject = 'noreply@' . $this->httpHost;
+        }
+
+        if (!$from) {
             $from = $this->modx->getOption('mail_use_smtp')
                 ? $this->modx->getOption('mail_smtp_user')
-                : 'noreply@' . $_SERVER['HTTP_HOST'];
+                : 'noreply@' . $this->httpHost;
         }
-        if(!$reply){$reply = $from;}
-        if(!$fromName){$fromName = $this->modx->getOption('site_name');}
-        if(!$params){
+        if (!$reply) {
+            $reply = $from;
+        }
+        if (!$fromName) {
+            $fromName = $this->modx->getOption('site_name');
+        }
+        if (!$params) {
             $params = [];
-        }elseif(!is_array($params)){
+        } elseif (!is_array($params)) {
             $params = json_decode($params, true);
         }
 
         $this->modx->getService('mail', 'mail.modPHPMailer');
 
         $message = $this->pdoTools->getChunk($chunk, $params);
-        $this->modx->mail->set(\modMail::MAIL_BODY,$message);
+        $this->modx->mail->set(\modMail::MAIL_BODY, $message);
         $this->modx->mail->set(\modMail::MAIL_FROM, $from);
         $this->modx->mail->set(\modMail::MAIL_FROM_NAME, $fromName);
         $this->modx->mail->set(\modMail::MAIL_SUBJECT, $subject);
-        foreach($to as $t){
-            $this->modx->mail->address('to',$t);
+        foreach ($to as $t) {
+            $this->modx->mail->address('to', $t);
         }
         $this->modx->mail->address('reply-to', $reply);
-        if(isset($attachment)){
+        if (isset($attachment)) {
             $this->modx->mail->attach($attachment);
         }
 
         $this->modx->mail->setHTML(true);
         if (!$this->modx->mail->send()) {
-            $this->modx->log(1,'При отправке письма произошла ошибка: '.$this->modx->mail->mailer->ErrorInfo);
+            $this->modx->log(1, 'При отправке письма произошла ошибка: ' . $this->modx->mail->mailer->ErrorInfo);
         }
 
         $this->modx->mail->reset();

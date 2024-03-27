@@ -1,6 +1,7 @@
 <!--##{"templatename":"Модерация дизайнов","pagetitle":"Страница Модерации дизайнов","icon":"icon-tint", "extends": "12"}##-->
 
 <!-- /usr/local/php/php-7.4/bin/php /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web moderate_designs.tpl -->
+<!-- php7.4 www/core/components/migxpageconfigurator/console/mgr_tpl.php web moderate_designs.tpl -->
 
 <div id="{$id}" data-mpc-section="moderate_designs" data-mpc-name="Модерация дизайнов">
     <div class="container-medium">

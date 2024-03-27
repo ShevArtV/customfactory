@@ -291,7 +291,7 @@ class Product extends Base
                     $preview = explode('|', $product->get('preview'));
                     $this->sendEmail([
                         'to' => $profile->get('email'),
-                        'chunk' => '@FILE elements/chunks/emails/designModerateRejected.tpl',
+                        'chunk' => '@FILE chunks/emails/designModerateRejected.tpl',
                         'params' => [
                             'reasons' => $product->get('content'),
                             'pagetitle' => $product->get('pagetitle'),
@@ -306,17 +306,20 @@ class Product extends Base
                 if ($profile = $this->modx->getObject('modUserProfile', array('default_moderator' => 1))) {
                     $this->sendEmail([
                         'to' => $profile->get('email'),
-                        'chunk' => '@FILE elements/chunks/emails/designModerateNeedCheckParams.tpl',
+                        'chunk' => '@FILE chunks/emails/designModerateNeedCheckParams.tpl',
                         'params' => array('pagetitle' => $product->get('pagetitle')),
                         'subject' => 'Результаты модерации дизайна.'
                     ]);
                 }
                 break;
             case '3':
-                if ($profile = $this->modx->getObject('modUserProfile', $product->get('manager_id'))) {
+                if ($profile = $this->modx->getObject('modUserProfile', [
+                    'internalKey' => $product->get('manager_id'),
+                    'OR:old_id' => $product->get('manager_id')
+                ])) {
                     $this->sendEmail([
                         'to' => $profile->get('email'),
-                        'chunk' => '@FILE elements/chunks/emails/designModerateSuccessManager.tpl',
+                        'chunk' => '@FILE chunks/emails/designModerateSuccessManager.tpl',
                         'params' => array('pagetitle' => $product->get('pagetitle')),
                         'subject' => 'Результаты проверки технических требований к дизайну.'
                     ]);
@@ -326,7 +329,7 @@ class Product extends Base
                 if ($profileUser = $this->modx->getObject('modUserProfile', array('internalKey' => $product->get('createdby')))) {
                     $this->sendEmail([
                         'to' => $profileUser->get('email'),
-                        'chunk' => '@FILE elements/chunks/emails/designModerateSuccessUser.tpl',
+                        'chunk' => '@FILE chunks/emails/designModerateSuccessUser.tpl',
                         'params' => array(
                             'article_wb' => $product->get('article_wb'),
                             'article_ya' => $product->get('article_ya'),
@@ -510,7 +513,7 @@ class Product extends Base
         }
         $articlePrefix = $productData['article'];
         $number = trim($setting->get('value'));
-        $profile_num = $productData['profile_num'];
+        $profile_num = $productData['profilenum'];
         $tagLabel = trim($productData['tag_label']);
         list($article, $number) = $this->checkDouble($articlePrefix, $tagLabel, $number, $profile_num, $productData['id']);
         $setting->set('value', $number);
@@ -648,7 +651,6 @@ class Product extends Base
     public function getStatistic($resources, $total = ''): array
     {
         $statistic = [];
-        $this->modx->log(1, print_r($_REQUEST, 1));
         $q = $this->modx->newQuery('SalesStatisticsItem');
         $q->select([
             "product_id as {$total}id",
@@ -670,7 +672,6 @@ class Product extends Base
             $q->groupby('product_id');
         }
         $q->prepare();
-        $this->modx->log(1, print_r($q->toSQL(), 1));
         $tstart = microtime(true);
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
@@ -725,6 +726,14 @@ class Product extends Base
         $productData = $product->toArray();
         $statuses = $this->getStatuses();
         $types = $this->getProductTypes();
+
+        if(empty($workflow)) {
+            $workflow[] = [
+                'print' => $productData['print'],
+                'preview' => $productData['preview'],
+                'designer_comment' => $productData['introtext'],
+            ];
+        }
 
         $params = [
             'id' => $id,

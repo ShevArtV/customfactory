@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
     {* /usr/local/php/php-7.4/bin/php /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/slice_tpl.php web lk_wrapper.tpl *}
+    {* php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/components/migxpageconfigurator/console/slice_tpl.php web lk_wrapper.tpl *}
     {* общие поля сайта *}
     {set $site_url = $_modx->config.site_url}
     {set $site_name = $_modx->config.site_name}
@@ -145,7 +146,7 @@
                 <div class="header-lk lg-hidden">
 
                     <div class="header-user">
-                        <div class="header-user__name" data-popup-link="lk-user">{$_modx->user.extended.name}</div>
+                        <div class="header-user__name" data-popup-link="lk-user">{$_modx->user.extended.name?:$_modx->user.fullname}</div>
                         <div class="popup-menu" data-popup="lk-user">
                             <ul>
                                 {if $_modx->user.id | ismember: 'Designers'}

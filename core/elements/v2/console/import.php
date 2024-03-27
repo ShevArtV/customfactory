@@ -18,19 +18,46 @@ foreach($products as $product){
     unset($product);
 }*/
 $filename = '';
+$start_time = microtime(true);
 switch ($argv[1]) {
     case 'users':
         // import users
         $filename = 'users.json';
         $userData = json_decode(file_get_contents(MODX_CORE_PATH . 'elements/v2/import/' . $filename), 1);
         foreach ($userData as $data) {
-            if (!$data['active']) {
-                continue;
-            }
             $profileData = $data['profile'];
             $profileData['old_id'] = (int)$data['id'];
+            $profileData['extended']['offer'] = $data['profile']['extended']['offer'] === '1' ? 'Да' : 'Нет';
+
+            if($data['profile']['fullname']){
+                $names = explode(' ', trim($data['profile']['fullname']));
+                $profileData['extended']['surname'] = $names[0];
+                $profileData['extended']['name'] = $names[1];
+                $profileData['extended']['fathername'] = $names[2];
+            }
+
+            if(is_array($data['profile']['extended']['certificate_img'])){
+                $profileData['extended']['certificate_img'] = '';
+            }
+            if(is_array($data['profile']['extended']['inn_img'])){
+                $profileData['extended']['inn_img'] = '';
+            }
+            if(is_array($data['profile']['extended']['selfemployed_img'])){
+                $profileData['extended']['selfemployed_img'] = '';
+            }
+            if(is_array($data['profile']['extended']['pass_one_img'])){
+                $profileData['extended']['pass_one_img'] = '';
+            }
+            if(is_array($data['profile']['extended']['pass_two_img'])){
+                $profileData['extended']['pass_two_img'] = '';
+            }
+            if(is_array($data['profile']['extended']['insurance_img'])){
+                $profileData['extended']['insurance_img'] = '';
+            }
+
             unset($data['id'], $data['profile'], $profileData['id'], $profileData['internalKey']);
             $groups = [];
+
             if ($user = $modx->getObject('modUser', ['username' => $data['username']])) {
                 $profile = $user->getOne('Profile');
                 $user->fromArray($data, '', true);
@@ -59,6 +86,7 @@ switch ($argv[1]) {
             $user->save();
         }
         break;
+
     case 'products':
         // import products
         $arr = [
@@ -69,8 +97,10 @@ switch ($argv[1]) {
             4 => ['old' => 90, 'new' => 18, 'name' => 'posters.json'],
             5 => ['old' => 19, 'new' => 19, 'name' => 'bags.json'],
             6 => ['old' => 50227, 'new' => 20, 'name' => 'promos.json'],
+            7 => ['old' => 69138, 'new' => 54754, 'name' => 'tshirsb.json'],
+            8 => ['old' => 69140, 'new' => 19, 'name' => 'tshirsw.json'],
         ];
-        $filename = '1promos.json';
+        $filename = '1tshirsw.json';
         $productData = json_decode(file_get_contents(MODX_CORE_PATH . 'elements/v2/import/' . $filename), 1);
 
         foreach ($productData as $data) {
@@ -102,42 +132,28 @@ switch ($argv[1]) {
             unset($product);
         }
         break;
-    case 'tags':
-        $corePath = $modx->getOption('tagger.core_path', null, $modx->getOption('core_path', null, MODX_CORE_PATH) . 'components/tagger/');
-        /** @var Tagger $tagger */
-        $tagger = $modx->getService(
-            'tagger',
-            'Tagger',
-            $corePath . 'model/tagger/',
-            array(
-                'core_path' => $corePath
-            )
-        );
-        $filename = 'tags5.json';
-        $tagsData = json_decode(file_get_contents(MODX_CORE_PATH . 'elements/v2/import/' . $filename), 1);
-        //echo count($tagsData);
-        $count = count($tagsData);
-        $i = $prevpercent = 0;
-        foreach ($tagsData as $data) {
-            if ($resource = $modx->getObject('modResource', ['pagetitle' => $data['pagetitle']])) {
-                $data['resource'] = $resource->get('id');
-                unset($data['pagetitle']);
-                if (!$modx->getCount('TaggerTagResource', $data)) {
-                    $tag = $modx->newObject('TaggerTagResource');
-                    $tag->fromArray($data, '', true);
-                    $tag->save();
-                    unset($resource, $tag);
-                }
-            } else {
-                //$modx->log(1, $data['pagetitle']);
-                echo $data['pagetitle'] . PHP_EOL;
+
+    case 'set_count_files':
+        $q = $modx->newQuery('msProduct');
+        $q->leftJoin('msProductData', 'Data');
+        $q->select('Data.id,msProduct.old_id,Data.count_files');
+        $q->where(['template' => 14]);
+        $types = [];
+        if($q->prepare() && $q->stmt->execute()){
+            $result = $q->stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach($result as $item){
+                if(!$item['id']) continue;
+                $types[$item['old_id']]['count_files'] = $item['count_files'];
+                $types[$item['old_id']]['id'] = $item['id'];
             }
-            $i++;
-            $present = round($i / $count, 2) * 100;
-            if ($prevpercent !== $present) {
-                $modx->log(1, 'Обработано: ' . $present . '%');
-                $prevpercent = $present;
-            }
+        }
+
+        $products = $modx->getIterator('msProduct', ['template' => 13, 'parent' => 54754]);
+        foreach($products as $p){
+            $oldRootId = $p->get('root_id');
+            $p->set('root_id', $types[$oldRootId]['id']);
+            $p->set('count_files', $types[$oldRootId]['count_files']);
+            $p->save();
         }
         break;
 
@@ -146,15 +162,15 @@ switch ($argv[1]) {
         foreach ($profiles as $profile) {
             $user_id = $profile->get('internalKey');
             $old_id = $profile->get('old_id');
-            //$sql = "UPDATE `cust_ms2_orders` SET `user_id` = {$user_id}, `type` = 1 WHERE `user_id` = {$old_id} AND `type` = 0";
+            $sql = "UPDATE `cust_ms2_orders` SET `user_id` = {$user_id}, `type` = 1 WHERE `user_id` = {$old_id} AND `type` = 0";
             $sql2 = "UPDATE `cust_ms2_order_addresses` SET `user_id` = {$user_id}, `comment` = 1  WHERE `user_id` = {$old_id} AND `comment` != 1";
-            //$modx->query($sql);
+            $modx->query($sql);
             $modx->query($sql2);
         }
-        //$countOrders = $modx->getCount('msOrder', ['type' => 0]);
+        $countOrders = $modx->getCount('msOrder', ['type' => 0]);
         $countAddresses = $modx->getCount('msOrderAddress', ['comment:!=' => 1]);
 
-        //$modx->log(1, print_r($countOrders, 1));
+        $modx->log(1, print_r($countOrders, 1));
         $modx->log(1, print_r($countAddresses, 1));
 
         //UPDATE modx_ms2_order_addresses SET order_id = id;
@@ -163,7 +179,7 @@ switch ($argv[1]) {
     case 'order_products':
         $products = $modx->getIterator('msProduct');
         foreach ($products as $product) {
-            $old_id =$product->get('old_id');
+            $old_id = $product->get('old_id');
             $id = $product->get('id');
             $sql = "UPDATE `cust_ms2_order_products` SET `product_id` = {$id}, `weight` = 1 WHERE `product_id` = {$old_id} AND `weight` = 0";
             $modx->query($sql);
@@ -245,4 +261,7 @@ switch ($argv[1]) {
         }
         break;
 }
-echo 'Import Finished from ' . $filename . PHP_EOL;
+$end_time = microtime(true);
+$execution_time = round(($end_time - $start_time) / 60);
+
+echo "Script execution time for $filename : $execution_time min"  . PHP_EOL;

@@ -4,8 +4,10 @@ return [
     'main_categories' => [
         'parents' => 13,
         'showUnpublished' => 1,
+        'where' => ['class_key' => 'msCategory'],
         'tpl' => '#/pdoresources/main_categories/item.tpl',
-        'includeTVs' => 'img,is_hit',
+        'includeTVs' => 'img,is_hit,show_on_main',
+        'tvFilters' => 'show_on_main==1',
         'tvPrefix' => '',
         'sortby' => ['menuindex' => 'ASC'],
         'limit' => 5

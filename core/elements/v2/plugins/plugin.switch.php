@@ -7,7 +7,7 @@ require_once MODX_CORE_PATH . 'vendor/autoload.php';
 
 switch ($modx->event->name) {
     case 'OnBeforeReturnResponse':
-        if($_POST['email'] && in_array($presetName, ['auth', 'register'])){
+        if ($_POST['email'] && in_array($presetName, ['auth', 'register'])) {
             $user = $modx->getObject('modUser', ['username' => $_POST['email']]);
             if ($user && !$user->isMember('Designers')) {
                 $response['data']['redirectUrl'] = $modx->makeUrl(54750, '', '', 'full');
@@ -62,6 +62,23 @@ switch ($modx->event->name) {
         }
         $modx->event->returnedValues['conditions'] = $conditions;
         break;
+    case 'ffOnAfterGetFilterValues':
+        if ($configData['id'] === 2) {
+            foreach($output as $key => $item){
+                if(!in_array($key, ['color', 'tags'])){
+                    continue;
+                }
+                $array = $item['values'];
+                $k = array_search("не задан", $array);
+                if ($k !== false) {
+                    unset($array[$k]);
+                    array_unshift($array, "не задан");
+                    $output[$key]['values'] = $array;
+                }
+            }
+        }
+        $modx->event->returnedValues['output'] = $output;
+        break;
     case 'ffOnAfterFilter':
         if ($_REQUEST['query']) {
             switch ($configData['id']) {
@@ -96,7 +113,7 @@ switch ($modx->event->name) {
         }
         break;
     case 'ffOnGetFieldKeys':
-        if($type === 'statistic'){
+        if ($type === 'statistic') {
             $modx->event->returnedValues = array_merge(
                 $FlatFilters->getTableKeys('site_content'),
                 $FlatFilters->getTableKeys('ms2_products'),
@@ -105,7 +122,7 @@ switch ($modx->event->name) {
         }
         break;
     case 'ffOnGetIndexingQuery':
-        if($configData['id'] === 4){
+        if ($configData['id'] === 4) {
             $query->leftJoin('msProductData', 'Data');
             $query->where(['Data.status' => 4]);
         }

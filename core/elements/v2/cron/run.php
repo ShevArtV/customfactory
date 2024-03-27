@@ -1,5 +1,6 @@
 <?php
 // /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL /home/host1860015/art-sites.ru/htdocs/customfactory/core/elements/v2/cron/run.php
+// php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/elements/v2/cron/run.php loadtoselectel
 
 use CustomServices\LoadToSelectel;
 use CustomServices\Designer;
@@ -39,6 +40,7 @@ switch ($argv[1]) {
         $ozon->run();
         $wb->run();
         $wb->setStatictic();
+        $wb->indexing();
         break;
     case 'article_report':
         $fields = [
@@ -67,6 +69,17 @@ switch ($argv[1]) {
             $data['filename'] = 'article_report';
             $reportService = new Report($modx);
             $path = $reportService->generate($data);
+        }
+        break;
+    case 'delete_products':
+        $date = date('d.m.Y');
+        $productService = new Product($modx);
+        $q = $modx->newQuery('msProduct');
+        $q->leftJoin('msProductData', 'Data');
+        $q->where(['Data.delete_at' => '27.03.2024']);
+        $products = $modx->getIterator('msProduct', $q);
+        foreach($products as $product){
+            $productService->removeProduct($product);
         }
         break;
 }

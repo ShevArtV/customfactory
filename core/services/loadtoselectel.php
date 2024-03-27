@@ -63,7 +63,7 @@ class LoadToSelectel extends Base
             return false;
         }
 
-        $products = $this->getProducts($parents);
+        $products = $this->getProducts(array_keys($parents));
         $this->prepareLoading($products);
         return true;
     }
@@ -129,8 +129,8 @@ class LoadToSelectel extends Base
                 }
             }
 
-            if($flag === 2){
-                if($status === 7){
+            if ($flag === 2) {
+                if ($status === 7) {
                     $workflow['designer_date'] = date('Y-m-d H:i:s');
                     $workflow['designer_comment'] = $product->get('introtext');
                     $status = $product->get('prev_status');

@@ -13,7 +13,7 @@ class StatisticWb extends StatisticBase
         ];
         $this->headers = array_merge($this->headers, $headers);
         $this->url = 'https://statistics-api.wildberries.ru/api/v1/supplier/';
-        $this->dateFrom = '2024-03-01';
+        //$this->dateFrom = '2024-03-01';
         $this->query = ['dateFrom' => $this->dateFrom, 'dateTo' => $this->now, 'flag' => 0];
 
     }

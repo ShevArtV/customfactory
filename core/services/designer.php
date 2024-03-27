@@ -28,12 +28,12 @@ class Designer extends Base
 
     public function getProgress(int $id = 0)
     {
-        if($id === 0){
+        if ($id === 0) {
             return;
         }
         $user = $this->modx->getObject('modUser', $id);
 
-        if($offerResource = $this->modx->getObject('modResource', 51976)){
+        if ($offerResource = $this->modx->getObject('modResource', 51976)) {
             $offer_key = 'offer' . $offerResource->get('introtext');
         }
         $progress = 0;
@@ -64,8 +64,10 @@ class Designer extends Base
                 $steps['prods'] = 1;
                 $total += 1;
             }
+
+            $allow = (bool)$steps['status'];
             if ($progress == 100 || ($progress == 80 && !$steps['prods'])) {
-                $allow = 1;
+                $allow = true;
             }
         }
 
@@ -73,7 +75,7 @@ class Designer extends Base
             [
                 'user_progress' => $progress,
                 'user_total' => $total,
-                'user_allow_add' => 0 ?: $allow,
+                'user_allow_add' => $allow,
             ]
         );
         $this->modx->setPlaceholder('user_steps', $steps);
@@ -117,9 +119,12 @@ class Designer extends Base
             $profiles = $this->modx->getIterator('modUserProfile', ['active' => 1]);
             foreach ($profiles as $profile) {
                 $extended = $profile->get('extended');
-                $extended['offer'] = 0;
+                $extended['offer'] = 'Нет';
                 $profile->set('extended', $extended);
                 $profile->save();
+                $user = $profile->getOne('User');
+                $this->flatfilters->removeResourceIndex($user->get('id'));
+                $this->flatfilters->indexingUser($user);
             }
             $this->modx->runProcessor('security/logout', array('username' => 'all'));
         }
@@ -225,17 +230,19 @@ class Designer extends Base
         $status = (int)$profile->get('status');
         $chunk = '';
         $params = [];
-        if(in_array($status, [2,3])){
-            switch ($status){
+
+        if (in_array($status, [2, 3])) {
+            switch ($status) {
                 case 3:
                     $params = ['reasons' => $profile->get('comment')];
-                    $chunk = '@FILE elements/chunks/emails/userModerateRejected.tpl';
+                    $chunk = '@FILE chunks/emails/userModerateRejected.tpl';
                     break;
-                case 2:
-                    $chunk =  '@FILE elements/chunks/emails/userModerateSuccess.tpl';
+                default:
+                    $chunk = '@FILE chunks/emails/userModerateSuccess.tpl';
                     break;
             }
-            if($chunk){
+
+            if ($chunk) {
                 $this->sendEmail([
                     'to' => $profile->get('email'),
                     'chunk' => $chunk,
@@ -411,7 +418,7 @@ class Designer extends Base
 
     public function removeDir(string $dir): void
     {
-        if(strpos($dir, 'assets/') === false){
+        if (strpos($dir, 'assets/') === false) {
             return;
         }
         if (is_dir($dir)) {
@@ -446,7 +453,9 @@ class Designer extends Base
                 $groups = [3];
             }
         }
-
+        if (empty($groups)) {
+            return '';
+        }
         $ids = [];
         $q = $this->modx->newQuery('modResourceGroupResource');
         $q->select('document');
@@ -496,7 +505,7 @@ class Designer extends Base
         $q->leftJoin('modUserProfile', 'Profile');
         $q->where(['Profile.createdon:<=' => $limit, 'User.active:!=' => 1]);
         $users = $this->modx->getIterator('modUser', $q);
-        foreach($users as $user) {
+        foreach ($users as $user) {
             $this->removeUser($user);
         }
     }
@@ -505,7 +514,7 @@ class Designer extends Base
     {
         $q = $this->modx->newQuery('modUserProfile');
         $q->setClassAlias('Profile');
-        if(!empty($where)){
+        if (!empty($where)) {
             $q->where($where);
         }
         $profiles = $this->modx->getIterator('modUserProfile', $q);
@@ -520,11 +529,11 @@ class Designer extends Base
         foreach ($profiles as $profile) {
             $extended = $profile->get('extended');
             foreach ($filesFields as $field) {
-                if(empty($extended[$field])) {
+                if (empty($extended[$field])) {
                     continue;
                 }
                 $path = $this->basePath . $extended[$field];
-                if(file_exists($path)) {
+                if (file_exists($path)) {
                     unlink($path);
                 }
             }
