@@ -625,6 +625,7 @@ class Product extends Base
             'Product.createdon AS createdon',
             'Data.preview AS preview',
             'Data.article AS article',
+            'Data.root_id AS root_id',
             'Data.price AS price',
         ]);
         $q->where(['Product.id:IN' => $resources]);

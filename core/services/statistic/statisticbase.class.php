@@ -19,7 +19,7 @@ class StatisticBase
         $this->corePath = $this->modx->getOption('core_path');
         $this->basePath = $this->modx->getOption('base_path');
         $date = date('d-m-Y');
-        if(!file_exists($this->basePath . 'assets/statistic_log')){
+        if (!file_exists($this->basePath . 'assets/statistic_log')) {
             mkdir($this->basePath . 'assets/statistic_log');
         }
         $logpath = $this->basePath . 'assets/statistic_log/log_' . $date . '.txt';
@@ -177,13 +177,16 @@ class StatisticBase
         return is_array($result) ? $result : [];
     }
 
-    public function indexing(){
+    public function indexing()
+    {
         $FF = $this->modx->getService('flatfilters', 'Flatfilters', MODX_CORE_PATH . 'components/flatfilters/');
         if ($config = $this->modx->getObject('ffConfiguration', 4)) {
             $configData = $config->toArray();
             $configData['filters'] = json_decode($configData['filters'], 1);
             $configData['default_filters'] = json_decode($configData['default_filters'], 1);
-
+            if ($configData['offset'] === $configData['total']) {
+                $configData['offset'] = 0;
+            }
             $className = "ffIndex4";
             $tableName = $this->modx->getTableName($className);
             $sql = "TRUNCATE TABLE {$tableName}";
@@ -193,13 +196,26 @@ class StatisticBase
             $sql = "DELETE FROM {$tableName} WHERE config_id = 4";
             $this->modx->exec($sql);
 
-            if(!$Indexing = $FF->loadClass($configData, 'indexing')){
+            if (!$Indexing = $FF->loadClass($configData, 'indexing')) {
                 $this->logging->writeLog("Base::indexing", "Ошибка получения класса индексации.");
                 return false;
             }
-            $result = $Indexing->indexConfig();
-            $config->fromArray($result);
-            $config->save();
+            $offset = $configData['offset'];
+            $total = $configData['total'] ?: 1;
+            $percent = round($offset / $total * 100);
+            while ($offset < $total) {
+                $result = $Indexing->indexConfig();
+                $total = $result['total'];
+                $offset = $result['offset'];
+                $newPercent = round($offset / $total * 100);
+                if($percent !== $newPercent){
+                    $percent = $newPercent;
+                    $this->logging->writeLog("Base::indexing", "Проиндексировано: {$percent}%");
+                }
+                $Indexing->config['offset'] = $result['offset'];
+                $config->fromArray($result);
+                $config->save();
+            }
             $this->logging->writeLog("Base::indexing", "Статистика проиндексирована.");
             return true;
         }

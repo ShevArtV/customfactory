@@ -37,9 +37,9 @@ switch ($argv[1]) {
     case 'get_statistic':
         $ozon = new StatisticOzon($modx);
         $wb = new StatisticWb($modx);
-        $ozon->run();
+        /*$ozon->run();
         $wb->run();
-        $wb->setStatictic();
+        $wb->setStatictic();*/
         $wb->indexing();
         break;
     case 'article_report':
@@ -78,7 +78,7 @@ switch ($argv[1]) {
         $q->leftJoin('msProductData', 'Data');
         $q->where(['Data.delete_at' => '27.03.2024']);
         $products = $modx->getIterator('msProduct', $q);
-        foreach($products as $product){
+        foreach ($products as $product) {
             $productService->removeProduct($product);
         }
         break;

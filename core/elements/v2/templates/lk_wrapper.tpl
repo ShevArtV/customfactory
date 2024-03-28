@@ -96,7 +96,8 @@
                                 {$wrapper}
                                 <li class="{(!$_modx->user.extended['offer'] && $parent == 51978) ? 'disabled' : ''}{(!('user_allow_add' | placeholder) && $parent == 12) ? 'disabled' : ''}"
                                     data-mpc-remove="1" data-mpc-chunk="pdomenu/tplInnerRow.tpl">
-                                    <a href="{$uri}" data-mpc-attr="{($class_key == 'modWebLink' ? 'target=_blank' : '')}">
+                                    {set $week = '' | period: 'week'}
+                                    <a href="{$uri}{$id == 54752 ? '?date='~$week : ''}" data-mpc-attr="{($class_key == 'modWebLink' ? 'target=_blank' : '')}">
                                         {$pagetitle}
                                         {if $id == 54748 && $_modx->user.extended['rework']}
                                             <span class="good-item__status status--cancel"></span>

@@ -16,7 +16,7 @@
                     <img src="##$photo}" class="user-avatar" alt="">
                 </div>
                 <div class="profile-header__name">
-                    ##$_modx->user.fullname}
+                    ##$_modx->user.extended.surname} ##$_modx->user.extended.name}
                 </div>
             </div>
 
@@ -55,10 +55,10 @@
                     </div>
 
                     <div class="column col-4 md-col-12 md-order-1">
-                        <div class="blockquote blockquote_success ##$_modx->user.status == 2 ? '' : 'd-none'}">
+                        <div class="blockquote ##$_modx->user.status == 2 ? '' : 'd-none'}">
                             Ваши данные успешно прошли модерацию. Для внесения изменений обратитесь в <a href="{51973 | resource: 'content'}">техническую поддержку</a>.
                         </div>
-                        <div class="blockquote blockquote_warning ##$_modx->user.status == 1 ? '' : 'd-none'}">
+                        <div class="blockquote ##$_modx->user.status == 1 ? '' : 'd-none'}">
                             Ваши данные проходят модерацию. О результатах Вы получите уведомление.
                         </div>
                         <div class="blockquote ##$_modx->user.status == 3 ? '' : 'd-none'}">
@@ -154,62 +154,11 @@
                 </div>
             </div>
 
-            <!--Паспорт-->
-            <div class="profile-item">
-                <h2>Паспортные данные <small>Нужны для заключения договора</small></h2>
-
-                <div class="container-small">
-                    <div class="input-group">
-                        <div class="columns">
-                            <div class="column col-6 md-col-12">
-                                <label class="input-label">Серия*</label>
-                                <input type="text" class="input" name="pass_series" value="##$_modx->user.pass_series}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
-                                <small class="error" data-si-error="pass_series"></small>
-                            </div>
-                            <div class="column col-6 md-col-12">
-                                <label class="input-label">Номер*</label>
-                                <input type="text" class="input" name="pass_num" value="##$_modx->user.pass_num}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
-                                <small class="error" data-si-error="pass_num"></small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Кем и когда выдан*</label>
-                        <div class="columns">
-                            <div class="column col-6 md-col-12">
-                                <input type="text" class="input" name="extended[pass_date]" value="##$extended[pass_date]}" placeholder="Дата выдачи" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
-                                <small class="error" data-si-error="extended[pass_date]"></small>
-                            </div>
-                            <div class="column col-6 md-col-12">
-                                <input type="text" class="input" name="extended[pass_code]" value="##$extended[pass_code]}" placeholder="Код подразделения" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
-                                <small class="error" data-si-error="extended[pass_code]"></small>
-                            </div>
-                            <div class="column col-12">
-                                <input type="text" class="input" name="extended[pass_where]" value="##$extended[pass_where]}" placeholder="Орган, выдавший паспорт" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
-                                <small class="error" data-si-error="extended[pass_where]"></small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Адрес регистрации*</label>
-                        <input type="text" class="input" name="extended[pass_address]" value="##$extended[pass_address]}" data-match-recepient="extended[address_ip]" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
-                        <small class="error" data-si-error="extended[pass_address]"></small>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Дата рождения*</label>
-                        <input type="text" class="input" name="dob" value="##$_modx->user.dob? ($_modx->user.dob | date: 'd.m.Y') :''}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
-                        <small class="error" data-si-error="dob"></small>
-                    </div>
-                </div>
-            </div>
-
             <!--Организационно правовая форма-->
             <div class="profile-item">
 
                 <div class="container-small">
-                    <h2>Организационно правовая форма</h2>
+                    <h2>Организационно-правовая форма</h2>
 
                     <div class="input-group">
                         Сервис работает с самозанятыми и ИП. Как оформить самозанятость или стать ИП, читайте в разделе помощь
@@ -287,6 +236,13 @@
                                     <input type="text" class="input" name="inn" value="##$_modx->user.inn}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                     <small class="error" data-si-error="inn"></small>
                                 </div>
+
+                                <div class="input-group">
+                                    ##set $offerPageKey = 'offer'~(51976 | resource: 'introtext')}
+                                    ##$offerDate = $extended[$offerPageKey]}
+                                    <label class="input-label">Дата принятия оферты*</label>
+                                    <input type="text" class="input" value="##$offerDate}">
+                                </div>
                             </div>
 
                         </div>
@@ -302,6 +258,57 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--Паспорт-->
+            <div class="profile-item">
+                <h2>Паспортные данные <small>Нужны для заключения договора</small></h2>
+
+                <div class="container-small">
+                    <div class="input-group">
+                        <div class="columns">
+                            <div class="column col-6 md-col-12">
+                                <label class="input-label">Серия*</label>
+                                <input type="text" class="input" name="pass_series" value="##$_modx->user.pass_series}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <small class="error" data-si-error="pass_series"></small>
+                            </div>
+                            <div class="column col-6 md-col-12">
+                                <label class="input-label">Номер*</label>
+                                <input type="text" class="input" name="pass_num" value="##$_modx->user.pass_num}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <small class="error" data-si-error="pass_num"></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Кем и когда выдан*</label>
+                        <div class="columns">
+                            <div class="column col-6 md-col-12">
+                                <input type="text" class="input" name="extended[pass_date]" value="##$extended[pass_date]}" placeholder="Дата выдачи" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <small class="error" data-si-error="extended[pass_date]"></small>
+                            </div>
+                            <div class="column col-6 md-col-12">
+                                <input type="text" class="input" name="extended[pass_code]" value="##$extended[pass_code]}" placeholder="Код подразделения" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <small class="error" data-si-error="extended[pass_code]"></small>
+                            </div>
+                            <div class="column col-12">
+                                <input type="text" class="input" name="extended[pass_where]" value="##$extended[pass_where]}" placeholder="Орган, выдавший паспорт" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <small class="error" data-si-error="extended[pass_where]"></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label">Адрес регистрации*</label>
+                        <input type="text" class="input" name="extended[pass_address]" value="##$extended[pass_address]}" data-match-recepient="extended[address_ip]" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                        <small class="error" data-si-error="extended[pass_address]"></small>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Дата рождения*</label>
+                        <input type="text" class="input" name="dob" value="##$_modx->user.dob? ($_modx->user.dob | date: 'd.m.Y') :''}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                        <small class="error" data-si-error="dob"></small>
                     </div>
                 </div>
             </div>

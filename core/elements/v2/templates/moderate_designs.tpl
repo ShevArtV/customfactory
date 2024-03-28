@@ -18,20 +18,21 @@
             <form id="filterForm" data-ff-form="filterDesignForm" class="filter">
                 <input type="hidden" name="configId" value="{$configId}">
                 <input type="hidden" name="configId" form="generateReport" value="{$configId}">
-                <div class="filter-column filter-column-design">
+                <div class="filter-column">
                     <div class="filter-item">
                         <div class="filter-name">Дизайнов: <span id="total">{$totalResources?:0}</span></div>
                     </div>
-                    {$filters}
-                    <div class="filter-item" data-mpc-remove="1" data-mpc-chunk="fffiltering/designs/fffcheckboxgroupouter.tpl">
+                    <div class="filter-item">
                         <ul class="filter-list">
-                            <li>
+                            {$filters}
+                            <li data-mpc-remove="1" data-mpc-chunk="fffiltering/designs/fffcheckboxgroupouter.tpl">
                                 <div class="filter-name filter-name--select" data-popup-link="filter-{$key}">
                                     {('ff_frontend_'~$key) | lexicon}
                                 </div>
                                 <div class="popup-menu popup-menu--checked" data-popup="filter-{$key}">
                                     <ul class="filter-value-list scrollbar">
                                         {$options}
+
                                         <li data-mpc-remove="1" data-mpc-chunk="fffiltering/designs/ffcheckboxgroup.tpl">
                                             {set $statuses = ('statuses' | placeholder)}
                                             {if $key == 'status' && $value == 7 && $_modx->resource.template == 19}
@@ -65,6 +66,8 @@
                             </li>
                         </ul>
                     </div>
+                </div>
+                <div class="filter-column">
                     <div class="filter-item">
                         <div class="filter-name filter-name--select" data-popup-link="datepicker">
                             {if $.get.createdon == ('' | period: 'week')}

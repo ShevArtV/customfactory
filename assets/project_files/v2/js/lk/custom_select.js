@@ -152,7 +152,8 @@ export default class CustomSelect {
         option.classList.add(this.config.selectedClass);
         option.selected = 1;
         this.element.classList.remove(this.config.openClass);
-        dispatch ? this.select.dispatchEvent(CustomSelect.changeEvent) : '';
+        SendIt?.setComponentCookie('sitrusted', '1')
+        dispatch && this.select.dispatchEvent(CustomSelect.changeEvent);
     }
 
     createElement(tagName, parentEl, classNames, val, text, select, disabled, display) {

@@ -121,10 +121,4 @@ switch ($modx->event->name) {
             );
         }
         break;
-    case 'ffOnGetIndexingQuery':
-        if ($configData['id'] === 4) {
-            $query->leftJoin('msProductData', 'Data');
-            $query->where(['Data.status' => 4]);
-        }
-        break;
 }

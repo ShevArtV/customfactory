@@ -47,6 +47,7 @@ class Render
             }
             $tabNum++;
             $nav .= $this->pdoTools->getChunk($navItemTpl, ['active' => $active, 'type' => $type, 'typeName' => $typeNames[$type]]);
+            $questions = '';
             foreach ($items as $item) {
                 $questions .= $this->pdoTools->getChunk($questionTpl, $item);
             }

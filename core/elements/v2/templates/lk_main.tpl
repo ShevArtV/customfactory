@@ -1,7 +1,7 @@
 <!--##{"templatename":"Мой кабинет","pagetitle":"Страница Мой кабинет","icon":"icon-qrcode","extends":"12"}##-->
 
 <!-- /usr/local/php/php-7.4/bin/php /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web lk_main.tpl -->
-
+{* php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/components/migxpageconfigurator/console/mgr_tpl.php web lk_main.tpl 1 *}
 <!--Вопросы-ответы-->
 <div id="{$id}" data-mpc-section="user_progress" data-mpc-name="Прогресс пользователя">
     ##if !('user_allow_add' | placeholder)}
@@ -171,7 +171,6 @@
             <div class="page" data-mpc-field="subtitle">
                 Ответы на многие вопросы вы найдете в нашем разделе часто задаваемых вопросов
             </div>
-
             <div data-tab-wrapper data-mpc-snippet="getFAQ|default">
                 <div data-mpc-unwrap="1" data-mpc-chunk="getfaq/default/wrap.tpl">
                     <div class="round-tabs">
@@ -309,7 +308,8 @@
                 </div>
                 <div data-mpc-item="">
                     <div data-mpc-field-1="question">Есть ли ограничение по месячному доходу самозанятого?</div>
-                    <div data-mpc-field-1="answer"><p>Для самозанятых есть ограничение по объему годового дохода — он не должен превысить 2,4 миллиона рублей. Ограничения по
+                    <div data-mpc-field-1="answer">
+                        <p>Для самозанятых есть ограничение по объему годового дохода — он не должен превысить 2,4 миллиона рублей. Ограничения по
                             объёму дохода за месяц нет: в один месяц вы можете получить 500 000 рублей, в другой — 50 000, в третий — 0. Важно не превысить годовое
                             ограничение.</p>
                         <p>Если вы превысите годовой лимит, придётся перейти на другой налоговый режим – например, оформить статус индивидуального предпринимателя (ИП).</p>

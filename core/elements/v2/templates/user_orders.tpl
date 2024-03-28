@@ -1,7 +1,7 @@
 <!--##{"templatename":"Статистика продаж","pagetitle":"Страница Статистика продаж","icon":"icon-dollar","extends":"12"}##-->
 
 <!-- /usr/local/php/php-7.4/bin/php /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web user_orders.tpl -->
-
+<!-- php7.4 www/core/components/migxpageconfigurator/console/mgr_tpl.php web user_orders.tpl -->
 <div id="{$id}" data-mpc-section="user_orders" data-mpc-name="Статистика продаж">
     <div class="container-small">
         <div class="page" data-mpc-field="content">
@@ -52,11 +52,18 @@
 
             <form id="filterForm" data-ff-form="filterDesignForm" class="filter">
                 <input type="hidden" name="configId" value="{$configId}">
-                <div class="filter-column filter-column-design">
+
+                <div class="filter-column">
                     <div class="filter-item">
                         <div class="filter-name">Дизайнов: <span id="total">{$totalResources?:0}</span></div>
                     </div>
-                    {$filters}
+                    <div class="filter-item">
+                        <ul class="filter-list">
+                            {$filters}
+                        </ul>
+                    </div>
+                </div>
+                <div class="filter-column">
                     <div class="filter-item">
                         <div class="filter-name filter-name--select" data-popup-link="datepicker">
                             {if $.get.date == ('' | period: 'week')}
@@ -82,7 +89,7 @@
                     <div class="datepicker-popup__layout">
                         <div class="datepicker-popup__aside">
                             <ul class="datepicker-popup__date">
-                                <li data-period-value="{'' | period: 'week'}" class="active">7 дней</li>
+                                <li data-period-week data-period-value="{'' | period: 'week'}" class="active">7 дней</li>
                                 <li data-period-value="{'' | period: 'month'}">Месяц</li>
                                 <li data-period-value="{'' | period: 'year'}">Год</li>
                             </ul>
@@ -136,7 +143,7 @@
                                 {/if}
                             </ul>
                             <div class="statistic-table__content">
-                                <div class="statistic-table__title">{$pagetitle} <small>(id:{$id})</small></div>
+                                <div class="statistic-table__title">{$types[$root_id]}</div>
                                 <ul class="statistic-table__params">
                                     <li>Создан {$createdon | date: 'd.m.Y H:i'}</li>
                                     <li>Артикул: {$article}</li>
