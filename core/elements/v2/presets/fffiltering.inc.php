@@ -16,11 +16,11 @@ return [
         'tpl' => '#/fffiltering/designers/item.tpl',
 
         'sortby' => ['Profile.createdon' => 'DESC'],
-        'element' => '!pdoUsers',
+        'element' => '@FILE snippets/designer/snippet.getusers.php',
     ],
     'designs' => [
         'configId' => 2,
-        'limit' => 6,
+        'limit' => 12,
 
         'wrapper' => '#/fffiltering/designs/ffouter.tpl',
         'empty' => '#/fffiltering/designs/ffempty.tpl',
@@ -37,10 +37,12 @@ return [
     ],
     'products' => [
         'extends' => 'fffiltering.designs',
+        'limit' => 6,
         'tpl' => '#/fffiltering/products/item.tpl',
     ],
     'orders' => [
         'configId' => 4,
+        'limit' => 6,
         'extends' => 'fffiltering.designs',
         'wrapper' => '#/fffiltering/orders/outer.tpl',
         'empty' => '#/fffiltering/orders/ffempty.tpl',
@@ -48,5 +50,6 @@ return [
         'dateTplOuter' => '',
         'dateTplRow' => '',
         'element' => '@FILE snippets/product/snippet.renderorders.php',
+        'sortby' => ['Resource.createdon' => 'DESC'],
     ]
 ];

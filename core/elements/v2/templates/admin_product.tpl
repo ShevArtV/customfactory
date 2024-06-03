@@ -77,9 +77,10 @@
 <!--Популярные товары-->
 <div data-mpc-section="popular_products" data-mpc-name="Популярные товары">
     <div data-mpc-unwrap="1" data-mpc-snippet="msProducts|popular"></div>
+    <span data-mpc-remove data-mpc-field="title"></span>
     ##if $popular}
     <div class="offset-top">
-        <h2 data-mpc-field="title">Популярные товары</h2>
+        <h2>{$title?:'Популярные товары'}</h2>
 
         <div class="columns">
             ##$popular}

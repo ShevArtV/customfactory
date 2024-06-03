@@ -1,7 +1,7 @@
 <!--##{"templatename":"Модерация дизайнеров","pagetitle":"Страница Модерации дизайнеров","icon":"icon-tasks", "extends": "12"}##-->
 
 <!-- /usr/local/php/php-7.4/bin/php /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web moderate_users.tpl -->
-
+<!-- php7.4 www/core/components/migxpageconfigurator/console/mgr_tpl.php web moderate_users.tpl -->
 <div id="{$id}" data-mpc-section="moderate_users" data-mpc-name="Модерация дизайнеров">
     <div data-mpc-unwrap="1" data-mpc-snippet="!ffFiltering|designers">
         <p class="page input-group" data-mpc-chunk="fffiltering/designers/ffempty.tpl">Дизайнеров удовлетворяющих заданным параметрам не найдено.</p>
@@ -50,7 +50,7 @@
                             <label class="">Оферта:</label>
                             <div class="js-custom-select">
                                 <select class="" data-ff-filter="{$key}" name="{$key}">
-                                    <option value="" data-mpc-attr="{!$.get[$key] ? 'selected' : ''}">Не важно</option>
+                                    <option value="" data-mpc-attr="{!$.get[$key] ? 'selected' : ''}">Все</option>
                                     {$options}
                                     <div data-mpc-chunk="fffiltering/designers/ffoptionoffer.tpl" data-mpc-remove="1" data-mpc-unwrap="1">
                                         <option value="{$value}"
@@ -169,12 +169,28 @@
                                             оферты: {$extended[$offerPageKey] ? '<span data-copy title="Нажмите для копирования">'~$extended[('offerPageKey' | placeholder)]~'</span>' : '<span class="red">Не принята</span>'}
                                         </li>
                                         <li>
-                                            Фактический
-                                            адрес: {$address_fact ?'<span data-copy title="Нажмите для копирования">'~$zip_fact~', '~$address_fact~'</span>': '<span class="red">Не указано</span>'}
+                                            {if $address_fact}
+                                                {if $zip_fact}
+                                                    {set $address_fact = '<span data-copy title="Нажмите для копирования">'~$zip_fact~', '~$address_fact~'</span>'}
+                                                {else}
+                                                    {set $address_fact = '<span data-copy title="Нажмите для копирования">'~$address_fact~'</span>'}
+                                                {/if}
+                                            {else}
+                                                {set $address_fact = '<span class="red">Не указано</span>'}
+                                            {/if}
+                                            Фактический адрес: {$address_fact}
                                         </li>
                                         <li>
-                                            Адрес для
-                                            корреспонденции: {$address ?'<span data-copy title="Нажмите для копирования">'~$zip~', '~$address~'</span>': '<span class="red">Не указано</span>'}
+                                            {if $address}
+                                                {if $zip}
+                                                    {set $address = '<span data-copy title="Нажмите для копирования">'~$zip~', '~$address~'</span>'}
+                                                {else}
+                                                    {set $address = '<span data-copy title="Нажмите для копирования">'~$address~'</span>'}
+                                                {/if}
+                                            {else}
+                                                {set $address = '<span class="red">Не указано</span>'}
+                                            {/if}
+                                            Адрес для корреспонденции: {$address}
                                         </li>
                                     </ul>
                                 </div>
@@ -190,8 +206,16 @@
                                             паспорта: {$pass_num ?'<span data-copy title="Нажмите для копирования">'~$pass_num~'</span>': '<span class="red">Не указано</span>'}
                                         </li>
                                         <li>
-                                            Кем и когда
-                                            выдан: {$extended[pass_where] ?'<span data-copy title="Нажмите для копирования">'~$extended[pass_date]~', '~$extended[pass_where]~'</span>': '<span class="red">Не указано</span>'}
+                                            {if $extended.pass_where}
+                                                {if $extended.pass_date}
+                                                    {set $extended.pass_where = '<span data-copy title="Нажмите для копирования">'~$extended.pass_date~', '~$extended.pass_where~'</span>'}
+                                                {else}
+                                                    {set $extended.pass_where = '<span data-copy title="Нажмите для копирования">'~$extended.pass_where~'</span>'}
+                                                {/if}
+                                            {else}
+                                                {set $extended.pass_where = '<span class="red">Не указано</span>'}
+                                            {/if}
+                                            Кем и когда выдан: {$extended.pass_where}
                                         </li>
                                         <li>
                                             Код
@@ -334,7 +358,7 @@
                                         </li>
                                         <li>
                                             <div class="js-custom-select select-pill">
-                                                {set $statuses = ('statuses' | placeholder)}
+                                                {set $statuses = $statuses ?: ('statuses' | placeholder)}
                                                 {set $allow = $statuses['designer'][$status]['allow']}
                                                 <select class="" name="status">
                                                     {foreach $statuses['designer'] as $id => $data}

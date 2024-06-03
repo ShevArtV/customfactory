@@ -53,12 +53,11 @@
                         </div>
 
                     </div>
-
                     <div class="column col-4 md-col-12 md-order-1">
                         <div class="blockquote ##$_modx->user.status == 2 ? '' : 'd-none'}">
                             Ваши данные успешно прошли модерацию. Для внесения изменений обратитесь в <a href="{51973 | resource: 'content'}">техническую поддержку</a>.
                         </div>
-                        <div class="blockquote ##$_modx->user.status == 1 ? '' : 'd-none'}">
+                        <div class="blockquote blockquote_warning ##$_modx->user.status == 1 ? '' : 'd-none'}">
                             Ваши данные проходят модерацию. О результатах Вы получите уведомление.
                         </div>
                         <div class="blockquote ##$_modx->user.status == 3 ? '' : 'd-none'}">
@@ -239,7 +238,7 @@
 
                                 <div class="input-group">
                                     ##set $offerPageKey = 'offer'~(51976 | resource: 'introtext')}
-                                    ##$offerDate = $extended[$offerPageKey]}
+                                    ##set $offerDate = $extended[$offerPageKey]}
                                     <label class="input-label">Дата принятия оферты*</label>
                                     <input type="text" class="input" value="##$offerDate}">
                                 </div>
@@ -481,7 +480,7 @@
         </div>
     </form>
     <div id="modal-change-pass" aria-hidden="true" class="modal">
-        <form data-si-preset="editpass" class="modal-main modal-main_sm">
+        <form data-si-preset="editpass" data-si-form="editpassForm" class="modal-main modal-main_sm">
             <div class="modal-close" data-modal-close></div>
             <div class="modal-title">Изменение пароля</div>
             <div class="input-group">

@@ -33,7 +33,7 @@ class StatisticBase
         ];
         $this->url = '';
         $this->query = [];
-        $this->dateFrom = date('Y-m-d', time() - 86400);
+        $this->dateFrom = date('Y-m-d', time() - (3 * 86400));
         $this->now = date('Y-m-d');
         if (!$this->modx->addPackage('salesstatistics', $this->corePath . 'components/salesstatistics/model/')) {
             return false;

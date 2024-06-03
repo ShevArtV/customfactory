@@ -1,7 +1,7 @@
 <!--##{"templatename":"Загрузка дизайна","pagetitle":"Страница Загрузки дизайна","icon":"icon-upload", "extends": "12"}##-->
 
 <!-- /usr/local/php/php-7.4/bin/php /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web loaddesign.tpl -->
-
+<!-- php7.4 www/core/components/migxpageconfigurator/console/mgr_tpl.php web loaddesign.tpl -->
 <div class="container-medium" id="{$id}" data-mpc-section="load_design_text" data-mpc-name="Текст на странице загрузки">
     <div class="page" data-mpc-field="content">
         Загрузите файлы с дизайном товара, который вы сделали, в сервис.
@@ -17,8 +17,8 @@
 
 <div class="offset-top" data-mpc-section="load_design_form" data-mpc-name="Форма загрузки дизайна">
     <form method="post" enctype="multipart/form-data" data-si-form="uploadQuizForm" id="uploadQuizForm" data-si-preset="upload_quiz" data-si-nosave>
-        <input type="hidden" name="data[pagetitle]" value="Дизайн ##$_modx->user.fullname} от ##'' | date: 'd_m_Y H_i_s'}">
-        <input type="hidden" name="data[alias]" value="design-##'' | date: 'd-m-Y-H-i-s'}">
+        <input type="hidden" name="data[pagetitle]" value="Дизайн ##$_modx->user.fullname} от ">
+        <input type="hidden" name="data[alias]" value="design-">
         <input type="hidden" name="data[createdby]" value="{$_modx->user.id}">
         <input type="hidden" name="data[designer]" value="{$_modx->user.fullname}">
         <input type="hidden" name="data[status]" value="0">
@@ -232,7 +232,7 @@
         </div>
 
         <div class="btn-footer">
-            <button data-qf-btn="prev" class="btn btn--blue" type="button">Назад</button>
+            <button data-qf-btn="prev" class="btn btn--line" type="button">Назад</button>
             <button data-qf-btn="next" class="btn" type="button">Далее</button>
             <div data-qf-btn="reset" class="v_hidden">
                 <button class="btn" type="reset">Загрузить новый</button>

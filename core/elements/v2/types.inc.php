@@ -37,8 +37,8 @@ return [
             'className' => 'IndexingStatistic'
         ],
         'filtering' => [
-            'path' => 'components/flatfilters/handlers/filtering/filteringproducts.class.php',
-            'className' => 'FilteringProducts'
+            'path' => 'elements/v2/flatfilters/filtering/filteringstatistic.php',
+            'className' => 'FilteringStatistic'
         ]
     ]
 ];

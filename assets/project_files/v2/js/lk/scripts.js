@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     checked = Boolean(item.querySelector('[name="colors"]').value);
                     break;
                 case '5':
-                    checked = Boolean(item.querySelector('[name="introtext"]').value);
+                    checked = Boolean(item.querySelector('[name="data[introtext]"]').value);
                     break;
             }
             step.classList[checked ? 'add' : 'remove']('complete');
@@ -110,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modalShow(e, target) {
             if (typeof Fancybox !== 'undefined') {
                 e.preventDefault();
+                target.dispatchEvent(new CustomEvent('modal:show', {bubbles: true}));
                 Fancybox.show([{src: target.dataset.modalShow, type: "inline"}]);
             }
         },
@@ -118,11 +119,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 Fancybox.close();
             }
         },
-        checkMaxColors(root, target) {
+        checkMaxColors(root, target = null) {
             const leftTextBlock = document.querySelector('[data-js-left]');
             const colors = root.querySelectorAll('[data-color]:checked');
             if (colors.length > 3) {
-                target.checked = false;
+                target && (target.checked = false)
                 SendIt.Notify.error('Выбрано максимальное количество цветов.');
             } else if (colors.length === 3) {
                 leftTextBlock && (leftTextBlock.textContent = 'Выбраны все цвета')
@@ -213,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const blockquotes = target.querySelectorAll('.blockquote');
             fields && fields.forEach(field => field.disabled = true)
             blockquotes && blockquotes.forEach(el => el.classList.add('d-none'));
-            target.querySelector('.blockquote_warning').classList.remove('d-none');
+            target.querySelector('.blockquote_warning') && target.querySelector('.blockquote_warning').classList.remove('d-none');
         },
         async updateFiltersView() {
             const selectAll = document.querySelector('[data-select-all]');
@@ -300,6 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
             workflow && (workflow.innerHTML = data.html);
             (typeof Fancybox !== 'undefined') && Fancybox.show([{src: '#workflow', type: "inline"}]);
             CustomSelect.create(project.customSelectConfig);
+            Fancybox.bind("[data-fancybox]", {});
             SendIt?.FileUploaderFactory?.addInstances(workflow);
         },
         insertProducts(data) {
@@ -326,12 +328,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 params.delete('parent');
                 window.history.replaceState({}, '', url.split('?')[0] + '?' + params.toString());
             }
-            if(parent && type) {
+            if (parent && type) {
                 firstStep.classList.add('complete');
             }
             return {parent, type}
+        },
+        clearReason() {
+            const commentModal = document.querySelector('#modal-comment');
+            commentModal && (commentModal.querySelector('textarea[name="content"]').value = '');
         }
     }
+
+    document.addEventListener('modal:show', async(e) => {
+        if(e.target.dataset.modalShow === '#modal-tag'){
+            const modal = document.querySelector(e.target.dataset.modalShow);
+            const queryInput = modal.querySelector('input[name="query"]');
+            if(queryInput){
+                queryInput.value = '';
+                SendIt?.setComponentCookie('sitrusted', '1');
+                await SendIt?.Sending?.prepareSendParams(queryInput, queryInput.dataset.siPreset, 'input');
+            }
+        }
+    })
 
     // кастомный селект
     CustomSelect.create(project.customSelectConfig);
@@ -460,6 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 
     document.addEventListener('ff:results:loaded', (e) => {
+        e.detail.data.getDisabled = 0;
         CustomSelect.create(project.customSelectConfig);
         const updField = document.querySelector('[name="upd"]');
         const total = document.querySelector('[data-total]');
@@ -489,6 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'removeFile':
                 const item = target.closest('[data-qf-item]');
                 item && project.setComplete(item);
+                result.message = '';
                 break;
 
             case 'add_avatar':
@@ -506,7 +526,6 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'setStatusUsers':
             case 'unactiveUsers':
             case 'updateProduct':
-            case 'changeStatus':
             case 'changeParent':
             case 'changeRootId':
             case 'changeTags':
@@ -514,9 +533,12 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'changeDeleted':
             case 'toRework':
             case 'reloadFiles':
-                project.updateFiltersView();
+                await project.updateFiltersView();
                 break;
-
+            case 'changeStatus':
+                await project.updateFiltersView();
+                project.clearReason();
+                break;
             case 'dataedit':
                 project.changeUserProfileView(target);
                 break;
@@ -537,7 +559,11 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'get_totals':
                 if (result.data && result.data.total) {
                     const totals = document.querySelectorAll('[data-total]');
-                    totals && totals.forEach(total => (total.textContent = result.data.total[total.dataset.total]));
+                    totals && totals.forEach(total => {
+                        result.data.total[total.dataset.total]
+                        && (result.data.total[total.dataset.total] !== '01.01.1970')
+                        && (total.textContent = result.data.total[total.dataset.total]);
+                    });
                 }
                 break;
             case 'upload_quiz':
@@ -691,6 +717,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const {parent, type} = project.getParentAndType();
         if (parent && type) return;
         const {root} = e.detail;
+        const colorModal = document.querySelector('#modal-color');
         const parentRadio = root.querySelectorAll('[name="parent"]');
         const rootIdSelect = root.querySelectorAll('[name="data[root_id]"]');
         const checkboxValues = root.querySelectorAll('[data-checkbox-value]');
@@ -698,6 +725,7 @@ document.addEventListener('DOMContentLoaded', () => {
         parentRadio.length && parentRadio.forEach(el => el.checked = false)
         rootIdSelect.length && rootIdSelect.forEach(el => el.disabled = true)
         checkboxValues.length && checkboxValues.forEach(el => el.remove())
+        colorModal && project.checkMaxColors(colorModal)
         steps.length && steps.forEach(el => {
             el.classList[el.dataset.qfStep !== '1' ? 'remove' : 'add']('active');
         })

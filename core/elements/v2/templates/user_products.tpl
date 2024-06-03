@@ -1,7 +1,7 @@
 <!--##{"templatename":"Товары пользователя","pagetitle":"Страница товаров пользователя","icon":"icon-th", "extends": "12"}##-->
 
 <!-- /usr/local/php/php-7.4/bin/php /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web user_products.tpl -->
-
+<!-- php7.4 www/core/components/migxpageconfigurator/console/mgr_tpl.php web user_products.tpl -->
 <div id="{$id}" data-mpc-section="user_products" data-mpc-name="Товары пользователя">
     <div class="container-medium">
         <div class="page input-group" data-mpc-field="content">
@@ -78,9 +78,9 @@
 
 
                 <div class="product-content">
-                    <div class="product-title">{$pagetitle} <small>(id:{$id})</small></div>
+                    <div class="product-title">{$types[$root_id]}</div>
                     <ul class="product-params">
-                        <li>Создан {$createdon}</li>
+                        <li>Создан {$createdon | date: 'd.m.Y H:i'}</li>
                     </ul>
                     <div class="product-status">{$statusCaption}</div>
                 </div>
@@ -125,7 +125,7 @@
                             <button type="button" class="product-delete"
                                     data-si-event="click"
                                     data-si-preset="changeDeleted"
-                                    data-mpc-attr="{($status in list ['3','4','6','7']) ? 'disabled' : ''}">
+                                    data-mpc-attr="{($status in list ['2','3','4','6','7']) ? 'disabled' : ''}">
                                 Удалить <br>
                                 сейчас
                             </button>
@@ -142,6 +142,7 @@
             <div class="modal-close" data-modal-close=""></div>
             <form data-si-form="modalProductStatus" data-si-nosave enctype="multipart/form-data" class="modal-area modal-content scrollbar">
                 <input type="hidden" name="selected_id[]" value="{$id}">
+                <input type="hidden" name="maxcount" form="reloadFiles" value="{$count_files}">
                 <div class="good-items">
                     {foreach $workflow as $item index=$i}
                         {set $imgPrefix = 'https://311725.selcdn.ru/custom_factory/'}
@@ -166,10 +167,10 @@
                                         {set $images = $item.screens ?: $item.preview}
                                         {foreach ($images | split: '|') as $img index=$i}
                                             <div class="good-image">
-                                                <div class="good-image__img">
+                                                <a href="{$imgPrefix}{$img}" data-fancybox="gallery-{$id}" class="good-image__img">
                                                     <img src="{$imgPrefix}{$img}" alt="">
-                                                </div>
-                                                <div class="good-image__title">{$img}</div>
+                                                </a>
+                                                <a href="{$imgPrefix}{$img}" download="" class="good-image__title">{$img}</a>
                                             </div>
                                         {/foreach}
                                     </div>
@@ -185,7 +186,7 @@
                                             </div>
                                         {/if}
                                         {if $item.moderator_comment}
-                                            <div class="good-report">
+                                            <div class="good-report good-report__right">
                                                 <div class="good-report__date">{$item.moderator_date}</div>
                                                 <div class="good-report__quote">
                                                     {$item.moderator_comment}
@@ -200,7 +201,6 @@
                     <div class="good-item">
                         <div class="columns">
                             <div class="column col-6 md-col-12">
-                                <input type="hidden" name="maxcount" form="reloadFiles" value="{$count_files}">
                                 <div data-fu-wrap data-si-preset="upload_design" data-si-nosave>
                                     <input type="hidden" name="filelist" form="reloadFiles" data-fu-list>
                                     <div data-fu-progress=""></div>

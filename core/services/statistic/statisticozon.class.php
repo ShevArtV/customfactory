@@ -14,15 +14,13 @@ class StatisticOzon extends StatisticBase
         ];
         $this->headers = array_merge($this->headers, $headers);
         $this->url = 'https://api-seller.ozon.ru/v3/posting/fbs/';
-        //$this->url = 'https://api-seller.ozon.ru/v3/posting/fbs/unfulfilled/';
         $this->method = 'list';
         $now = date('d.m.Y');
         $nowTime = strtotime($now);
-        //$this->dateFrom = date('Y-m-d\TH:i:s\Z', strtotime('2023-12-01'));
-        $this->dateFrom = date('Y-m-d\TH:i:s\Z', $nowTime - 86400);
+        //$this->dateFrom = date('Y-m-d\TH:i:s\Z', strtotime('2024-04-21'));
+        $this->dateFrom = date('Y-m-d\TH:i:s\Z', $nowTime - 15 * 86400);
 
         $this->now = date('Y-m-d\TH:i:s\Z', $nowTime);
-        //$this->now = date('Y-m-d\TH:i:s\Z', strtotime('2023-10-05'));
         $this->count = 0;
         $this->limit = 1000;
         $this->query = [
@@ -40,22 +38,6 @@ class StatisticOzon extends StatisticBase
                 'financial_data' => false
             ]
         ];
-        /*$this->query = [
-            'dir' => 'ASC',
-            'filter' => [
-                'cutoff_from' => $this->dateFrom,
-                'status' => '',
-                'cutoff_to' => $this->now
-            ],
-            'limit' => $this->limit,
-            'offset' => 0,
-            'translit' => true,
-            'with' => [
-                'analytics_data' => false,
-                'financial_data' => false
-            ]
-        ];*/
-
     }
 
     public function run($next = false)

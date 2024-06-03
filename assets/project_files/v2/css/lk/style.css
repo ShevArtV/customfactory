@@ -1797,6 +1797,7 @@ h3 {
 
 .columns-list {
   columns: 3;
+  position:relative
 }
 
 .columns-list-2 {
@@ -2502,6 +2503,7 @@ h3 {
 
 .designer-card__info li span {
   flex-shrink: 0;
+  max-width: 100%;
 }
 
 .designer-card__footer {
@@ -2743,6 +2745,8 @@ h3 {
   height: 140px;
   display: flex;
   flex-shrink: 0;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 @media (max-width: 1023px) {
@@ -2965,7 +2969,8 @@ h3 {
   margin-left: auto;
 }
 
-.good-report:nth-child(even) .good-report__quote::before {
+.good-report:nth-child(even) .good-report__quote::before,
+.good-report__right .good-report__quote::before {
   left: auto;
   right: -4px;
   transform: scaleX(-1);
@@ -3011,7 +3016,6 @@ h3 {
 }
 
 .good-image__img {
-  height: 145px;
   display: flex;
 }
 
@@ -4248,4 +4252,8 @@ input[disabled], textarea[disabled], select[disabled] {
 .disabled {
   pointer-events: none;
   opacity: .5;
+}
+
+button[disabled]{
+  pointer-events: none;
 }

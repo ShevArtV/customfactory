@@ -7,7 +7,7 @@ return [
         'successMessage' => 'Вы успешно зарегистрированы. Подтвердите email для активации учётной записи.',
 
         'fiarSubject' => 'Активация пользователя',
-        'fiarFrom' => 'email@domain.ru',
+        'fiarFrom' => 'robot@customfactory.ru',
         'fiarTpl' => 'siActivateEmail',
 
         'activation' => 1,
@@ -61,7 +61,7 @@ return [
         'validate' => 'email:required:userNotExists',
 
         'fiarSubject' => 'Восстановление пароля',
-        'fiarFrom' => 'email@domain.ru',
+        'fiarFrom' => 'robot@customfactory.ru',
         'fiarTpl' => 'siResetPassEmail',
 
         'email.vTextRequired' => 'Укажите email.',
@@ -199,6 +199,8 @@ return [
     ],
     'reloadFiles' => [
         'hooks' => '',
+        'validate' => 'filelist:required',
+        'filelist.vTextRequired' => 'Загрузите новые макеты',
         'snippet' => '@FILE snippets/product/snippet.reloadfiles.php',
         'clearFieldsOnSuccess' => 1,
     ],
@@ -240,6 +242,7 @@ return [
     ],
     'changeStatus' => [
         'extends' => 'updateProduct',
+        'clearFieldsOnSuccess' => 0,
     ],
     'changeParent' => [
         'extends' => 'updateProduct',

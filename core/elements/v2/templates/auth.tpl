@@ -1,7 +1,7 @@
 <!--##{"templatename":"Авторизация","pagetitle":"Страница Авторизации","icon":"icon-sign-in"}##-->
 
 <!-- /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web auth.tpl -->
-
+<!-- php7.4 www/core/components/migxpageconfigurator/console/mgr_tpl.php web auth.tpl -->
 <div id="{$id}" data-mpc-section="auth" data-mpc-name="Авторизация" class="showcase">
     <div class="container">
         <div class="login-form">

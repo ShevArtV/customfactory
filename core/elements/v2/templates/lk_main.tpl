@@ -173,11 +173,16 @@
             </div>
             <div data-tab-wrapper data-mpc-snippet="getFAQ|default">
                 <div data-mpc-unwrap="1" data-mpc-chunk="getfaq/default/wrap.tpl">
+                    {if $nav}
                     <div class="round-tabs">
                         {$nav}
-                        <button data-tab-target="{$type}" data-mpc-remove="1" type="button" class="round-tabs__item {$active ? 'active' : ''}"
-                                data-mpc-chunk="getfaq/default/nav_item.tpl">{$typeName}</button>
+                        <div data-mpc-chunk="getfaq/default/nav_item.tpl" data-mpc-unwrap="1" data-mpc-remove="1">
+                            {if $typeName}
+                                <button data-tab-target="{$type}" type="button" class="round-tabs__item {$active ? 'active' : ''}">{$typeName}</button>
+                            {/if}
+                        </div>
                     </div>
+                    {/if}
                     <div class="faq-tab-wrapper">
                         {$tabs}
                         <div data-tab-item="{$type}" class="faq-tab {$active ? 'active' : ''}" data-mpc-remove="1" data-mpc-chunk="getfaq/default/tab.tpl">

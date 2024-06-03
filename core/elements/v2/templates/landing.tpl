@@ -1,7 +1,7 @@
 <!--##{"templatename":"Посадочная страница","pagetitle":"Посадочная страница","icon":"icon-home"}##-->
 
 <!-- /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web landing.tpl -->
-
+{* php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/components/migxpageconfigurator/console/slice_tpl.php web landing.tpl *}
 <!--УТП-->
 <div id="{$id}" data-mpc-section="lp_utp" data-mpc-name="УТП" class="showcase">
     <div class="container">

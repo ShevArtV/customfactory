@@ -6,6 +6,11 @@ use \PhpOffice\PhpSpreadsheet\IOFactory;
 
 class Product extends Base
 {
+
+    /**
+     * @var bool
+     */
+    private bool $setLog = false;
     /**
      * @var string
      */
@@ -39,7 +44,7 @@ class Product extends Base
 
     public function getDesignTemplates($prohibited_categories = '9999999999'): array
     {
-        $cacheKey = 'getDesignTemplates::' . $prohibited_categories;
+       $cacheKey = 'getDesignTemplates::' . $prohibited_categories;
         if ($output = $this->modx->cacheManager->get($cacheKey)) {
             return $output;
         }
@@ -114,6 +119,23 @@ class Product extends Base
         return $output;
     }
 
+    protected function getTagLabel(string $tag): int
+    {
+        $q = $this->modx->newQuery('TaggerTag');
+        $q->select('label');
+        $q->where(['tag' => $tag]);
+        $q->prepare();
+        $tstart = microtime(true);
+        if ($q->prepare() && $q->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+            $result = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
+            return (int)$result[0];
+        }
+        return 0;
+
+    }
+
     public function prepareFiles(array $filelist, int $rid, $folder = 'loadtoselectel/', $field = 'temp_files'): void
     {
         $senditTempPath = $this->modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');
@@ -162,6 +184,8 @@ class Product extends Base
                     OR JSON_SEARCH(Data.color, 'one', :color) IS NOT NULL
                     OR msProduct.pagetitle LIKE :pagetitle
                     OR Data.article LIKE :article 
+                    OR Data.article_oz LIKE :article 
+                    OR Data.article_wb LIKE :article 
                     OR Profile.profile_num LIKE :profileNum)                    
             "
         );
@@ -171,6 +195,7 @@ class Product extends Base
 
     public function createProduct(array $productData): array
     {
+        $log['front'] = $productData;
         $output = [
             'success' => false,
             'msg' => 'Произошла ошибка при создании дизайна.'
@@ -184,25 +209,81 @@ class Product extends Base
             return $output;
         }
 
-        $defaultProductData = $rootProduct->toArray();
-        unset($defaultProductData['id'], $defaultProductData['longtitle']);
-        $defaultProductData['template'] = 13;
-        $productData = array_merge($defaultProductData, $productData);
-        $newProduct = $this->modx->newObject('msProduct', $productData);
-        $newProduct->save();
-        $result = $this->getArticle($newProduct->toArray());
-        if (!$result['success']) {
-            return $result;
+        if(!$productData['tag_label'] && !$productData['tag_label'] = $this->getTagLabel($productData['tags'][0])) {
+            $output['msg'] = 'Не выбран тэг товара.';
+            return $output;
         }
 
-        $newProduct->set('article', $result['article']);
+        $productData['pagetitle'] .= date('d-m-Y H:i:s');
+        $productData['alias'] .= date('d-m-Y-H-i-s');
+        $defaultProductData = $rootProduct->toArray();
+        unset(
+            $defaultProductData['id'],
+            $defaultProductData['longtitle'],
+            $defaultProductData['createdon'],
+            $defaultProductData['editedon'],
+            $defaultProductData['article'],
+            $defaultProductData['createdby'],
+            $defaultProductData['profilenum'],
+            $defaultProductData['designer']
+        );
+        $defaultProductData['template'] = 13;
+        $log['root'] = $defaultProductData;
+        $productData = array_merge($defaultProductData, $productData);
+        if (!$productData['tag_label']) {
+            $q = $this->modx->newQuery('TaggerTag');
+            $q->select('label');
+            $q->where(['tag' => $productData['tags'][0]]);
+            $q->prepare();
+            $tstart = microtime(true);
+            if ($q->prepare() && $q->stmt->execute()) {
+                $this->modx->queryTime += microtime(true) - $tstart;
+                $this->modx->executedQueries++;
+                $result = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
+                $productData['tag_label'] = $result[0];
+            }
+            if (!$productData['tag_label']) {
+                $output['msg'] = 'Не указан лейбл тэга.';
+                return $output;
+            }
+        }
+        $log['mixed'] = $productData;
+        /** @var \msProduct $newProduct */
+        $newProduct = $this->modx->newObject('msProduct', $productData);
         $newProduct->save();
+        if (strpos($productData['pagetitle'], $productData['designer']) === false) {
+            $log['id'] = $newProduct->get('id');
+            $log['user_id'] = $this->modx->user->get('id');
+            $logPath = $this->basePath . 'assets/created-log.txt';
+            file_put_contents($logPath, print_r($log, 1) . PHP_EOL, FILE_APPEND);
+            $this->changeOwner($productData['pagetitle'], $newProduct);
+        }
+
+        $this->setModerateLog([
+            'rid' => $newProduct->get('id'),
+            'msg' => 'Дизайн создан',
+            'place' => '\CustomServices\Product',
+            'method' => 'createProduct',
+            'productData' => array_merge($productData, $newProduct->toArray())
+        ]);
 
         return [
             'success' => true,
-            'msg' => 'Дизайн отправлен на модерацию.',
+            'msg' => 'Дизайн ID=' . $newProduct->get('id') . ' отправлен на модерацию.',
             'rid' => $newProduct->get('id')
         ];
+    }
+
+    public function changeOwner(string $pagetitle, \msProduct $product)
+    {
+        preg_match('/^Дизайн(.*?) от.*?/', $pagetitle, $matches);
+        $name = trim($matches[1]);
+        if ($profile = $this->modx->getObject('modUserProfile', ['fullname' => $name])) {
+            $product->set('createdby', $profile->get('internalKey'));
+            $product->set('designer', $profile->get('fullname'));
+            $product->set('profilenum', $profile->get('profile_num'));
+            $product->save();
+        }
     }
 
     public function updateProduct(array $productData): array
@@ -237,6 +318,10 @@ class Product extends Base
             $workflow['moderator_date'] = date('Y-m-d H:i:s');
             $workflow['moderator_comment'] = $productData['content'];
             $workflow['screens'] = $product->get('temp_files');
+            $workflow['preview'] = $product->get('preview');
+            $workflow['print'] = $product->get('print');
+            $workflow['designer_comment'] = $product->get('introtext');
+            $workflow['designer_date'] = $product->get('createdon');
             $productData['temp_files'] = '';
             $this->setWorkflow($workflow, $product);
             $this->toggleMark('rework', $product, 'add');
@@ -244,14 +329,15 @@ class Product extends Base
             $this->toggleMark('rework', $product);
         }
 
-        if($this->modx->user->isMember('Managers') && !$product->get('manager_id')) {
+        if ($this->modx->user->isMember('Managers') && !$product->get('manager_id')) {
             $productData['manager_id'] = $this->modx->user->get('id');
         }
-        if($this->modx->user->isMember('Moderators') && !$product->get('moderator_id')) {
+        if ($this->modx->user->isMember('Moderators') && !$product->get('moderator_id')) {
             $productData['moderator_id'] = $this->modx->user->get('id');
         }
 
         if ($productData['deleted']) {
+            $this->setLog = true;
             $productData['delete_at'] = date('d.m.Y', strtotime('+7 days'));
         }
 
@@ -261,6 +347,16 @@ class Product extends Base
                 $productData['root_id'] = $monitoredFields['root_id'];
             }
         }
+
+        if ($productData['status'] == 3) {
+            $result = $this->getArticle($product->toArray());
+            if (!$result['success']) {
+                return $result;
+            }
+            $productData['article'] = $result['article'];
+        }
+
+
         $productData['editedon'] = time();
         $product->fromArray($productData);
         $product->save();
@@ -269,6 +365,16 @@ class Product extends Base
 
         $this->flatfilters->removeResourceIndex((int)$productData['id']);
         $this->flatfilters->indexingDocument($product);
+
+        if ($this->setLog) {
+            $this->setModerateLog([
+                'rid' => (int)$productData['id'],
+                'msg' => 'Данные дизайна изменены',
+                'place' => '\CustomServices\Product',
+                'method' => 'updateProduct',
+                'productData' => array_merge($productData, $product->toArray())
+            ]);
+        }
 
         return [
             'success' => true,
@@ -350,19 +456,28 @@ class Product extends Base
             if ($method === 'add') {
                 $extended[$mark] = 1;
             } else {
-                unset($extended[$mark]);
+                $extended[$mark] = 0;
             }
             $profile->set('extended', $extended);
             $profile->save();
         }
     }
 
-    public function removeProduct(\msProduct $product): array
+    public function removeProduct(array $productData): array
     {
-        $id = $product->get('id');
-        $preview = $product->get('preview') ? explode('|', $product->get('preview')) : [];
-        $print = $product->get('print') ? explode('|', $product->get('print')) : [];
-        $workflow = $product->getTVValue('workflow') ? json_decode($product->getTVValue('workflow'), true) : [];
+        $id = $productData['id'];
+        $preview = $productData['preview'] ? explode('|', $productData['preview']) : [];
+        $print = $productData['print'] ? explode('|', $productData['print']) : [];
+        $workflow = [];
+        $q = $this->modx->newQuery('modTemplateVarResource');
+        $q->select('value');
+        $q->where(['tmplvarid' => 15, 'contentid' => $id]);
+        $q->limit(1);
+        if($q->prepare() && $q->stmt->execute()){
+            $result = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
+            $workflow = $result[0] ? json_decode($result[0], true) : [];
+        }
+
         $files = array_merge($preview, $print);
         if (!empty($files)) {
             foreach ($files as $path) {
@@ -388,7 +503,17 @@ class Product extends Base
 
         $this->flatfilters->removeResourceIndex($id);
 
-        $product->remove();
+        $this->setModerateLog([
+            'rid' => $id,
+            'msg' => 'Дизайн удалён по расписанию.',
+            'place' => '\CustomServices\Product',
+            'method' => 'removeProduct',
+            'productData' => $productData
+        ]);
+
+        if($product = $this->modx->getObject('msProduct', $id)){
+            $product->remove();
+        }
 
         return [
             'success' => true,
@@ -479,24 +604,18 @@ class Product extends Base
         switch ($key) {
             case 'status':
                 if ($oldValue !== $newValue && is_array($this->statuses['product'][$oldValue]) && !in_array($newValue, $this->statuses['product'][$oldValue]['allow'])) {
-                    $this->modx->log(1, print_r($oldValue, 1));
-                    $this->modx->log(1, print_r($newValue, 1));
                     $newValue = $oldValue;
                 }
-                $setLog = $newValue !== $oldValue;
+                $this->setLog = $newValue !== $oldValue;
                 break;
 
             case 'tags':
             case 'color':
-                $setLog = !empty(array_diff($newValue, $oldValue));
+                $this->setLog = !empty(array_diff($newValue, $oldValue));
                 break;
             default:
-                $setLog = $newValue !== $oldValue;
+                $this->setLog = $newValue !== $oldValue;
                 break;
-        }
-
-        if ($setLog) {
-            $this->setModerateLog($key, $oldValue, $newValue, $rid);
         }
 
         return $newValue;
@@ -511,7 +630,26 @@ class Product extends Base
                 'msg' => 'Не установлен порядковый номер дизайна.'
             ];
         }
-        $articlePrefix = $productData['article'];
+
+        if (!$root = $this->modx->getObject('msProductData', $productData['root_id'])) {
+            return [
+                'success' => false,
+                'msg' => 'Не удалось получить шаблонный товар.'
+            ];
+        }
+        if (!$productData['profilenum']) {
+            if ($profile = $this->modx->getObject('modUserProfile', ['internalKey' => $productData['createdby']])) {
+                $productData['profilenum'] = $profile->get('profile_num');
+            } else {
+                return [
+                    'success' => false,
+                    'msg' => 'Не удалось получить номер ЛК.',
+                    'article' => ''
+                ];
+            }
+        }
+
+        $articlePrefix = $root->get('article');
         $number = trim($setting->get('value'));
         $profile_num = $productData['profilenum'];
         $tagLabel = trim($productData['tag_label']);
@@ -564,6 +702,7 @@ class Product extends Base
             return $properties['resources'];
         }
         $resources = explode(',', $properties['resources']);
+
         $lists = [
             'categories' => $this->getParents(),
             'types' => $this->getProductTypes(),
@@ -608,17 +747,14 @@ class Product extends Base
         if (!$properties['tpl']) {
             return $properties['resources'];
         }
-        $resources = explode(',', $properties['resources']);
+
+        $resources = !is_array($properties['resources']) ? explode(',', $properties['resources']) : $properties['resources'];
         $html = '';
         $statistic = $this->getStatistic($resources);
 
         $q = $this->modx->newQuery('msProduct');
         $q->setClassAlias('Product');
         $q->leftJoin('msProductData', 'Data');
-        $q->leftJoin('SalesStatisticsItem', 'Sales', 'Sales.product_id = Data.id');
-        $q->leftJoin('SalesStatisticsItem', 'Returns', 'Returns.product_id = Data.id');
-        $q->leftJoin('SalesStatisticsItem', 'Orders', 'Orders.product_id = Data.id');
-        $q->leftJoin('SalesStatisticsItem', 'Pays', 'Pays.product_id = Data.id');
         $q->select([
             'Product.pagetitle AS pagetitle',
             'Product.id AS id',
@@ -638,10 +774,9 @@ class Product extends Base
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
-
             $result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
             foreach ($result as $row) {
-                $row = array_merge($properties, $row, $statistic[$row['id']]);
+                $row = array_merge($properties, $row, $statistic[$row['id']] ?? []);
                 $html .= $this->pdoTools->getChunk($properties['tpl'], $row);
             }
         }
@@ -669,16 +804,21 @@ class Product extends Base
             $end = strtotime($dates[1]);
             $q->andCondition("date BETWEEN $start AND $end");
         }
+        if ($_REQUEST['market']) {
+            $q->andCondition(['market:IN' => !is_array($_REQUEST['market']) ? explode(',', $_REQUEST['market']) : $_REQUEST['market']]);
+        }
+        if ($_REQUEST['sortby']) {
+            $sortby = explode('|', $_REQUEST['sortby']);
+            $q->sortby($sortby[0], $sortby[1]);
+        }
         if (!$total) {
             $q->groupby('product_id');
         }
-        $q->prepare();
         $tstart = microtime(true);
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
             $result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
-
             foreach ($result as $item) {
                 $prefix = $total ? str_replace('_', '', $total) : '';
                 $item[$total . 'min'] = date('d.m.Y', $item[$total . 'min']);
@@ -728,7 +868,7 @@ class Product extends Base
         $statuses = $this->getStatuses();
         $types = $this->getProductTypes();
 
-        if(empty($workflow)) {
+        if (empty($workflow)) {
             $workflow[] = [
                 'print' => $productData['print'],
                 'preview' => $productData['preview'],
@@ -736,6 +876,16 @@ class Product extends Base
             ];
         }
 
+        if (!$productData['count_files']) {
+            if (!$root = $this->modx->getObject('msProductData', $productData['root_id'])) {
+                return [
+                    'success' => false,
+                    'msg' => 'Шаблонный товар не найден',
+                    'html' => ''
+                ];
+            }
+            $productData['count_files'] = $root->get('count_files');
+        }
         $params = [
             'id' => $id,
             'tags' => $productData['tags'],
@@ -789,6 +939,7 @@ class Product extends Base
         $q->setClassAlias('Data');
         $q->select('Data.id');
         $q->where(['Data.article:IN' => $articles]);
+        $q->orCondition(['Data.id:IN' => $articles]);
         $tstart = microtime(true);
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;

@@ -142,7 +142,7 @@
                     <img src="assets/project_files/v2/img/lk/logo-text.svg" alt="" width="136" height="13" class="logotype-text">
                 </a>
 
-                <div class="burger lg-visible js-sidebar-toggle"></div>
+                <div class="burger lg-visible js-sidebar-toggle" data-toggle="#sidebar"></div>
 
                 <div class="header-lk lg-hidden">
 

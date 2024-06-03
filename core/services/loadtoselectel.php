@@ -58,30 +58,93 @@ class LoadToSelectel extends Base
             $this->modx->log(1, '[LoadToSelectel::initialize] Не удалось получить медиа источник.');
             return false;
         }
-        if (!$parents = $this->getParents()) {
-            $this->modx->log(1, '[LoadToSelectel::initialize] Не удалось получить список родителей.');
-            return false;
-        }
 
-        $products = $this->getProducts(array_keys($parents));
+        $products = $this->getProducts();
         $this->prepareLoading($products);
+        //$this->modx->log(1, print_r('[LoadToSelectel::initialize] Загрузка завершена', 1));
         return true;
     }
 
+    public function generatePreviews(): int
+    {
+        $products = $this->getNoPreviewProducts();
+        $c = 0;
+        foreach ($products as $product) {
+            $filelist = explode('|', $product->get('print'));
+            if (empty($filelist)) {
+                continue;
+            }
+
+            $rid = $product->get('id');
+            $this->modx->log(1, print_r($rid, 1));
+            $createdby = $product->get('createdby');
+            $internalPath = $this->preparePath($createdby . '/' . $rid . '/{day}-{month}-{year}-{time}/');
+            if (!$filesData = $this->getProductPreviews($filelist)) {
+                continue;
+            }
+
+            if (!$fileInfo = $this->uploadFiles($filesData, $internalPath)) {
+                continue;
+            }
+            $files = [];
+            foreach ($fileInfo as $info) {
+                $files[] = $info['path'];
+            }
+
+            if (!empty($files)) {
+                $product->set('preview', implode('|', $files));
+                $this->removeFiles($filesData);
+                $this->removeEmptyDir(dirname($filesData[0]['tmp_name']));
+                $product->save();
+                $c++;
+            }
+        }
+        return $c;
+    }
+
     /**
-     * @param array $parents
      * @return \xPDOIterator
      */
-    private function getProducts(array $parents): \xPDOIterator
+    private function getNoPreviewProducts(): \xPDOIterator
     {
+        if (!$parents = $this->getParents()) {
+            $this->modx->log(1, '[LoadToSelectel::initialize] Не удалось получить список родителей.');
+        }
+        $parents = array_keys($parents);
+
+
         $q = $this->modx->newQuery('modResource');
         $q->leftJoin('msProductData', 'msProductData', 'modResource.id = msProductData.id');
         $q->where([
-            'msProductData.status:IN' => [0, 7],
             'modResource.parent:IN' => $parents,
             'modResource.class_key' => 'msProduct',
-            'modResource.template' => 13
+            'modResource.template' => 13,
+            'modResource.deleted' => 0,
         ]);
+        $q->andCondition('(msProductData.preview IS NULL)');
+        $q->limit(2);
+        return $this->modx->getIterator('modResource', $q);
+    }
+
+    /**
+     * @return \xPDOIterator
+     */
+    private function getProducts(): \xPDOIterator
+    {
+        if (!$parents = $this->getParents()) {
+            $this->modx->log(1, '[LoadToSelectel::initialize] Не удалось получить список родителей.');
+        }
+        $parents = array_keys($parents);
+
+        $q = $this->modx->newQuery('modResource');
+        $q->leftJoin('msProductData', 'msProductData', 'modResource.id = msProductData.id');
+        $q->where([
+            'modResource.parent:IN' => $parents,
+            'modResource.class_key' => 'msProduct',
+            'modResource.template' => 13,
+            'modResource.deleted' => 0,
+        ]);
+        $q->andCondition('(msProductData.status = 0 OR msProductData.prev_status = 7)');
 
         return $this->modx->getIterator('modResource', $q);
     }
@@ -93,12 +156,25 @@ class LoadToSelectel extends Base
     private function prepareLoading(\xPDOIterator $products): void
     {
         foreach ($products as $product) {
-            $status = $product->get('status') ?: 1;
+            $status = (int)$product->get('status') ?: 1;
+            $prevStatus = (int)$product->get('prev_status') ?: 0;
             $workflow = [];
-            $filelist = $product->get('temp_files');
+            $tempFiles = $product->get('temp_files');
+            $filelist = $tempFiles ? explode('|', $tempFiles) : [];
             $flag = 0;
-            if (empty($filelist)) {
-                $product->remove();
+            if (empty($filelist) && !$product->get('print')) {
+                if ($status === 1 && $prevStatus === 0) {
+                    $product->set('deleted', 1);
+                    $product->save();
+                    $this->setModerateLog([
+                        'rid' => (int)$product->get('id'),
+                        'msg' => 'Товар удалён автоматически из-за отсутствия изображений',
+                        'place' => '\CustomServices\LoadToSelectel',
+                        'method' => 'prepareLoading',
+                        'productData' => $product->toArray()
+                    ]);
+                    $this->flatfilters->removeResourceIndex((int)$product->get('id'));
+                }
                 continue;
             }
 
@@ -106,13 +182,21 @@ class LoadToSelectel extends Base
             $createdby = $product->get('createdby');
             $keys = ['print', 'preview'];
             $internalPath = $this->preparePath($createdby . '/' . $rid . '/{day}-{month}-{year}-{time}/');
-            if (!$filesData = $this->getProductFiles(explode('|', $filelist))) {
+            if (!$filesData = $this->getProductFiles($filelist)) {
                 continue;
             }
 
             foreach ($keys as $key) {
                 $files = [];
                 if (!$fileInfo = $this->uploadFiles($filesData[$key], $internalPath)) {
+                    $this->setModerateLog([
+                        'user_id' => 1,
+                        'rid' => (int)$product->get('id'),
+                        'msg' => $key === 'print' ? 'Не удалось загрузить файлы для печати в облако.' : 'Не удалось загрузить файлы превью в облако.',
+                        'place' => '\CustomServices\LoadToSelectel',
+                        'method' => 'prepareLoading',
+                        'productData' => $product->toArray()
+                    ]);
                     continue;
                 }
 
@@ -126,25 +210,57 @@ class LoadToSelectel extends Base
                     $this->removeFiles($filesData[$key]);
                     $this->removeEmptyDir(dirname($filesData[$key][0]['tmp_name']));
                     $flag++;
+
+                    $this->setModerateLog([
+                        'user_id' => 1,
+                        'rid' => (int)$product->get('id'),
+                        'msg' => $key === 'print' ? 'Файлы для печати загружены в облако.' : 'Файлы превью загружены в облако.',
+                        'place' => '\CustomServices\LoadToSelectel',
+                        'method' => 'prepareLoading',
+                        'productData' => $product->toArray()
+                    ]);
                 }
             }
 
             if ($flag === 2) {
-                if ($status === 7) {
+                if ($prevStatus === 7) {
                     $workflow['designer_date'] = date('Y-m-d H:i:s');
                     $workflow['designer_comment'] = $product->get('introtext');
-                    $status = $product->get('prev_status');
-                    $product->set('prev_status', 7);
-                    $this->setModerateLog('status', 7, $status, $product->get('id'), 'products', $product->get('createdby'));
+                    $product->set('prev_status', 0);
                     $this->setWorkflow($workflow, $product);
+                    $this->setModerateLog([
+                        'user_id' => 1,
+                        'rid' => (int)$product->get('id'),
+                        'msg' => 'Добавлен элемент workflow.',
+                        'place' => '\CustomServices\LoadToSelectel',
+                        'method' => 'prepareLoading',
+                        'productData' => $workflow
+                    ]);
                 }
                 $product->set('status', $status);
                 $product->set('published', 1);
                 $product->set('temp_files', '');
-                $product->set('introtext', '');
                 $product->save();
                 $this->flatfilters->indexingDocument($product);
+                $this->setModerateLog([
+                    'user_id' => 1,
+                    'rid' => (int)$product->get('id'),
+                    'msg' => 'Завершена загрузка файлов в облако.',
+                    'place' => '\CustomServices\LoadToSelectel',
+                    'method' => 'prepareLoading',
+                    'productData' => $product->toArray()
+                ]);
+            }else{
+                $this->setModerateLog([
+                    'user_id' => 1,
+                    'rid' => (int)$product->get('id'),
+                    'msg' => 'Что-то пошло не так при загрузке файлов в облако.',
+                    'place' => '\CustomServices\LoadToSelectel',
+                    'method' => 'prepareLoading',
+                    'productData' => $product->toArray()
+                ]);
             }
+
         }
     }
 
@@ -161,19 +277,25 @@ class LoadToSelectel extends Base
     }
 
     /**
-     * @param array $product
+     * @param array $filelist
      * @return array
      */
     private function getProductFiles(array $filelist): array
     {
         $prints = [];
         $previews = [];
+        $basePath = '/jail/' . $this->basePath;
 
         foreach ($filelist as $item) {
             $preview = $this->modx->runSnippet('pThumb', [
-                'input' => $item,
+                'input' => $basePath . $item,
                 'options' => 'w=249&h=281&zc=1&q=60'
             ]);
+            if ($preview === $item) {
+                $this->modx->log(1, '[LoadToSelectel::getProductFiles] Не удалось сгенерировать превью');
+                return [];
+            }
+
             $prints[] = $this->getFileData($this->basePath . $item);
             $previews[] = $this->getFileData($this->basePath . preg_replace('/^\//', '', $preview));
         }
@@ -186,6 +308,31 @@ class LoadToSelectel extends Base
         ];
     }
 
+    /**
+     * @param array $filelist
+     * @return array
+     */
+    private function getProductPreviews(array $filelist): array
+    {
+        $previews = [];
+        $source = $this->mediaSource->toArray();
+        $basePath = $source['properties']['url']['value'];
+
+        foreach ($filelist as $item) {
+            $preview = $this->modx->runSnippet('pThumb', [
+                'input' => $basePath . $item,
+                'options' => 'w=249&h=281&zc=1&q=60'
+            ]);
+            $this->modx->log(1, print_r($preview, 1));
+            if ($preview === $basePath . $item) {
+                $this->modx->log(1, '[LoadToSelectel::getProductPreviews] Не удалось сгенерировать превью');
+                return [];
+            }
+            $previews[] = $this->getFileData($this->basePath . preg_replace($basePath, '', $preview));
+        }
+
+        return $previews;
+    }
 
     /**
      * @param string $fullPath
@@ -251,6 +398,7 @@ class LoadToSelectel extends Base
                 foreach ($errors as $k => $msg) {
                     $errorMessage .= $k . ': ' . $msg . '. ';
                 }
+                $this->modx->log(1, print_r($internalPath, 1));
                 $this->modx->log(1, '[LoadToSelectel] Can`t upload user file: ' . $originalFilename . '. Error text: ' . $errorMessage);
                 return [];
             }

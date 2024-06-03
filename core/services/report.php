@@ -35,7 +35,7 @@ class Report extends Base
     private array $statuses;
 
     /** @var array $types */
-    private array $types;
+    public array $types;
 
     /** @var array $parents */
     private array $parents;
@@ -45,7 +45,7 @@ class Report extends Base
         parent::initialize();
         $this->statuses = $this->getStatuses();
         $this->sizes = ['M', 'L', 'XL', 'XXL'];
-        $this->tshirtParents = [69138789, 6914097897];
+        $this->tshirtParents = [19, 54754];
         $this->filename = 'report-' . date('d-m-Y-H-i-s');
         $this->setProductTypes();
         $this->setParents();
@@ -54,10 +54,7 @@ class Report extends Base
 
     private function setProductTypes()
     {
-        $products = $this->getProductTypes();
-        foreach ($products as $p) {
-            $this->types[$p['id']] = $p['pagetitle'];
-        }
+        $this->types = $this->getProductTypes();
     }
 
     private function setParents()
@@ -168,24 +165,34 @@ class Report extends Base
         return $output;
     }
 
-    public function getProductData(array $resourceData, int $strNum, int $i = 0): array
+    public function getProductData(array $resourceData, int $strNum, int $j = 0): array
     {
         $output = [];
+
         foreach ($this->names as $i => $name) {
             $index = $this->getColumnIndex($i + 1) . $strNum;
             $output[$index] = $resourceData[$name];
 
             switch ($name) {
                 case 'article_barcode':
-                    $output[$index] = $resourceData['article'] . ' ' . $this->sizes[$i];
+                    if (in_array($resourceData['parent'], $this->tshirtParents)) {
+                        $output[$index] = $resourceData['article'] . ' ' . $this->sizes[$j];
+                    }
                     break;
                 case 'article_oz':
                     if (in_array($resourceData['parent'], $this->tshirtParents)) {
-                        $output[$index] = preg_replace('/^(.*)\/(.*?)-(.*)/', '\1/\2-' . $this->sizes[$i] . '-\3', $resourceData['article']);
+                        $output[$index] = preg_replace('/^(.*)\/(.*?)-(.*)/', '\1/\2-' . $this->sizes[$j] . '-\3', $resourceData['article']);
+                    }
+                    break;
+                case 'article_wb':
+                    if (in_array($resourceData['parent'], $this->tshirtParents)) {
+                        $output[$index] = $resourceData['article'] . '-' . $this->sizes[$j];
                     }
                     break;
                 case 'name_barcode':
-                    $output[$index] = $this->types[$resourceData['root_id']] . ' ' . $resourceData['article'] . ' ' . $this->sizes[$i];
+                    if (in_array($resourceData['parent'], $this->tshirtParents)) {
+                        $output[$index] = $this->types[$resourceData['root_id']] . ' ' . $resourceData['article'] . ' ' . $this->sizes[$j];
+                    }
                     break;
                 case 'status':
                     $output[$index] = str_replace('&nbsp;', '', $this->statuses['product'][$resourceData['status']]['caption']);
@@ -199,10 +206,11 @@ class Report extends Base
                 case 'tags':
                 case 'color':
                     $value = json_decode($resourceData[$name], true);
-                    $output[$index] = is_array($value) ? implode(', ', $value) : $value;
+                    $output[$index] = is_array($value) ? implode(';', $value) : $value;
                     break;
             }
         }
+
         return $output;
     }
 

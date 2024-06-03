@@ -12,7 +12,7 @@ if ($modx->user->get('id') !== 1 && !$modx->getPlaceholder('user_allow_add')) {
 }
 
 $data = json_decode($_POST['data'], true);
-$filelist = isset($_POST['filelist']) ? explode(',', $_POST['filelist']) : [];
+$filelist = $_POST['filelist'] ? explode(',', $_POST['filelist']) : [];
 if($data['count_files'] <= 0 || count($filelist) <= 0 || count($filelist) !== (int)$data['count_files']){
     return $SendIt->error('Вы загрузили недостаточное количество файлов.');
 }

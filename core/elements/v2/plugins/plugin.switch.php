@@ -49,31 +49,59 @@ switch ($modx->event->name) {
         break;
     case 'ffOnBeforeSetFilterConditions':
         if ($modx->user->isMember(['Designers'])) {
-            $conditions[] = '`createdby` = ' . $modx->user->get('id');
+            foreach($conditions as $k => $condition){
+                if(strpos($condition, ':createdby') !== false){
+                    $conditions[$k] = str_replace('>', '=', $condition);
+                    $FlatFilters->tokens['createdby'] = $modx->user->get('id');
+                }
+            }
         }
-        if ($configData['id'] === 2 && $modx->user->isMember(['Moderators', 'Managers'])) {
+        if ($configData['id'] === 2 && $modx->user->isMember(['Managers'])) {
             $conditions[] = '`status` != 7';
         }
+
         $modx->event->returnedValues['conditions'] = $conditions;
         break;
     case 'ffOnBeforeGetFilterValues':
         if ($modx->user->isMember(['Designers'])) {
-            $conditions[] = '`createdby` = ' . $modx->user->get('id');
+            foreach($conditions as $k => $condition){
+                if(strpos($condition, ':createdby') !== false){
+                    $conditions[$k] = str_replace('>', '=', $condition);
+                    $FlatFilters->tokens['createdby'] = $modx->user->get('id');
+                }
+            }
         }
         $modx->event->returnedValues['conditions'] = $conditions;
         break;
     case 'ffOnAfterGetFilterValues':
         if ($configData['id'] === 2) {
             foreach($output as $key => $item){
-                if(!in_array($key, ['color', 'tags'])){
-                    continue;
+                if(in_array($key, ['color', 'tags'])){
+                    $array = $item['values'];
+                    $k = array_search("не задан", $array);
+                    if ($k !== false) {
+                        unset($array[$k]);
+                        array_unshift($array, "не задан");
+                        $output[$key]['values'] = $array;
+                    }
                 }
-                $array = $item['values'];
-                $k = array_search("не задан", $array);
-                if ($k !== false) {
-                    unset($array[$k]);
-                    array_unshift($array, "не задан");
-                    $output[$key]['values'] = $array;
+
+                if($key === 'root_id'){
+                    $q = $modx->newQuery('modResource');
+                    $q->where(['id:IN' => $item['values'], 'class_key' => 'msProduct']);
+                    $q->select('parent, id');
+                    if($q->prepare() && $q->stmt->execute()){
+                        $products = $q->stmt->fetchAll(PDO::FETCH_ASSOC);
+                        $values = [];
+                        $grouped = [];
+                        foreach($products as $product){
+                            $grouped[$product['parent']][] = $product['id'];
+                        }
+                        foreach($grouped as $ids){
+                            $values = array_merge($values, $ids);
+                        }
+                        $output[$key]['values'] = $values;
+                    }
                 }
             }
         }
@@ -119,6 +147,20 @@ switch ($modx->event->name) {
                 $FlatFilters->getTableKeys('ms2_products'),
                 $FlatFilters->getTableKeys('salesstatistics_items')
             );
+        }
+        break;
+
+    case 'OnResourceDelete':
+        if($product = $modx->getObject('msProduct', $id)){
+            $product->set('delete_at', date('d.m.Y', strtotime('+7 days')));
+            $product->save();
+        }
+        break;
+
+    case 'OnResourceUndelete':
+        if($product = $modx->getObject('msProduct', $id)){
+            $product->set('delete_at', '');
+            $product->save();
         }
         break;
 }

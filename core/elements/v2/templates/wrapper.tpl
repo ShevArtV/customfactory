@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
     {* /usr/local/php/php-7.4/bin/php /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/slice_tpl.php web wrapper.tpl *}
+    {* php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/components/migxpageconfigurator/console/slice_tpl.php web wrapper.tpl *}
     {* общие поля сайта *}
     {set $site_url = $_modx->config.site_url}
     {set $site_name = $_modx->config.site_name}

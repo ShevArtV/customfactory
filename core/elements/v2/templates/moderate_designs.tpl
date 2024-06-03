@@ -93,8 +93,9 @@
                     <div class="datepicker-popup__layout">
                         <div class="datepicker-popup__aside">
                             <ul class="datepicker-popup__date">
-                                <li data-period-value="{'' | period: 'week'}" class="active">7 дней</li>
-                                <li data-period-value="{'' | period: 'month'}">Месяц</li>
+                                <li data-period-value="{'' | period: 'week'}" class="active">Последние 7 дней</li>
+                                <li data-period-value="{'' | period: 'month'}">Текущий месяц</li>
+                                <li data-period-value="{'' | period: 'prev_month'}">Предыдущий месяц</li>
                                 <li data-period-value="{'' | period: 'year'}">Год</li>
                             </ul>
                         </div>
@@ -192,7 +193,18 @@
             <div class="columns" data-ff-results>
                 {$resources}
                 <div class="column col-4 md-col-6 sm-col-12" id="product-{$id}" data-mpc-remove="1" data-mpc-chunk="fffiltering/designs/item.tpl">
-                    <div class="card-design">
+                    {if $status == 1 || ($prev_status == 1 && $status == 7)}
+                        {set $class = 'product--new'}
+                    {elseif $status == 2 || ($prev_status == 2 && $status == 7)}
+                        {set $class = 'product--check'}
+                    {elseif $status == 3}
+                        {set $class = 'product--article'}
+                    {elseif $status == 4}
+                        {set $class = 'product--sale'}
+                    {elseif $status == 5 || $status == 6}
+                        {set $class = 'product--cancel'}
+                    {/if}
+                    <div class="card-design {$class}">
                         <div class="card-design__check">
                             <label class="checkbox-label">
                                 <input type="checkbox" class="checkbox" name="selected_id[]" id="sel-product-{$id}" value="{$id}" form="listActionProducts">
@@ -201,7 +213,7 @@
                         </div>
 
 
-                        <ul class="card-design__images" data-load-workflow="{$id}">
+                        <ul class="card-design__images" data-mpc-attr="{if $status == 5} data-modal-show='reject-{$id}' {/if} {if ($status in list [1,2])}data-load-workflow='{$id}'{/if}">
                             {set $previews = $preview | split: '|'}
                             {if $previews}
                                 {foreach $previews as $path}
@@ -211,9 +223,10 @@
                         </ul>
 
                         <div class="card-design__content">
-                            <div class="card-design__title">{$pagetitle} <small>(id:{$id})</small></div>
+                            <div class="card-design__title" data-mpc-attr="{if ($status in list [1,2])}data-load-workflow='{$id}'{/if}">{$designer}</div>
                             <ul class="card-design__params">
-                                <li>Номер ЛК: {$profilenum?:'Не задан'} ({$createdby})</li>
+                                <li>Номер ЛК: {$profilenum?:'Не задан'}</li>
+                                <li>Создан {$createdon | date: 'd.m.Y H:i'}</li>
                             </ul>
                         </div>
                         <div class="card-design__footer">
@@ -233,6 +246,43 @@
                                     {/foreach}
                                 </li>
                             </ul>
+                            <div style="padding-top:20px" class="product-articles">
+                                <div class="product-articles__title">Артикулы</div>
+                                <ul class="product-articles__grid">
+                                    <li>
+                                        <div class="product-articles__name">Внутренний</div>
+                                        <div class="product-articles__value">
+                                            <span>{$article?:'не присвоен'}</span>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="product-articles__name">Ozon</div>
+                                        <div class="product-articles__value">
+                                            <span>{$article_oz?:'не присвоен'}</span>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="product-articles__name">WB</div>
+                                        <div class="product-articles__value">
+                                            <span>{$article_wb?:'не присвоен'}</span>
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div class="product-articles__name">Я.Маркет</div>
+                                        <div class="product-articles__value">
+                                            <span>{$article_ya?:'не присвоен'}</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="good-list">
+                                {set $imgPrefix = 'https://311725.selcdn.ru/custom_factory/'}
+                                <ul class="good-list__files">
+                                    {foreach ($print | split: '|') as $img index=$i}
+                                        <li><a href="{$imgPrefix}{$img}" download target="_blank">Печатный файл №{$i%2B1}</a></li>
+                                    {/foreach}
+                                </ul>
+                            </div>
                         </div>
 
                         <div id="modal-parent-{$id}" aria-hidden="true" class="modal">
@@ -348,6 +398,43 @@
                                 </div>
                             </div>
                         </div>
+
+                        {if $status == 5}
+                            <div id="reject-{$id}" aria-hidden="false" class="modal">
+                                <div class="modal-main" style="">
+                                    <div class="modal-close" data-modal-close=""></div>
+                                    <div class="modal-area modal-content scrollbar">
+                                        <div class="good-items">
+                                            <div class="good-item">
+                                                <div class="columns">
+                                                    <div class="column col-6 md-col-12">
+                                                        <ul class="good-item__params">
+                                                            <li>Товар: {$types[$root_id]}</li>
+                                                            <li style="display:flex;gap:5px;align-items:center;">
+                                                                <span class="good-item__status status--cancel"></span>
+                                                                Отклонён
+                                                            </li>
+                                                            <li>Тэг: {$tags[0]?:'не задан'}</li>
+                                                            <li>Цвета: {$color ? ($color | join: '; ') : 'не заданы'}</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="column col-6 md-col-12">
+                                                        <div class="good-reports">
+                                                            <div class="good-report">
+                                                                <div class="good-report__date">{$editedon}</div>
+                                                                <div class="good-report__quote">
+                                                                    {$content}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {/if}
 
                     </div>
                 </div>
@@ -520,7 +607,7 @@
                                                 </div>
                                             {/if}
                                             {if $item.moderator_comment}
-                                                <div class="good-report">
+                                                <div class="good-report good-report__right">
                                                     <div class="good-report__date">{$item.moderator_date}</div>
                                                     <div class="good-report__quote">
                                                         {$item.moderator_comment}

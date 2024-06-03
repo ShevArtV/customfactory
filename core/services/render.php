@@ -17,12 +17,15 @@ class Render
         $this->pdoTools = $this->modx->getParser()->pdoTools;
     }
 
-    public function getFAQ(array $data = [], array $props = []): string
+    public function getFAQ(?array $data = [], ?array $props = []): string
     {
         if (!$this->pdoTools) {
             $this->modx->log(1, 'No pdoTools');
         }
-        if (empty($data)) return '';
+        if (empty($data)) {
+            return '';
+        }
+
         ['navItemTpl' => $navItemTpl, 'questionTpl' => $questionTpl, 'tabTpl' => $tabTpl, 'wrapTpl' => $wrapTpl] = $props;
         $faq = [];
         $nav = '';
@@ -31,10 +34,15 @@ class Render
         $tabNum = 0;
 
         foreach ($data as $item) {
-            $faq[$item['type']][] = $item;
+            if ($props['rid'] !== 51972) {
+                $faq[$item['type']][] = $item;
+            } else {
+                $faq['all'][] = $item;
+            }
         }
 
         $typeNames = [
+            'all' => '',
             'self-employment' => 'Самозанятость',
             'design' => 'Дизайн',
             'income' => 'Доход',
@@ -46,7 +54,9 @@ class Render
                 $active = true;
             }
             $tabNum++;
-            $nav .= $this->pdoTools->getChunk($navItemTpl, ['active' => $active, 'type' => $type, 'typeName' => $typeNames[$type]]);
+            if ($props['rid'] !== 51972) {
+                $nav .= $this->pdoTools->getChunk($navItemTpl, ['active' => $active, 'type' => $type, 'typeName' => $typeNames[$type]]);
+            }
             $questions = '';
             foreach ($items as $item) {
                 $questions .= $this->pdoTools->getChunk($questionTpl, $item);

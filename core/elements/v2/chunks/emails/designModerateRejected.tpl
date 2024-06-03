@@ -3,7 +3,8 @@
 
 {if $preview}
     {foreach $preview as $path}
-    <img src="{$filePrefix}{$path}" width="249" height="281" alt="">
+        <img src="{$filePrefix}{$path}" width="249" height="281" alt="">
+    {/foreach}
 {/if}
 
 <p>Для обжалования обратитесь в техническую поддержку <a href="mailto:support@customfactory.ru">support@customfactory.ru</a></p>

@@ -20,8 +20,8 @@ class IndexingStatistic extends IndexingResources
     }
     protected function getStatisticFields($rid){
         $q = $this->modx->newQuery('SalesStatisticsItem');
-        $q->select('market, date');
-        $q->where(['product_id' => $rid]);
+        $q->select('SalesStatisticsItem.market as market, SalesStatisticsItem.date as date');
+        $q->where(['SalesStatisticsItem.product_id' => $rid]);
         $output = [];
         $tstart = microtime(true);
         if ($q->prepare() && $q->stmt->execute()) {
@@ -30,10 +30,12 @@ class IndexingStatistic extends IndexingResources
             if(!$result = $q->stmt->fetchAll(PDO::FETCH_ASSOC)){
                 return $output;
             }
+
             $output = [
                 'market' => [],
                 'date' => []
             ];
+
             foreach($result as $item){
                 if(!in_array($item['market'], $output['market'])){
                     $output['market'][] =  $item['market'];
@@ -42,6 +44,7 @@ class IndexingStatistic extends IndexingResources
                     $output['date'][] =  $item['date'];
                 }
             }
+
         }
         return $output;
     }

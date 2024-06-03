@@ -205,8 +205,6 @@ class Designer extends Base
             && !in_array($data['status'], $this->statuses['designer'][$oldStatus]['allow'])
         ) {
             $data['status'] = $oldStatus;
-        } else {
-            $this->setModerateLog('status', $oldStatus, $data['status'], $data['id'], 'user');
         }
 
         $profile->fromArray($data);
@@ -321,7 +319,7 @@ class Designer extends Base
     {
         $products = $this->modx->getIterator('modResource', ['createdby' => $id, 'class_key' => 'msProduct']);
         foreach ($products as $product) {
-            $this->productService->removeProduct($product->get('id'));
+            $this->productService->removeProduct($product->toArray());
         }
     }
 
@@ -360,7 +358,6 @@ class Designer extends Base
                 'active' => $fields['active'],
                 'offer' => $fields['offer'],
                 'comment' => $fields['comment'],
-                'old_id' => $fields['old_id'],
             ],
             'Личные данные' => [
                 'surname' => $fields['surname'],
@@ -376,13 +373,13 @@ class Designer extends Base
                 'address' => $fields['address'],
                 'zip_fact' => $fields['zip_fact'],
                 'address_fact' => $fields['address_fact'],
+                'pass_address' => $fields['pass_address'],
             ],
             'Паспортные данные' => [
                 'pass_num' => $fields['pass_num'],
                 'pass_series' => $fields['pass_series'],
                 'pass_where' => $fields['pass_where'],
                 'pass_code' => $fields['pass_code'],
-                'pass_address' => $fields['pass_address'],
             ],
             'Данные об ИП и самозанятости' => [
                 'legal_form' => $fields['legal_form'],
@@ -392,7 +389,7 @@ class Designer extends Base
                 'certificate_date' => $fields['certificate_date'],
             ],
             'Платёжные данные' => [
-                'card_data' => $fields['dob'],
+                'card_data' => $fields['card_data'],
                 'rs' => $fields['rs'],
                 'bik' => $fields['bik'],
             ],
@@ -540,5 +537,26 @@ class Designer extends Base
             $profile->set('files_deleted', 1);
             $profile->save();
         }
+    }
+
+    public function getUsers($props)
+    {
+        $output = '';
+        $q = $this->modx->newQuery('modUserProfile');
+        $q->select($this->modx->getSelectColumns('modUserProfile', 'modUserProfile', '', ['id'], true));
+        $q->where(['internalKey:IN' => explode(',', $props['users'])]);
+        $tstart = microtime(true);
+        if ($q->prepare() && $q->stmt->execute()) {
+            $this->modx->queryTime += microtime(true) - $tstart;
+            $this->modx->executedQueries++;
+            $result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+            foreach ($result as $row) {
+                $row['extended'] = json_decode($row['extended'], true);
+                $row['id'] = $row['internalKey'];
+                $output .= $this->pdoTools->getChunk($props['tpl'], array_merge($props, $row));
+            }
+        }
+
+        return $output;
     }
 }

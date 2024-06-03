@@ -69,8 +69,15 @@ class Base
             return $output;
         }
         $q = $this->modx->newQuery('msProduct');
-        $q->select('id, pagetitle');
-        $q->where(['msProduct.template' => 14]);
+        $q->leftJoin('modResource', 'Parent', 'msProduct.parent = Parent.id');
+        $q->select('msProduct.id as id, msProduct.pagetitle as pagetitle');
+        $q->where([
+            'msProduct.template' => 14,
+            'msProduct.published' => 1,
+            'Parent.published' => 1,
+            'msProduct.deleted' => 0,
+            'Parent.deleted' => 0,
+        ]);
         $tstart = microtime(true);
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
@@ -79,6 +86,7 @@ class Base
             foreach ($result as $row) {
                 $output[$row['id']] = $row['pagetitle'];
             }
+
             $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime, $this->cacheOptions);
             return $output;
         }
@@ -92,7 +100,7 @@ class Base
         }
         $q = $this->modx->newQuery('modResource');
         $q->select('id, pagetitle');
-        $q->where(['modResource.class_key' => 'msCategory', 'modResource.parent' => 13]);
+        $q->where(['modResource.class_key' => 'msCategory', 'modResource.parent' => 13, 'modResource.published' => 1, 'modResource.deleted' => 0]);
         $tstart = microtime(true);
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
@@ -119,16 +127,48 @@ class Base
         $this->modx->event->returnedValues['rids'] = implode(',', $rids);
     }
 
-    public function setModerateLog(string $fieldKey, $oldValue, $newValue, $rid, $type = 'products', int $user_id = 0)
+    public function setModerateLog(array $params)
     {
-        $params = [
-            'user_id' => $user_id ?: $this->modx->user->get('id'),
-            'rid' => $rid,
-            'field' => $fieldKey,
-            'old_value' => $oldValue,
-            'new_value' => $newValue,
-            'type' => $type
+        $allowedKeys = [
+            'pagetitle',
+            'editedon',
+            'createdon',
+            'createdby',
+            'template',
+            'deleted',
+            'delete_at',
+            'tags',
+            'color',
+            'size',
+            'print',
+            'preview',
+            'root_id',
+            'designer',
+            'article',
+            'article_ya',
+            'article_oz',
+            'article_wb',
+            'status',
+            'prev_status',
+            'count_files',
+            'tag_label',
+            'profilenum',
+            'moderator_id',
+            'manager_id',
+            'introtext',
+            'content',
         ];
+        $productData = [];
+        if(isset($params['productData']) && is_array($params['productData'])){
+            foreach($params['productData'] as $key => $value){
+                if(in_array($key, $allowedKeys)){
+                    $productData[$key] = $value;
+                }
+            }
+        }
+        $params['productData'] = json_encode($productData, JSON_UNESCAPED_UNICODE);
+        $params['user_id'] = $params['user_id'] ?? $this->modx->user->get('id');
+        $params['createdon'] = time();
         $event = $this->modx->newObject('moderatorlogEvent');
         $event->fromArray($params);
         $event->save();
@@ -138,14 +178,21 @@ class Base
     {
         $tvvalue = $product->getTVValue('workflow', $workflow);
         $tvvalue = json_decode($tvvalue, true) ?: [];
-        $lastIndex = count($tvvalue) - 1;
+        $lastIndex = count($tvvalue) ? count($tvvalue) - 1 : 0;
 
-        if ($workflow['moderator_comment']) {
+        if($workflow['moderator_comment']){
             $tvvalue[$lastIndex]['moderator_comment'] = $workflow['moderator_comment'];
             $tvvalue[$lastIndex]['moderator_date'] = $workflow['moderator_date'];
             $tvvalue[$lastIndex]['screens'] = $workflow['screens'];
-        } else {
-            $tvvalue[] = $workflow;
+
+            if(!$tvvalue[$lastIndex]['designer_comment']){
+                $tvvalue[$lastIndex]['designer_comment'] = $workflow['designer_comment'];
+                $tvvalue[$lastIndex]['designer_data'] = $workflow['designer_date'];
+                $tvvalue[$lastIndex]['print'] = $workflow['print'];
+                $tvvalue[$lastIndex]['preview'] = $workflow['preview'];
+            }
+        }else{
+            $tvvalue[] =  $workflow;
         }
 
         $product->setTVValue('workflow', json_encode($tvvalue));
@@ -215,5 +262,60 @@ class Base
         }
 
         $this->modx->mail->reset();
+    }
+
+    public function getNewDesigns($start, $end){
+        $result = [];
+        $q = $this->modx->newQuery('msProductData');
+        $q->leftJoin('modResource', 'modResource', 'msProductData.id=modResource.id');
+        $q->select($this->modx->getSelectColumns('msProductData', 'msProductData'));
+        $q->select($this->modx->getSelectColumns('modResource', 'modResource'));
+        $q->where([
+            'modResource.editedon:>=' => $start,
+            'modResource.editedon:<' => $end,
+            'article:!=' => '',
+            'status' => 4,
+        ]);
+        $q->prepare();
+        $resources = $this->modx->getIterator('msProduct', $q);
+        foreach ($resources as $resource) {
+            $images = [];
+            if ($profile = $this->modx->getObject('modUserProfile', ['internalKey' => $resource->get('createdby')])) {
+                $name = $profile->get('fullname');
+                $lk_num = $profile->get('profile_num');
+            }
+
+            if ($category = $this->modx->getObject('modResource', $resource->get('parent'))) {
+                $category_name = $category->get('pagetitle');
+            }
+
+            if ($type = $this->modx->getObject('modResource', $resource->get('root_id'))) {
+                $type_name = $type->get('pagetitle');
+            }
+            if ($print = $resource->get('print')) {
+                $print = explode('|', $print);
+                foreach ($print as $p) {
+                    if (strpos($p, 'http') === false) {
+                        $images[] = $this->printFullPath . $p;
+                    } else {
+                        $images[] = $p;
+                    }
+                }
+            }
+
+            $result[] = [
+                'Дата/Время' => $resource->get('editedon'),
+                'Артикул' => $resource->get('article'),
+                'Статус' => $resource->get('status'),
+                'ФИО дизайнера' => $name ?: '',
+                'Номер ЛК' => $lk_num ?: '',
+                'Категория' => $category_name ?: '',
+                'Тип товара' => $type_name ?: '',
+                'Превью' => $this->imgFullPath . $resource->getTVValue('img'),
+                'Файлы для печати' => $images
+            ];
+        }
+        //$this->modx->log(1, print_r($result, 1));
+        return $result;
     }
 }

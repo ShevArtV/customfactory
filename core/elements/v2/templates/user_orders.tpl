@@ -26,8 +26,9 @@
                 <div class="statistic-showcase">
                     <div class="statistic-showcase__item">
                         <div class="statistic-showcase__title">
+                            {set $dates = $.get.date | split: ','}
                             Всего за период <br>
-                            с <span data-total="total_min">30.01.2023</span> по <span data-total="total_max">06.10.2023</span>
+                            с <span data-total="total_min">{$dates[0]}</span> по <span data-total="total_max">{$dates[1]}</span>
                         </div>
                     </div>
                     <div class="statistic-showcase__item">
@@ -60,6 +61,19 @@
                     <div class="filter-item">
                         <ul class="filter-list">
                             {$filters}
+                            <li>
+                                <div class="js-custom-select">
+                                    <select data-ff-filter="sortby" name="sortby">
+                                        <option value="product_id|DESC" data-mpc-attr="{$.get['sortby'] === 'product_id|DESC' ? 'selected' : ''}">По новизне</option>
+                                        <option value="orders|DESC" data-mpc-attr="{$.get['sortby'] === 'orders|DESC' ? 'selected' : ''}">Больше заказов</option>
+                                        <option value="orders|ASC" data-mpc-attr="{$.get['sortby'] === 'orders|ASC' ? 'selected' : ''}">Меньше заказов</option>
+                                        <option value="sales|DESC" data-mpc-attr="{$.get['sortby'] === 'sales|DESC' ? 'selected' : ''}">Больше выкупов</option>
+                                        <option value="sales|ASC" data-mpc-attr="{$.get['sortby'] === 'sales|ASC' ? 'selected' : ''}">Меньше выкупов</option>
+                                        <option value="pays|DESC" data-mpc-attr="{$.get['sortby'] === 'pays|DESC' ? 'selected' : ''}">Больше выплат</option>
+                                        <option value="pays|ASC" data-mpc-attr="{$.get['sortby'] === 'pays|ASC' ? 'selected' : ''}">Меньше выплат</option>
+                                    </select>
+                                </div>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -67,9 +81,11 @@
                     <div class="filter-item">
                         <div class="filter-name filter-name--select" data-popup-link="datepicker">
                             {if $.get.date == ('' | period: 'week')}
-                                7 дней
+                                Последние 7 дней
                             {elseif $.get.date == ('' | period: 'month')}
-                                Месяц
+                                Текущий месяц
+                            {elseif $.get.date == ('' | period: 'prev_month')}
+                                Предыдущий месяц
                             {elseif $.get.date == ('' | period: 'year')}
                                 Год
                             {elseif $.get.date != ''}
@@ -89,8 +105,9 @@
                     <div class="datepicker-popup__layout">
                         <div class="datepicker-popup__aside">
                             <ul class="datepicker-popup__date">
-                                <li data-period-week data-period-value="{'' | period: 'week'}" class="active">7 дней</li>
-                                <li data-period-value="{'' | period: 'month'}">Месяц</li>
+                                <li data-period-value="{'' | period: 'week'}" class="active">Последние 7 дней</li>
+                                <li data-period-value="{'' | period: 'month'}">Текущий месяц</li>
+                                <li data-period-value="{'' | period: 'prev_month'}">Предыдущий месяц</li>
                                 <li data-period-value="{'' | period: 'year'}">Год</li>
                             </ul>
                         </div>

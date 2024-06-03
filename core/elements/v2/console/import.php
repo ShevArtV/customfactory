@@ -1,5 +1,6 @@
 <?php
 // /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL /home/host1860015/art-sites.ru/htdocs/customfactory/core/elements/v2/console/import.php
+// php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/elements/v2/console/import.php
 // Импорт делал 22.02.2024
 
 define('MODX_API_MODE', true);
@@ -88,49 +89,63 @@ switch ($argv[1]) {
         break;
 
     case 'products':
-        // import products
+        // php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/elements/v2/console/import.php products
+
+
+
         $arr = [
-            0 => ['old' => 17, 'new' => 14, 'name' => 'pillows.json'],
-            1 => ['old' => 18, 'new' => 15, 'name' => 'pictures.json'],
-            2 => ['old' => 5500, 'new' => 16, 'name' => 'roads.json'],
-            3 => ['old' => 16, 'new' => 17, 'name' => 'wallpapers.json'],
-            4 => ['old' => 90, 'new' => 18, 'name' => 'posters.json'],
-            5 => ['old' => 19, 'new' => 19, 'name' => 'bags.json'],
-            6 => ['old' => 50227, 'new' => 20, 'name' => 'promos.json'],
-            7 => ['old' => 69138, 'new' => 54754, 'name' => 'tshirsb.json'],
-            8 => ['old' => 69140, 'new' => 19, 'name' => 'tshirsw.json'],
+            ['old' => 17, 'new' => 14, 'name' => '1pillows.json'],
+            ['old' => 17, 'new' => 14, 'name' => '2pillows.json'],
+            ['old' => 17, 'new' => 14, 'name' => '3pillows.json'],
+            ['old' => 18, 'new' => 15, 'name' => '1pictures.json'],
+            ['old' => 18, 'new' => 15, 'name' => '2pictures.json'],
+            ['old' => 18, 'new' => 15, 'name' => '3pictures.json'],
+            ['old' => 18, 'new' => 15, 'name' => '4pictures.json'],
+            ['old' => 18, 'new' => 15, 'name' => '5pictures.json'],
+            ['old' => 5500, 'new' => 16, 'name' => '1roads.json'],
+            ['old' => 16, 'new' => 17, 'name' => '1wallpapers.json'],
+            ['old' => 16, 'new' => 17, 'name' => '2wallpapers.json'],
+            ['old' => 90, 'new' => 18, 'name' => '1posters.json'],
+            ['old' => 69138, 'new' => 54754, 'name' => '1tshirsb.json'],
+            ['old' => 69140, 'new' => 19, 'name' => '1tshirsw.json'],
         ];
-        $filename = '1tshirsw.json';
-        $productData = json_decode(file_get_contents(MODX_CORE_PATH . 'elements/v2/import/' . $filename), 1);
+        foreach ($arr as $item) {
+            $filename = $item['name'];
+            $productData = json_decode(file_get_contents(MODX_CORE_PATH . 'elements/v2/import/' . $filename), 1);
 
-        foreach ($productData as $data) {
-            $data['old_id'] = $data['id'];
-            $data['template'] = 14;
-            unset($data['id']);
-            if (!$product = $modx->getObject('msProduct', ['pagetitle' => $data['pagetitle']])) {
-                $product = $modx->newObject('msProduct');
-            }
-            if ($data['createdby'] !== 1) {
-                $data['template'] = 13;
-                if ($user = $modx->getObject('modUser', ['username' => $data['createdby']])) {
-                    $profile = $user->getOne('Profile');
-                    $data['createdby'] = $user->get('id');
-                    $data['designer'] = $profile->get('fullname');
-                    unset($user, $profile);
-                } else {
-                    $data['createdby'] = 3215;
-                    $data['designer'] = 'unknown';
+            foreach ($productData as $data) {
+                $data['old_id'] = $data['id'];
+                $data['template'] = 14;
+                unset($data['id']);
+                if (!$product = $modx->getObject('msProduct', ['pagetitle' => $data['pagetitle']])) {
+                    continue;
+                    //$product = $modx->newObject('msProduct');
                 }
-            }
-            if ($data['colors']) {
-                $data['color'] = explode(';', $data['colors']);
-                unset($data['colors']);
+                if ($data['createdby'] !== 1) {
+                    $data['template'] = 13;
+                    if ($user = $modx->getObject('modUser', ['username' => $data['createdby']])) {
+                        $profile = $user->getOne('Profile');
+                        $data['createdby'] = $user->get('id');
+                        $data['designer'] = $profile->get('fullname');
+                        unset($user, $profile);
+                    } else {
+                        $data['createdby'] = 3215;
+                        $data['designer'] = 'unknown';
+                    }
+                }
+                if ($data['colors']) {
+                    $data['color'] = explode(';', $data['colors']);
+                    unset($data['colors']);
+                }
+
+                $product->fromArray($data, '', true);
+                $product->save();
+                unset($product);
             }
 
-            $product->fromArray($data, '', true);
-            $product->save();
-            unset($product);
+            $modx->log(1, print_r('Import ' . $filename . ' is done.', 1));
         }
+
         break;
 
     case 'set_count_files':
@@ -259,6 +274,22 @@ switch ($argv[1]) {
                 $modx->log(1, print_r($newConfig, 1));
             }
         }
+        break;
+
+
+    case 'set_root_id':
+        $q = $modx->newQuery('modResource');
+        $q->where(['template' => 14]);
+        $q->select('id, old_id');
+        if($q->prepare() && $q->stmt->execute()) {
+            $roots = $q->stmt->fetchAll(PDO::FETCH_ASSOC);
+            $rootIds = [];
+            foreach ($roots as $root) {
+                $rootIds[$root['old_id']] = $root['id'];
+            }
+        }
+
+
         break;
 }
 $end_time = microtime(true);

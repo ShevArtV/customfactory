@@ -1,7 +1,7 @@
 <!--##{"templatename":"Оферта","pagetitle":"Страница Оферты","icon":"icon-edit","extends":"12"}##-->
 
 <!-- /usr/local/php/php-7.4/bin/php /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web offer.tpl -->
-
+<!-- php7.4 www/core/components/migxpageconfigurator/console/mgr_tpl.php web offer.tpl -->
 <div id="{$id}" data-mpc-section="user_offer" data-mpc-name="Оферта пользователя">
     <div class="text-block">
         {$resource.content}
