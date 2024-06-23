@@ -21,7 +21,7 @@ return [
     'designs' => [
         'configId' => 2,
         'limit' => 12,
-
+        'hooks' => '',
         'wrapper' => '#/fffiltering/designs/ffouter.tpl',
         'empty' => '#/fffiltering/designs/ffempty.tpl',
         'defaultTplOuter' => '#/fffiltering/designs/fffcheckboxgroupouter.tpl',

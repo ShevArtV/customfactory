@@ -181,8 +181,14 @@ class LoadToSelectel extends Base
             $rid = $product->get('id');
             $createdby = $product->get('createdby');
             $keys = ['print', 'preview'];
-            $internalPath = $this->preparePath($createdby . '/' . $rid . '/{day}-{month}-{year}-{time}/');
             if (!$filesData = $this->getProductFiles($filelist)) {
+                continue;
+            }
+
+            $internalPath = $this->preparePath($createdby . '/' . $rid . '/{day}-{month}-{year}-{time}/');
+            $path = $this->mediaSource->getBasePath() . $internalPath;
+            if (!$this->mediaSource->createContainer($internalPath, '')) {
+                $this->modx->log(1, '[LoadToSelectel] Can`t create directory: ' . $path);
                 continue;
             }
 
@@ -284,7 +290,10 @@ class LoadToSelectel extends Base
     {
         $prints = [];
         $previews = [];
-        $basePath = '/jail/' . $this->basePath;
+        $basePath = $this->basePath;
+        if(strpos($this->basePath,'art-sites') === false){
+            $basePath = '/jail/' . $this->basePath;
+        }
 
         foreach ($filelist as $item) {
             $preview = $this->modx->runSnippet('pThumb', [
@@ -323,7 +332,7 @@ class LoadToSelectel extends Base
                 'input' => $basePath . $item,
                 'options' => 'w=249&h=281&zc=1&q=60'
             ]);
-            $this->modx->log(1, print_r($preview, 1));
+
             if ($preview === $basePath . $item) {
                 $this->modx->log(1, '[LoadToSelectel::getProductPreviews] Не удалось сгенерировать превью');
                 return [];
@@ -355,14 +364,6 @@ class LoadToSelectel extends Base
     private function uploadFiles(array $files, string $internalPath)
     {
         if (empty($files)) {
-            return false;
-        }
-
-        $internalPath = $this->preparePath($internalPath);
-        $path = $this->mediaSource->getBasePath() . $internalPath;
-
-        if (!$this->mediaSource->createContainer($internalPath, '')) {
-            $this->modx->log(1, '[LoadToSelectel] Can`t create directory: ' . $path);
             return false;
         }
 

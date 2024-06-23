@@ -1,7 +1,7 @@
 <!--##{"templatename":"Отбор на удаление","pagetitle":"Страница Отбор на удаление","icon":"icon-trash", "extends": "12"}##-->
 
 <!-- /usr/local/php/php-7.4/bin/php /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web on_delete.tpl -->
-
+<!-- php7.4 www/core/components/migxpageconfigurator/console/mgr_tpl.php web on_delete.tpl -->
 <div id="{$id}" data-mpc-section="on_delete" data-mpc-name="Отбор на удаление">
 
     <form id="fileForm" data-si-form class="filter filter--glass filter--no-margin">
@@ -122,15 +122,15 @@
         </div>
     </div>
 
-    <div class="d-flex justify-content-between" style="gap:20px;flex-wrap:wrap;margin-top:60px;">
-        <div data-pn-pagination class="pagination {$totalPages < 2 ? 'd-none' : ''}">
+    <div data-pn-pagination class="d-flex justify-content-between {$totalPages < 2 ? 'd-none' : ''}" style="gap:20px;flex-wrap:wrap;margin-top:60px;">
+        <div  class="pagination">
             <button type="button" class="toggler start" data-pn-first="1"></button>
             <button type="button" class="toggler prev" data-pn-prev></button>
             <input type="number" name="page" data-pn-current form="fileForm" data-si-preset="getfilesproducts" min="1" max="{$totalPages}" value="{$.get.page?:1}">
-            <input type="hidden" name="limit" value="6">
             <span data-pn-total>{$totalPages}</span>
             <button type="button" class="toggler next" data-pn-next></button>
             <button type="button" class="toggler end" data-pn-last="{$totalPages}"></button>
         </div>
+        <input type="number" name="limit" min="6" max="102" data-pn-limit form="fileForm" data-si-preset="getfilesproducts" value="6">
     </div>
 </div>

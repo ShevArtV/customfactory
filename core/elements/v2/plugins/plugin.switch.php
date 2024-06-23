@@ -56,7 +56,7 @@ switch ($modx->event->name) {
                 }
             }
         }
-        if ($configData['id'] === 2 && $modx->user->isMember(['Managers'])) {
+        if ($configData['id'] === 2 && ($modx->user->isMember(['Managers']) || $modx->user->isMember(['Moderators']))) {
             $conditions[] = '`status` != 7';
         }
 

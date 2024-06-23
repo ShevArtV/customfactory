@@ -44,7 +44,7 @@ class Product extends Base
 
     public function getDesignTemplates($prohibited_categories = '9999999999'): array
     {
-       $cacheKey = 'getDesignTemplates::' . $prohibited_categories;
+        $cacheKey = 'getDesignTemplates::' . $prohibited_categories;
         if ($output = $this->modx->cacheManager->get($cacheKey)) {
             return $output;
         }
@@ -133,7 +133,6 @@ class Product extends Base
             return (int)$result[0];
         }
         return 0;
-
     }
 
     public function prepareFiles(array $filelist, int $rid, $folder = 'loadtoselectel/', $field = 'temp_files'): void
@@ -201,16 +200,53 @@ class Product extends Base
             'msg' => 'Произошла ошибка при создании дизайна.'
         ];
         if (!(int)$productData['root_id']) {
-            $output['msg'] = 'Не передан ID шаблонного товара.';
+            $msg = 'Не передан ID шаблонного товара.';
+            $this->setModerateLog([
+                'rid' => (int)$productData['id'],
+                'msg' => $msg,
+                'place' => '\CustomServices\Product',
+                'method' => 'createProduct',
+                'productData' => $productData
+            ]);
+            $output['msg'] = $msg;
+            return $output;
+        }
+        $types = $this->getProductTypes();
+        if (!$types[$productData['root_id']]) {
+            $msg =  'Передан недопустимый ID шаблонного товара.';
+            $this->setModerateLog([
+                'rid' => (int)$productData['id'],
+                'msg' => $msg,
+                'place' => '\CustomServices\Product',
+                'method' => 'createProduct',
+                'productData' => $productData
+            ]);
+            $output['msg'] = $msg;
             return $output;
         }
         if (!$rootProduct = $this->modx->getObject('modResource', ['class_key' => 'msProduct', 'id' => (int)$productData['root_id']])) {
-            $output['msg'] = "Не удалось получить шаблонный товара по ID = {$productData['root_id']}.";
+            $msg = "Не удалось получить шаблонный товара по ID = {$productData['root_id']}.";
+            $this->setModerateLog([
+                'rid' => (int)$productData['id'],
+                'msg' => $msg,
+                'place' => '\CustomServices\Product',
+                'method' => 'createProduct',
+                'productData' => $productData
+            ]);
+            $output['msg'] = $msg;
             return $output;
         }
 
-        if(!$productData['tag_label'] && !$productData['tag_label'] = $this->getTagLabel($productData['tags'][0])) {
-            $output['msg'] = 'Не выбран тэг товара.';
+        if (!$productData['tag_label'] && !$productData['tag_label'] = $this->getTagLabel($productData['tags'][0])) {
+            $msg = 'Не выбран тэг товара.';
+            $this->setModerateLog([
+                'rid' => (int)$productData['id'],
+                'msg' => $msg,
+                'place' => '\CustomServices\Product',
+                'method' => 'createProduct',
+                'productData' => $productData
+            ]);
+            $output['msg'] = $msg;
             return $output;
         }
 
@@ -243,10 +279,33 @@ class Product extends Base
                 $productData['tag_label'] = $result[0];
             }
             if (!$productData['tag_label']) {
-                $output['msg'] = 'Не указан лейбл тэга.';
+                $msg = 'Не указан лейбл тэга.';
+                $this->setModerateLog([
+                    'rid' => (int)$productData['id'],
+                    'msg' => $msg,
+                    'place' => '\CustomServices\Product',
+                    'method' => 'createProduct',
+                    'productData' => $productData
+                ]);
+                $output['msg'] = $msg;
                 return $output;
             }
         }
+
+        $productData['profilenum'] = $productData['profilenum'] ?: $this->getProfileNum((int)$productData['createdby']);
+        if (!$productData['profilenum']) {
+            $msg = 'Не указан номер ЛК.';
+            $this->setModerateLog([
+                'rid' => (int)$productData['id'],
+                'msg' => $msg,
+                'place' => '\CustomServices\Product',
+                'method' => 'createProduct',
+                'productData' => $productData
+            ]);
+            $output['msg'] = $msg;
+            return $output;
+        }
+
         $log['mixed'] = $productData;
         /** @var \msProduct $newProduct */
         $newProduct = $this->modx->newObject('msProduct', $productData);
@@ -274,6 +333,14 @@ class Product extends Base
         ];
     }
 
+    protected function getProfileNum(?int $user_id): int
+    {
+        if ($profile = $this->modx->getObject('modUserProfile', ['internalKey' => $user_id])) {
+            return (int)$profile->get('profile_num');
+        }
+        return 0;
+    }
+
     public function changeOwner(string $pagetitle, \msProduct $product)
     {
         preg_match('/^Дизайн(.*?) от.*?/', $pagetitle, $matches);
@@ -289,9 +356,17 @@ class Product extends Base
     public function updateProduct(array $productData): array
     {
         if (!$product = $this->modx->getObject('modResource', ['class_key' => 'msProduct', 'id' => (int)$productData['id']])) {
+            $msg =  'Дизайн с ID=' . $productData['id'] . ' не найден.';
+            $this->setModerateLog([
+                'rid' => (int)$productData['id'],
+                'msg' => $msg,
+                'place' => '\CustomServices\Product',
+                'method' => 'updateProduct',
+                'productData' => $productData
+            ]);
             return [
                 'success' => false,
-                'msg' => 'Произошла ошибка при обновлении дизайна.'
+                'msg' => $msg
             ];
         }
 
@@ -317,7 +392,7 @@ class Product extends Base
         if ($productData['status'] == 7 && !$productData['deleted']) {
             $workflow['moderator_date'] = date('Y-m-d H:i:s');
             $workflow['moderator_comment'] = $productData['content'];
-            $workflow['screens'] = $product->get('temp_files');
+            $workflow['screens'] = strpos($product->get('temp_files'), 'assets/screenshots/') !== false ? $product->get('temp_files') : '';
             $workflow['preview'] = $product->get('preview');
             $workflow['print'] = $product->get('print');
             $workflow['designer_comment'] = $product->get('introtext');
@@ -341,21 +416,49 @@ class Product extends Base
             $productData['delete_at'] = date('d.m.Y', strtotime('+7 days'));
         }
 
-        if ($productData['root_id'] && $root = $this->modx->getObject('msProduct', $productData['root_id'])) {
-            $files = $product->get('print') ? explode('|', $product->get('print')) : [];
-            if (count($files) !== $root->get('count_files')) {
-                $productData['root_id'] = $monitoredFields['root_id'];
+        if($productData['root_id']){
+            if ($root = $this->modx->getObject('msProduct', $productData['root_id'])) {
+                $productData['count_files'] = $root->get('count_files');
+                /*$files = $product->get('print') ? explode('|', $product->get('print')) : [];
+                if (count($files) !== $root->get('count_files')) {
+                    $productData['root_id'] = $monitoredFields['root_id'];
+                }*/
+            }
+            $types = $this->getProductTypes();
+            if (!$types[$productData['root_id']]) {
+                $msg =  'Передан недопустимый ID шаблонного товара  для товара '.$productData['id'].'.';
+                $this->setModerateLog([
+                    'rid' => (int)$productData['id'],
+                    'msg' => $msg,
+                    'place' => '\CustomServices\Product',
+                    'method' => 'updateProduct',
+                    'productData' => array_merge($productData, $product->toArray())
+                ]);
+                return [
+                    'success' => false,
+                    'msg' => $msg
+                ];
             }
         }
 
         if ($productData['status'] == 3) {
             $result = $this->getArticle($product->toArray());
-            if (!$result['success']) {
-                return $result;
-            }
             $productData['article'] = $result['article'];
+            if (!(int)$productData['article']) {
+                $msg = 'Не удалось сгенерировать артикул для товар с ID ' . $productData['id'];
+                $this->setModerateLog([
+                    'rid' => (int)$productData['id'],
+                    'msg' => $msg,
+                    'place' => '\CustomServices\Product',
+                    'method' => 'updateProduct',
+                    'productData' => array_merge($productData, $product->toArray())
+                ]);
+                return [
+                    'success' => false,
+                    'msg' => $msg
+                ];
+            }
         }
-
 
         $productData['editedon'] = time();
         $product->fromArray($productData);
@@ -473,7 +576,7 @@ class Product extends Base
         $q->select('value');
         $q->where(['tmplvarid' => 15, 'contentid' => $id]);
         $q->limit(1);
-        if($q->prepare() && $q->stmt->execute()){
+        if ($q->prepare() && $q->stmt->execute()) {
             $result = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
             $workflow = $result[0] ? json_decode($result[0], true) : [];
         }
@@ -511,7 +614,7 @@ class Product extends Base
             'productData' => $productData
         ]);
 
-        if($product = $this->modx->getObject('msProduct', $id)){
+        if ($product = $this->modx->getObject('msProduct', $id)) {
             $product->remove();
         }
 
@@ -592,7 +695,7 @@ class Product extends Base
                 }
                 $result = $this->updateProduct(['id' => $selectedId, $key => $value, 'content' => $data['content']]);
                 if (!$result['success']) {
-                    $this->modx->log(1, '[Designer::setProductsField] ' . $result['msg']);
+                    $this->modx->log(1, '[Product::setProductsField] ' . $result['msg']);
                 }
             }
         }
@@ -637,16 +740,14 @@ class Product extends Base
                 'msg' => 'Не удалось получить шаблонный товар.'
             ];
         }
-        if (!$productData['profilenum']) {
-            if ($profile = $this->modx->getObject('modUserProfile', ['internalKey' => $productData['createdby']])) {
-                $productData['profilenum'] = $profile->get('profile_num');
-            } else {
-                return [
-                    'success' => false,
-                    'msg' => 'Не удалось получить номер ЛК.',
-                    'article' => ''
-                ];
-            }
+
+        $productData['profilenum'] = (int)$productData['profilenum'] ?: $this->getProfileNum((int)$productData['createdby']);
+        if ($productData['profilenum'] === 0) {
+            return [
+                'success' => false,
+                'msg' => 'Не удалось получить номер ЛК.',
+                'article' => ''
+            ];
         }
 
         $articlePrefix = $root->get('article');

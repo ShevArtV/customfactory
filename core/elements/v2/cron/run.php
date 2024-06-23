@@ -1,5 +1,5 @@
 <?php
-// /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL /home/host1860015/art-sites.ru/htdocs/customfactory/core/elements/v2/cron/run.php
+// /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL /home/host1860015/art-sites.ru/htdocs/customfactory/core/elements/v2/cron/run.php loadtoselectel
 // php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/elements/v2/cron/run.php loadtoselectel
 // php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/elements/v2/cron/run.php import_articles
 

@@ -387,7 +387,7 @@
                 <div data-pn-pagination class="pagination {$totalPages < 2 ? 'd-none' : ''}">
                     <button type="button" class="toggler start" data-pn-first="1"></button>
                     <button type="button" class="toggler prev" data-pn-prev></button>
-                    <input type="number" name="page" data-pn-current form="filterForm" min="1" max="{$totalPages}" value="{$.get.page?:1}">
+                    <input type="number" name="page" data-pn-current form="filterForm" data-si-preset="flatfilters" min="1" max="{$totalPages}" value="{$.get.page?:1}">
 
                     <span data-pn-total>{$totalPages}</span>
                     <button type="button" class="toggler next" data-pn-next></button>

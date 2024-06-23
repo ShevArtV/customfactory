@@ -119,7 +119,9 @@ class Report extends Base
                 $q->where(['msProduct.template' => 13]);
             }
         }
-
+        if(!empty($this->conditions)){
+            $q->andCondition($this->conditions);
+        }
         $strNum = 1;
         $tstart = microtime(true);
         if ($q->prepare() && $q->stmt->execute()) {
@@ -174,6 +176,9 @@ class Report extends Base
             $output[$index] = $resourceData[$name];
 
             switch ($name) {
+                case 'preview':
+
+                    break;
                 case 'article_barcode':
                     if (in_array($resourceData['parent'], $this->tshirtParents)) {
                         $output[$index] = $resourceData['article'] . ' ' . $this->sizes[$j];

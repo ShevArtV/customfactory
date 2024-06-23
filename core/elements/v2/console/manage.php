@@ -725,16 +725,16 @@ ORDER BY r.id DESC LIMIT 100";
         // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php getdesignlog
         $modx->addPackage('moderatorlog', MODX_CORE_PATH . 'components/moderatorlog/model/');
         $productService = new Product($modx);
-        $logs = $modx->getIterator('moderatorlogEvent', ['rid' => '70280']);
+        $logs = $modx->getIterator('moderatorlogEvent', ['rid' => '71684']);
         foreach ($logs as $log) {
             $data = $log->toArray();
             $data['createdon'] = date('d.m.Y H:i:s', $data['createdon']);
             $data['productData'] = json_decode($data['productData'], true);
             $modx->log(1, print_r($data, 1));
-            if((int)$data['id'] === 22295) {
+            /*if((int)$data['id'] === 22295) {
                 $data['productData']['id'] = $data['rid'];
                 $productService->removeProduct($data['productData']);
-            }
+            }*/
         }
         break;
 
