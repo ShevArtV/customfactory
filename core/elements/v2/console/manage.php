@@ -742,6 +742,7 @@ ORDER BY r.id DESC LIMIT 100";
         // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php restoreproduct
         $modx->addPackage('moderatorlog', MODX_CORE_PATH . 'components/moderatorlog/model/');
         if ($log = $modx->getObject('moderatorlogEvent', 23898)) {
+            /** @var \modResource $log */
             $data = $log->toArray();
             $productData = json_decode($data['productData'], true);
             $productData['class_key'] = 'msProduct';
@@ -773,6 +774,12 @@ ORDER BY r.id DESC LIMIT 100";
                 $modx->log(1, print_r($productData, 1));
             }
         }
+        break;
+
+    case 'loadworkflow':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php loadworkflow
+        $productService = new Product($modx);
+        $result = $productService->loadWorkflow(79671);
         break;
 
 

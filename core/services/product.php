@@ -30,6 +30,9 @@ class Product extends Base
     /** @var LoadToSelectel $loadToSelectel */
     private LoadToSelectel $loadToSelectel;
 
+    /** @var int $workflowTVId */
+    private int $workflowTVId = 15;
+
     protected function initialize()
     {
         parent::initialize();
@@ -213,7 +216,7 @@ class Product extends Base
         }
         $types = $this->getProductTypes();
         if (!$types[$productData['root_id']]) {
-            $msg =  'Передан недопустимый ID шаблонного товара.';
+            $msg = 'Передан недопустимый ID шаблонного товара.';
             $this->setModerateLog([
                 'rid' => (int)$productData['id'],
                 'msg' => $msg,
@@ -356,7 +359,7 @@ class Product extends Base
     public function updateProduct(array $productData): array
     {
         if (!$product = $this->modx->getObject('modResource', ['class_key' => 'msProduct', 'id' => (int)$productData['id']])) {
-            $msg =  'Дизайн с ID=' . $productData['id'] . ' не найден.';
+            $msg = 'Дизайн с ID=' . $productData['id'] . ' не найден.';
             $this->setModerateLog([
                 'rid' => (int)$productData['id'],
                 'msg' => $msg,
@@ -416,17 +419,13 @@ class Product extends Base
             $productData['delete_at'] = date('d.m.Y', strtotime('+7 days'));
         }
 
-        if($productData['root_id']){
+        if ($productData['root_id']) {
             if ($root = $this->modx->getObject('msProduct', $productData['root_id'])) {
                 $productData['count_files'] = $root->get('count_files');
-                /*$files = $product->get('print') ? explode('|', $product->get('print')) : [];
-                if (count($files) !== $root->get('count_files')) {
-                    $productData['root_id'] = $monitoredFields['root_id'];
-                }*/
             }
             $types = $this->getProductTypes();
             if (!$types[$productData['root_id']]) {
-                $msg =  'Передан недопустимый ID шаблонного товара  для товара '.$productData['id'].'.';
+                $msg = 'Передан недопустимый ID шаблонного товара  для товара ' . $productData['id'] . '.';
                 $this->setModerateLog([
                     'rid' => (int)$productData['id'],
                     'msg' => $msg,
@@ -955,7 +954,31 @@ class Product extends Base
 
     public function loadWorkflow($id)
     {
-        if (!$product = $this->modx->getObject('msProduct', $id)) {
+        $productData = [];
+        $q = $this->modx->newQuery('msProductData');
+        $q->setClassAlias('Data');
+        $q->leftJoin('modTemplateVarResource', 'Workflow', [
+            'Workflow.contentid' => 'Data.id',
+            'Workflow.tmplvarid' => $this->workflowTVId
+        ]);
+        $q->select(
+            'Data.tags as tags,
+         Data.color as color,
+         Data.count_files as count_files,
+         Data.status as status,
+         Data.prev_status as prev_status,
+         Data.root_id as root_id,
+         Workflow.value as workflow'
+        );
+        $q->where([
+            'Data.id' => $id,
+        ]);
+        $q->prepare();
+        if($q->stmt->execute()){
+            $productData = $q->stmt->fetch(\PDO::FETCH_ASSOC);
+            $this->modx->log(1, print_r($productData, 1));
+        }
+        if (empty($productData)) {
             return [
                 'success' => false,
                 'msg' => 'Товар не найден',
@@ -963,9 +986,7 @@ class Product extends Base
             ];
         }
 
-        $workflow = $product->getTVValue('workflow');
-        $workflow = $workflow ? json_decode($workflow, true) : [];
-        $productData = $product->toArray();
+        $workflow = $productData['workflow'] ? json_decode($productData['workflow'], true) : [];
         $statuses = $this->getStatuses();
         $types = $this->getProductTypes();
 
@@ -989,8 +1010,8 @@ class Product extends Base
         }
         $params = [
             'id' => $id,
-            'tags' => $productData['tags'],
-            'color' => $productData['color'],
+            'tags' => $productData['tags'] ? json_decode($productData['tags'], true) : [],
+            'color' => $productData['color'] ? json_decode($productData['color'], true) : [],
             'count_files' => $productData['count_files'],
             'statuses' => $statuses,
             'status' => $productData['status'],
