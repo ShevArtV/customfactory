@@ -119,7 +119,7 @@ class Report extends Base
                 $q->where(['msProduct.template' => 13]);
             }
         }
-        if(!empty($this->conditions)){
+        if (!empty($this->conditions)) {
             $q->andCondition($this->conditions);
         }
         $strNum = 1;
@@ -225,7 +225,7 @@ class Report extends Base
         $sheet = $spreadsheet->getActiveSheet();
         $pathToReports = MODX_ASSETS_PATH . 'reports/';
         foreach ($data as $cell => $value) {
-            $sheet->setCellValue($cell, $value);
+            $sheet->setCellValue($cell, is_array($value) ? implode('; ', $value) : $value);
         }
         $writer = new Xlsx($spreadsheet);
         if (!is_dir($pathToReports)) {
@@ -234,6 +234,6 @@ class Report extends Base
         $filePath = MODX_ASSETS_PATH . 'reports/' . "$this->filename.xlsx";
 
         $writer->save($filePath);
-        return 'assets/reports/' . "$this->filename.xlsx";;
+        return 'assets/reports/' . "$this->filename.xlsx";
     }
 }

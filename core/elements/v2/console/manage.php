@@ -725,7 +725,7 @@ ORDER BY r.id DESC LIMIT 100";
         // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php getdesignlog
         $modx->addPackage('moderatorlog', MODX_CORE_PATH . 'components/moderatorlog/model/');
         $productService = new Product($modx);
-        $logs = $modx->getIterator('moderatorlogEvent', ['rid' => '71684']);
+        $logs = $modx->getIterator('moderatorlogEvent', ['rid' => '70403']);
         foreach ($logs as $log) {
             $data = $log->toArray();
             $data['createdon'] = date('d.m.Y H:i:s', $data['createdon']);
