@@ -26,8 +26,9 @@ switch ($argv[1]) {
         $loadtoselectel->startUploading();
         break;
     case 'remove_user_files':
+        // php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/elements/v2/cron/run.php remove_user_files
         $designerService = new Designer($modx);
-        $designerService->removeUserFiles(['Profile.status' => 2, 'Profile.files_deleted!=' => 1]);
+        $designerService->removeUserFiles(['status' => 2, 'files_deleted!=' => 1]);
         break;
     case 'remove_unactive_users':
         $designerService = new Designer($modx);

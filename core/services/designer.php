@@ -16,6 +16,14 @@ class Designer extends Base
 
     /** @var Product $productService */
     private Product $productService;
+    /**
+     * @var string $senditTempPath
+     */
+    private string $senditTempPath;
+    /**
+     * @var string $userfilesPath
+     */
+    private string $userfilesPath;
 
     protected function initialize()
     {
@@ -23,6 +31,9 @@ class Designer extends Base
         $this->basePath = $this->modx->getOption('base_path');
         $this->assetsPath = $this->modx->getOption('assets_path');
         $this->statuses = $this->getStatuses();
+        $senditTempPath = $this->modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');
+        $this->senditTempPath = str_replace('[[+asseetsUrl]]', $this->assetsPath, $senditTempPath);
+        $this->userfilesPath = $this->assetsPath . 'userfiles/';
         $this->productService = new Product($this->modx);
     }
 
@@ -132,12 +143,10 @@ class Designer extends Base
 
     public function prepareFiles($key, $data)
     {
-        $senditTempPath = $this->modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');
-        $senditTempPath = str_replace('[[+asseetsUrl]]', $this->assetsPath, $senditTempPath);
         if (!empty($data[$key])) {
-            $sourceFile = $senditTempPath . session_id() . '/' . $data[$key];
+            $sourceFile = $this->senditTempPath . session_id() . '/' . $data[$key];
             if (file_exists($sourceFile)) {
-                $targetFolder = $this->assetsPath . 'userfiles/' . $this->modx->user->get('id') . '/';
+                $targetFolder = $this->userfilesPath . $this->modx->user->get('id') . '/';
                 if (!file_exists($targetFolder)) {
                     mkdir($targetFolder, 0777, true);
                 }
@@ -305,8 +314,8 @@ class Designer extends Base
 
     public function removeUserDir(int $id, int $old_id)
     {
-        $targetFolder = $this->assetsPath . 'userfiles/' . $id . '/';
-        $targetFolderAlt = $this->assetsPath . 'userfiles/' . $old_id . '/';
+        $targetFolder = $this->userfilesPath . $id . '/';
+        $targetFolderAlt = $this->userfilesPath . $old_id . '/';
         if (file_exists($targetFolder)) {
             $this->removeDir($targetFolder);
         }
@@ -510,7 +519,6 @@ class Designer extends Base
     public function removeUserFiles($where = [])
     {
         $q = $this->modx->newQuery('modUserProfile');
-        $q->setClassAlias('Profile');
         if (!empty($where)) {
             $q->where($where);
         }
@@ -533,9 +541,26 @@ class Designer extends Base
                 if (file_exists($path)) {
                     unlink($path);
                 }
+                $extended[$field] = '';
             }
+            $this->removeEmptyDirs([
+                $this->userfilesPath . $profile->get('internalKey'),
+                $this->userfilesPath . $profile->get('old_id')
+            ]);
             $profile->set('files_deleted', 1);
+            $profile->set('extended', $extended);
             $profile->save();
+        }
+    }
+
+    private function removeEmptyDirs(array $dirs){
+        foreach ($dirs as $dir) {
+            if(file_exists($dir)){
+                $files = scandir($dir);
+                if(count($files) === 2){
+                    rmdir($dir);
+                }
+            }
         }
     }
 
