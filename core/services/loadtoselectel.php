@@ -291,7 +291,7 @@ class LoadToSelectel extends Base
         $prints = [];
         $previews = [];
         $basePath = $this->basePath;
-        if(strpos($this->basePath,'art-sites') === false){
+        if(strpos($this->basePath,'art-sites') === false && $this->mediaSource->get('id') === 3){
             $basePath = '/jail/' . $this->basePath;
         }
 
