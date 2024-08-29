@@ -1,7 +1,7 @@
 <!--##{"templatename":"Регистрация","pagetitle":"Страница Регистрации","icon":"icon-check"}##-->
 
 <!-- /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL /home/host1860015/art-sites.ru/htdocs/customfactory/core/components/migxpageconfigurator/console/mgr_tpl.php web register.tpl -->
-
+{* php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/components/migxpageconfigurator/console/mgr_tpl.php web register.tpl *}
 <div id="{$id}" data-mpc-section="register" data-mpc-name="Регистрация" class="showcase">
     <div class="container">
         <div class="login-form">
@@ -19,15 +19,15 @@
                 <div class="login-form__layout">
                     <div class="login-form__content col-6 md-col-12">
                         <div class="form-group">
-                            <input type="text" class="input" name="fullname" placeholder="Имя">
-                            <small class="red" data-si-error="fullname"></small>
+                            <input type="text" class="input" name="extended[name]" placeholder="Имя">
+                            <small class="red" data-si-error="extended[name]"></small>
                         </div>
                         <div class="form-group">
                             <input type="email" name="email" class="input" placeholder="E-mail" value="">
                             <small class="red" data-si-error="email"></small>
                         </div>
                         <div class="form-group">
-                            <input type="tel" name="phone" class="input" placeholder="Телефон" value="">
+                            <input type="tel" name="phone" class="input" placeholder="%2B7(9" value="">
                             <small class="red" data-si-error="phone"></small>
                         </div>
                         <div class="form-group">

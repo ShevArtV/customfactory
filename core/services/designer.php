@@ -357,6 +357,7 @@ class Designer extends Base
             'ogrnip' => 'ОГРНИП',
             'rs' => 'Расчетный счет',
             'bik' => 'БИК',
+            'createdon' => 'Дата регистрации'
         ];
 
         $fields = array_merge($this->getExtraFields(), $fields);
@@ -367,6 +368,7 @@ class Designer extends Base
                 'active' => $fields['active'],
                 'offer' => $fields['offer'],
                 'comment' => $fields['comment'],
+                'createdon' => $fields['createdon'],
             ],
             'Личные данные' => [
                 'surname' => $fields['surname'],

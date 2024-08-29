@@ -44,7 +44,7 @@
                             <div>
                                 <div class="input-group">
                                     <label class="input-label">Логин</label>
-                                    <input type="text" class="input" name="email"  value="##$_modx->user.email}" readonly>
+                                    <input type="text" class="input" name="email" value="##$_modx->user.email}" readonly>
                                 </div>
 
                                 <button type="button" data-modal-show="#modal-change-pass" class="btn btn--small">Сменить пароль</button>
@@ -84,19 +84,22 @@
                     ##set $names = $_modx->user.fullname | split: ' '}
                     <div class="input-group">
                         <label class="input-label">Фамилия*</label>
-                        <input type="text" class="input" name="extended[surname]" value="##$extended[surname]?:$names[0]}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                        <input type="text" class="input" name="extended[surname]" value="##$extended[surname]?:$names[0]}"
+                               data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                         <small class="error" data-si-error="extended[surname]"></small>
                     </div>
 
                     <div class="input-group">
                         <label class="input-label">Имя*</label>
-                        <input type="text" class="input" name="extended[name]" value="##$extended[name]?:$names[1]}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                        <input type="text" class="input" name="extended[name]" value="##$extended[name]?:$names[1]}"
+                               data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                         <small class="error" data-si-error="extended[name]"></small>
                     </div>
 
                     <div class="input-group">
                         <label class="input-label">Отчество*</label>
-                        <input type="text" class="input" name="extended[fathername]" value="##$extended[fathername]?:$names[2]}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                        <input type="text" class="input" name="extended[fathername]" value="##$extended[fathername]?:$names[2]}"
+                               data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                         <small class="error" data-si-error="extended[fathername]"></small>
                     </div>
 
@@ -105,7 +108,8 @@
                             Телефон*
                             <small>Телефон нужен для связи и выплаты денег</small>
                         </label>
-                        <input type="text" class="input" name="phone" value="##$_modx->user.phone}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                        <input type="text" class="input" name="phone" placeholder="%2B7(9" value="##$_modx->user.phone}"
+                               data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                         <small class="error" data-si-error="phone"></small>
                     </div>
 
@@ -117,11 +121,13 @@
 
                         <div class="columns">
                             <div class="column col-4 md-col-12">
-                                <input type="text" class="input" placeholder="Индекс" name="zip" value="##$_modx->user.zip}" data-match-recepient="zip_fact" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <input type="text" class="input" placeholder="Индекс" name="zip" value="##$_modx->user.zip}" data-match-recepient="zip_fact"
+                                       data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                 <small class="error" data-si-error="zip"></small>
                             </div>
                             <div class="column col-8 md-col-12">
-                                <input type="text" class="input" placeholder="Адрес" name="address" value="##$_modx->user.address}" data-match-recepient="address_fact" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <input type="text" class="input" placeholder="Адрес" name="address" value="##$_modx->user.address}" data-match-recepient="address_fact"
+                                       data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                 <small class="error" data-si-error="address"></small>
                             </div>
                         </div>
@@ -134,11 +140,13 @@
                         </label>
                         <div class="columns">
                             <div class="column col-4 md-col-12">
-                                <input type="text" class="input" placeholder="Индекс" name="zip_fact" value="##$_modx->user.zip_fact}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <input type="text" class="input" placeholder="Индекс" name="zip_fact" value="##$_modx->user.zip_fact}"
+                                       data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                 <small class="error" data-si-error="zip_fact"></small>
                             </div>
                             <div class="column col-8 md-col-12">
-                                <input type="text" class="input" placeholder="Адрес" name="address_fact" value="##$_modx->user.address_fact}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <input type="text" class="input" placeholder="Адрес" name="address_fact" value="##$_modx->user.address_fact}"
+                                       data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                 <small class="error" data-si-error="address_fact"></small>
                             </div>
                         </div>
@@ -146,7 +154,8 @@
                             ##if $_modx->user.address_fact == $_modx->user.address && $_modx->user.address_fact && $_modx->user.address}
                             ##set $checked = 'checked'}
                             ##/if}
-                            <input type="checkbox" class="checkbox" data-match-donor="address,zip" data-mpc-attr="##$checked} ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                            <input type="checkbox" class="checkbox" data-match-donor="address,zip"
+                                   data-mpc-attr="##$checked} ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                             <span class="checkbox-text">Адрес для корреспонденции и Фактический адрес совпадают</span>
                         </label>
                     </div>
@@ -166,13 +175,15 @@
                     <div class="columns">
                         <div class="column col-6 md-col-12">
                             <label class="checkbox-label">
-                                <input type="radio" class="checkbox" name="legal_form" value="Самозанятый" data-mpc-attr="##$_modx->user.legal_form == 'Самозанятый' ? 'checked' : ''} ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <input type="radio" class="checkbox" name="legal_form" value="Самозанятый"
+                                       data-mpc-attr="##$_modx->user.legal_form == 'Самозанятый' ? 'checked' : ''} ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                 <span class="checkbox-text radio-text">Самозанятый</span>
                             </label>
                         </div>
                         <div class="column col-6 md-col-12">
                             <label class="checkbox-label">
-                                <input type="radio" class="checkbox" name="legal_form" value="ИП" data-mpc-attr="##$_modx->user.legal_form == 'Самозанятый' ? '' : 'checked'} ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <input type="radio" class="checkbox" name="legal_form" value="ИП"
+                                       data-mpc-attr="##$_modx->user.legal_form == 'Самозанятый' ? '' : 'checked'} ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                 <span class="checkbox-text radio-text">ИП</span>
                             </label>
                         </div>
@@ -194,31 +205,37 @@
 
                                 <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый">
                                     <label class="input-label">Номер справки о постановке на учет в качестве плательщика «Налога на профессиональный доход»*</label>
-                                    <input type="text" class="input" name="extended[certificate_num]" value="##$extended[certificate_num]}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                    <input type="text" class="input" name="extended[certificate_num]" value="##$extended[certificate_num]}"
+                                           data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                     <small class="error" data-si-error="extended[certificate_num]"></small>
                                 </div>
 
                                 <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый">
                                     <label class="input-label">Дата выдачи справки о постановке на учёт в качестве плательщика «Налога на профессиональный доход»*</label>
-                                    <input type="text" class="input" name="extended[certificate_date]" value="##$extended[certificate_date]}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                    <input type="text" class="input" name="extended[certificate_date]" value="##$extended[certificate_date]}"
+                                           data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                     <small class="error" data-si-error="extended[certificate_date]"></small>
                                 </div>
 
                                 <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый">
                                     <label class="input-label">Номер СНИЛС*</label>
-                                    <input type="text" class="input" name="extended[insurance]" value="##$extended[insurance]}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                    <input type="text" class="input" name="extended[insurance]" value="##$extended[insurance]}"
+                                           placeholder="11 цифр"
+                                           data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                     <small class="error" data-si-error="extended[insurance]"></small>
                                 </div>
 
                                 <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? 'd-none' : ''}" data-legal-form="ИП">
                                     <label class="input-label">Адрес регистрации ИП*</label>
-                                    <input type="text" class="input" name="extended[address_ip]" value="##$extended[address_ip]}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                    <input type="text" class="input" name="extended[address_ip]" value="##$extended[address_ip]}"
+                                           data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                     <small class="error" data-si-error="extended[address_ip]"></small>
                                     <label class="checkbox-label" style="margin-top:30px;">
                                         ##if $extended.address_ip == $extended.pass_address && $extended.pass_address && $extended.address_ip}
                                         ##set $checked = 'checked'}
                                         ##/if}
-                                        <input type="checkbox" class="checkbox" data-match-donor="extended[pass_address]" data-mpc-attr="##$checked} ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                        <input type="checkbox" class="checkbox" data-match-donor="extended[pass_address]"
+                                               data-mpc-attr="##$checked} ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                         <span class="checkbox-text">Адреса регистрации ИП и в паспорте совпадают</span>
                                     </label>
                                 </div>
@@ -226,21 +243,32 @@
 
                                 <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? 'd-none' : ''}" data-legal-form="ИП">
                                     <label class="input-label">ОГРНИП*</label>
-                                    <input type="text" class="input" name="extended[ogrnip]" value="##$extended[ogrnip]}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                    <input type="text" class="input" name="extended[ogrnip]" value="##$extended[ogrnip]}"
+                                           data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                     <small class="error" data-si-error="extended[ogrnip]"></small>
                                 </div>
 
-                                <div class="input-group">
+                                <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? 'd-none' : ''}" data-legal-form="ИП">
                                     <label class="input-label">ИНН*</label>
-                                    <input type="text" class="input" name="inn" value="##$_modx->user.inn}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
-                                    <small class="error" data-si-error="inn"></small>
+                                    <input type="text" class="input" name="inn_ip" value="##$_modx->user.inn}"
+                                           placeholder="10 цифр"
+                                           data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                    <small class="error" data-si-error="inn_ip"></small>
+                                </div>
+
+                                <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый">
+                                    <label class="input-label">ИНН*</label>
+                                    <input type="text" class="input" name="inn_self" value="##$_modx->user.inn}"
+                                           placeholder="12 цифр"
+                                           data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                    <small class="error" data-si-error="inn_self"></small>
                                 </div>
 
                                 <div class="input-group">
                                     ##set $offerPageKey = 'offer'~(51976 | resource: 'introtext')}
                                     ##set $offerDate = $extended[$offerPageKey]}
                                     <label class="input-label">Дата принятия оферты*</label>
-                                    <input type="text" class="input" value="##$offerDate}">
+                                    <input type="text" readonly class="input" value="##$offerDate}">
                                 </div>
                             </div>
 
@@ -270,12 +298,14 @@
                         <div class="columns">
                             <div class="column col-6 md-col-12">
                                 <label class="input-label">Серия*</label>
-                                <input type="text" class="input" name="pass_series" value="##$_modx->user.pass_series}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <input type="text" class="input" name="pass_series" value="##$_modx->user.pass_series}"
+                                       data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                 <small class="error" data-si-error="pass_series"></small>
                             </div>
                             <div class="column col-6 md-col-12">
                                 <label class="input-label">Номер*</label>
-                                <input type="text" class="input" name="pass_num" value="##$_modx->user.pass_num}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <input type="text" class="input" name="pass_num" value="##$_modx->user.pass_num}"
+                                       data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                 <small class="error" data-si-error="pass_num"></small>
                             </div>
                         </div>
@@ -285,28 +315,33 @@
                         <label class="input-label">Кем и когда выдан*</label>
                         <div class="columns">
                             <div class="column col-6 md-col-12">
-                                <input type="text" class="input" name="extended[pass_date]" value="##$extended[pass_date]}" placeholder="Дата выдачи" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <input type="text" class="input" name="extended[pass_date]" value="##$extended[pass_date]}" placeholder="Дата выдачи"
+                                       data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                 <small class="error" data-si-error="extended[pass_date]"></small>
                             </div>
                             <div class="column col-6 md-col-12">
-                                <input type="text" class="input" name="extended[pass_code]" value="##$extended[pass_code]}" placeholder="Код подразделения" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <input type="text" class="input" name="extended[pass_code]" value="##$extended[pass_code]}" placeholder="Код подразделения"
+                                       data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                 <small class="error" data-si-error="extended[pass_code]"></small>
                             </div>
                             <div class="column col-12">
-                                <input type="text" class="input" name="extended[pass_where]" value="##$extended[pass_where]}" placeholder="Орган, выдавший паспорт" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <input type="text" class="input" name="extended[pass_where]" value="##$extended[pass_where]}" placeholder="Орган, выдавший паспорт"
+                                       data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                 <small class="error" data-si-error="extended[pass_where]"></small>
                             </div>
                         </div>
                     </div>
                     <div class="input-group">
                         <label class="input-label">Адрес регистрации*</label>
-                        <input type="text" class="input" name="extended[pass_address]" value="##$extended[pass_address]}" data-match-recepient="extended[address_ip]" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                        <input type="text" class="input" name="extended[pass_address]" value="##$extended[pass_address]}" data-match-recepient="extended[address_ip]"
+                               data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                         <small class="error" data-si-error="extended[pass_address]"></small>
                     </div>
 
                     <div class="input-group">
                         <label class="input-label">Дата рождения*</label>
-                        <input type="text" class="input" name="dob" value="##$_modx->user.dob? ($_modx->user.dob | date: 'd.m.Y') :''}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                        <input type="text" class="input" name="dob" value="##$_modx->user.dob? ($_modx->user.dob | date: 'd.m.Y') :''}"
+                               data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                         <small class="error" data-si-error="dob"></small>
                     </div>
                 </div>
@@ -324,17 +359,20 @@
 
                             <div class="input-group">
                                 <label class="input-label">Расчетный счет*</label>
-                                <input type="text" class="input" name="extended[rs]" value="##$extended[rs]}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <input type="text" class="input" name="extended[rs]" value="##$extended[rs]}"
+                                       data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                 <small class="error" data-si-error="extended[rs]"></small>
                             </div>
 
                             <div class="input-group">
                                 <label class="input-label">БИК*</label>
-                                <input type="text" class="input" name="extended[bik]" value="##$extended[bik]}" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
+                                <input type="text" class="input" name="extended[bik]" value="##$extended[bik]}"
+                                       data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                 <small class="error" data-si-error="extended[bik]"></small>
                             </div>
 
-                            <textarea class="input textarea" name="extended[card_data]" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}" placeholder="Получатель, Банк получателя, Корр. счёт, ИНН, КПП, SWIFT-код">##$extended[card_data]}</textarea>
+                            <textarea class="input textarea" name="extended[card_data]" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}"
+                                      placeholder="Получатель, Банк получателя, Корр. счёт, ИНН, КПП, SWIFT-код">##$extended[card_data]}</textarea>
                             <small class="error" data-si-error="extended[card_data]"></small>
                         </div>
 
@@ -365,13 +403,15 @@
                 <div class="container-small">
                     <h2>Документы</h2>
 
-                    <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="selfemployed_img" data-si-form="certUploadForm">
+                    <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="selfemployed_img"
+                         data-si-form="certUploadForm">
                         <div data-fu-wrap>
                             <label class="input-label">Справка о постановке на учет в качестве плательщика «Налога на профессиональный доход»*</label>
                             <input type="hidden" name="extended[selfemployed_img]" data-fu-list>
                             <div data-fu-progress=""></div>
                             <div class="file">
-                                <input type="file" data-fu-field name="selfemployed_img" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}" class="file-form__file">
+                                <input type="file" data-fu-field name="selfemployed_img" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}"
+                                       class="file-form__file">
                                 <div class="file-text">загрузите фотографию</div>
                             </div>
                             <template data-fu-tpl>
@@ -381,13 +421,15 @@
                         <small class="error" data-si-error="extended[selfemployed_img]"></small>
                     </div>
 
-                    <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="pass_one_img" data-si-form="passOneUploadForm">
+                    <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="pass_one_img"
+                         data-si-form="passOneUploadForm">
                         <div data-fu-wrap>
                             <label class="input-label">Скан основного разворота паспорта*</label>
                             <input type="hidden" name="extended[pass_one_img]" data-fu-list>
                             <div data-fu-progress=""></div>
                             <div class="file">
-                                <input type="file" data-fu-field name="pass_one_img" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}" class="file-form__file">
+                                <input type="file" data-fu-field name="pass_one_img" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}"
+                                       class="file-form__file">
                                 <div class="file-text">загрузите фотографию</div>
                             </div>
                             <template data-fu-tpl>
@@ -397,13 +439,15 @@
                         <small class="error" data-si-error="extended[pass_one_img]"></small>
                     </div>
 
-                    <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="pass_two_img" data-si-form="passTwoUploadForm">
+                    <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="pass_two_img"
+                         data-si-form="passTwoUploadForm">
                         <div data-fu-wrap>
                             <label class="input-label">Скан разворота паспорта с пропиской*</label>
                             <input type="hidden" name="extended[pass_two_img]" data-fu-list>
                             <div data-fu-progress=""></div>
                             <div class="file">
-                                <input type="file" data-fu-field name="pass_two_img" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}" class="file-form__file">
+                                <input type="file" data-fu-field name="pass_two_img" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}"
+                                       class="file-form__file">
                                 <div class="file-text">загрузите фотографию</div>
                             </div>
                             <template data-fu-tpl>
@@ -413,13 +457,15 @@
                         <small class="error" data-si-error="extended[pass_two_img]"></small>
                     </div>
 
-                    <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="insurance_img" data-si-form="insuranceUploadForm">
+                    <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="insurance_img"
+                         data-si-form="insuranceUploadForm">
                         <div data-fu-wrap>
                             <label class="input-label">Скан лицевой стороны СНИЛС*</label>
                             <input type="hidden" name="extended[insurance_img]" data-fu-list>
                             <div data-fu-progress=""></div>
                             <div class="file">
-                                <input type="file" data-fu-field name="insurance_img" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}" class="file-form__file">
+                                <input type="file" data-fu-field name="insurance_img" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}"
+                                       class="file-form__file">
                                 <div class="file-text">загрузите фотографию</div>
                             </div>
                             <template data-fu-tpl>
@@ -431,13 +477,15 @@
 
 
                     ##if !$extended.certificate_img}
-                    <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? 'd-none' : ''}" data-legal-form="ИП" data-si-preset="certificate_img" data-si-form="certificateUploadForm">
+                    <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? 'd-none' : ''}" data-legal-form="ИП" data-si-preset="certificate_img"
+                         data-si-form="certificateUploadForm">
                         <div data-fu-wrap>
                             <label class="input-label">Свидетельство о регистрации ИП*</label>
                             <input type="hidden" name="extended[certificate_img]" data-fu-list>
                             <div data-fu-progress=""></div>
                             <div class="file">
-                                <input type="file" data-fu-field name="certificate_img" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}" class="file-form__file">
+                                <input type="file" data-fu-field name="certificate_img" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}"
+                                       class="file-form__file">
                                 <div class="file-text">загрузите фотографию</div>
                             </div>
                             <template data-fu-tpl>
@@ -447,18 +495,21 @@
                         <small class="error" data-si-error="extended[certificate_img]"></small>
                     </div>
                     ##else}
-                    <input type="hidden" name="extended[certificate_img]" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}" value="##$extended.certificate_img}">
+                    <input type="hidden" name="extended[certificate_img]" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}"
+                           value="##$extended.certificate_img}">
                     <p class="input-label">Свидетельство о регистрации ИП уже загружено.</p>
                     ##/if}
 
                     ##if !$extended.inn_img}
-                    <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? 'd-none' : ''}" data-legal-form="ИП" data-si-preset="inn_img" data-si-form="innUploadForm">
+                    <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? 'd-none' : ''}" data-legal-form="ИП" data-si-preset="inn_img"
+                         data-si-form="innUploadForm">
                         <div data-fu-wrap>
                             <label class="input-label">Скан ИНН*</label>
                             <input type="hidden" name="extended[inn_img]" data-fu-list>
                             <div data-fu-progress=""></div>
                             <div class="file">
-                                <input type="file" data-fu-field name="inn_img" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}" class="file-form__file">
+                                <input type="file" data-fu-field name="inn_img" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}"
+                                       class="file-form__file">
                                 <div class="file-text">загрузите фотографию</div>
                             </div>
                             <template data-fu-tpl>

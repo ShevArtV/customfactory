@@ -87,8 +87,8 @@
                         </li>
                         <li>
                             {if $_modx->user.id | ismember: "Designers"}
-                            {set $dashboardUrl = (28 | url)}
-                            <a href="{$dashboardUrl}" class="header-auth__item">{28 | resource: 'menutitle'}</a>
+                                {set $dashboardUrl = (28 | url)}
+                                <a href="{$dashboardUrl}" class="header-auth__item">{28 | resource: 'menutitle'}</a>
                             {else}
                                 {set $dashboardUrl = (54750 | url)}
                                 <a href="{$dashboardUrl}" class="header-auth__item">{54750 | resource: 'menutitle'}</a>
@@ -191,6 +191,11 @@
             </div>
 
         </div>
+
+        {if $template === 9}
+            <script type="module" src="assets/project_files/v2/js/lk/scripts.js?v={'' | date: 'dmYHis'}"></script>
+        {/if}
+
         <!-- SQL: [^qt^] ([^q^]), PHP: [^p^], MEM: [^m^], ALL: [^t^] ([^s^]) -->
     </footer>
 </div>

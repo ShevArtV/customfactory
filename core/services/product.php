@@ -955,12 +955,12 @@ class Product extends Base
     public function loadWorkflow($id)
     {
         $productData = [];
-        $q = $this->modx->newQuery('msProductData');
-        $q->setClassAlias('Data');
-        $q->leftJoin('modTemplateVarResource', 'Workflow', [
-            'Workflow.contentid' => 'Data.id',
-            'Workflow.tmplvarid' => $this->workflowTVId
-        ]);
+        $q = $this->modx->newQuery('modResource');
+        $q->setClassAlias('Resource');
+        $q->leftJoin('msProductData', 'Data');
+        $q->leftJoin('modTemplateVarResource', 'Workflow',
+            "Workflow.contentid = Data.id AND Workflow.tmplvarid = $this->workflowTVId"
+        );
         $q->select(
             'Data.tags as tags,
          Data.color as color,
@@ -968,15 +968,18 @@ class Product extends Base
          Data.status as status,
          Data.prev_status as prev_status,
          Data.root_id as root_id,
+         Data.print as print,
+         Data.preview as preview,
+         Resource.introtext as introtext,
          Workflow.value as workflow'
         );
         $q->where([
             'Data.id' => $id,
         ]);
         $q->prepare();
-        if($q->stmt->execute()){
+
+        if ($q->stmt->execute()) {
             $productData = $q->stmt->fetch(\PDO::FETCH_ASSOC);
-            $this->modx->log(1, print_r($productData, 1));
         }
         if (empty($productData)) {
             return [

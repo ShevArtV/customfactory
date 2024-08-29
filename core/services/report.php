@@ -159,7 +159,16 @@ class Report extends Base
         $output = [];
         foreach ($this->names as $i => $name) {
             $index = $this->getColumnIndex($i + 1) . $strNum;
-            $output[$index] = $name === 'dob' ? date('d.m.Y', $resourceData[$name]) : $resourceData[$name];
+
+            // Обработка поля даты рождения (dob) и создания (createdon)
+            if ($name === 'dob' || $name === 'createdon') {
+                $timestamp = isset($resourceData[$name]) ? (int)$resourceData[$name] : 0;
+                $output[$index] = $timestamp ? date('d.m.Y', $timestamp) : '';
+            } else {
+                $output[$index] = $resourceData[$name];
+            }
+
+            // Обработка статуса
             if ($name === 'status') {
                 $output[$index] = str_replace('&nbsp;', '', $this->statuses['designer'][$resourceData['status']]['caption']);
             }
