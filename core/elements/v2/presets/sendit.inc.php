@@ -101,6 +101,7 @@ return [
         'hooks' => 'PrepareUserFields,PrepareUserFiles,Identification',
         'method' => 'update',
         'successMessage' => 'Данные сохранены.',
+        'validationErrorMessage' => 'Исправьте ошибки.',
         'clearFieldsOnSuccess' => 0,
         'allowFiles' => 'extended[selfemployed_img],extended[pass_one_img],extended[pass_two_img],extended[insurance_img],extended[certificate_img],extended[inn_img]',
         'validate' => 'email:required:email,

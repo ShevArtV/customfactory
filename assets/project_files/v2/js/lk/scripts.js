@@ -382,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('[name="pass_num"]') && IMask(document.querySelector('[name="pass_num"]'), {mask: '000 000'})
     document.querySelector('[name="extended[pass_code]"]') && IMask(document.querySelector('[name="extended[pass_code]"]'), {mask: '000-000'})
     document.querySelector('[name="inn_self"]') && IMask(document.querySelector('[name="inn_self"]'), {mask: '000 000 000 000'})
-    document.querySelector('[name="inn_ip"]') && IMask(document.querySelector('[name="inn_ip"]'), {mask: '000 000 000 0'})
+    document.querySelector('[name="inn_ip"]') && IMask(document.querySelector('[name="inn_ip"]'), {mask: '000 000 000 000'})
     document.querySelector('[name="extended[ogrnip]"]') && IMask(document.querySelector('[name="extended[ogrnip]"]'), {mask: '000 000 000 000 000'})
     document.querySelector('[name="extended[bik]"]') && IMask(document.querySelector('[name="extended[bik]"]'), {mask: '000 000 000'})
     document.querySelector('[name="extended[rs]"]') && IMask(document.querySelector('[name="extended[rs]"]'), {mask: '000 000 000 000 000 000 00'})
@@ -612,6 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('si:send:error', (e) => {
     const {result, headers, Sending} = e.detail;
     if (result.data && result.data.errors) {
+      (headers['X-SIPRESET'] === 'dataedit')  && SendIt?.Notify?.error(result.message);
       for (let k in result.data.errors) {
         k = k.replace(/extended\[|\]/g, '');
         const fields = document.querySelectorAll(`[name="${k}"]`);
@@ -743,6 +744,11 @@ document.addEventListener('DOMContentLoaded', () => {
       el.classList[el.dataset.qfStep !== '1' ? 'remove' : 'add']('active');
     })
   })
+
+  document.addEventListener('sf:set:before', e => {
+    const { savedData } = e.detail;
+    delete savedData['legal_form'];
+  });
 
   if (typeof jQuery !== 'undefined') {
     const collapseTitle = $('.js-collapse-title')

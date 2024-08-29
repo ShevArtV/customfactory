@@ -27,4 +27,5 @@ if(!empty($keys)){
     }
     $hook->setValue('extended', json_encode($extended, JSON_UNESCAPED_UNICODE));
 }
+
 return true;

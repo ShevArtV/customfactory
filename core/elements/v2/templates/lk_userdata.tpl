@@ -251,7 +251,7 @@
                                 <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? 'd-none' : ''}" data-legal-form="ИП">
                                     <label class="input-label">ИНН*</label>
                                     <input type="text" class="input" name="inn_ip" value="##$_modx->user.inn}"
-                                           placeholder="10 цифр"
+                                           placeholder="12 цифр"
                                            data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                                     <small class="error" data-si-error="inn_ip"></small>
                                 </div>
@@ -402,7 +402,7 @@
 
                 <div class="container-small">
                     <h2>Документы</h2>
-
+                    ##if !$extended.selfemployed_img}
                     <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="selfemployed_img"
                          data-si-form="certUploadForm">
                         <div data-fu-wrap>
@@ -420,7 +420,13 @@
                         </div>
                         <small class="error" data-si-error="extended[selfemployed_img]"></small>
                     </div>
+                    ##else}
+                    <input type="hidden" name="extended[selfemployed_img]" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}"
+                           value="##$extended.selfemployed_img}">
+                    <p class="input-label">Справка о постановке на учет в качестве плательщика «Налога на профессиональный доход» уже загружена.</p>
+                    ##/if}
 
+                    ##if !$extended.pass_one_img}
                     <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="pass_one_img"
                          data-si-form="passOneUploadForm">
                         <div data-fu-wrap>
@@ -438,7 +444,13 @@
                         </div>
                         <small class="error" data-si-error="extended[pass_one_img]"></small>
                     </div>
+                    ##else}
+                    <input type="hidden" name="extended[pass_one_img]" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}"
+                           value="##$extended.pass_one_img}">
+                    <p class="input-label">Скан основного разворота паспорта уже загружен.</p>
+                    ##/if}
 
+                    ##if !$extended.pass_two_img}
                     <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="pass_two_img"
                          data-si-form="passTwoUploadForm">
                         <div data-fu-wrap>
@@ -456,7 +468,13 @@
                         </div>
                         <small class="error" data-si-error="extended[pass_two_img]"></small>
                     </div>
+                    ##else}
+                    <input type="hidden" name="extended[pass_two_img]" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}"
+                           value="##$extended.pass_two_img}">
+                    <p class="input-label">Скан разворота паспорта с пропиской уже загружен.</p>
+                    ##/if}
 
+                    ##if !$extended.insurance_img}
                     <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="insurance_img"
                          data-si-form="insuranceUploadForm">
                         <div data-fu-wrap>
@@ -474,6 +492,11 @@
                         </div>
                         <small class="error" data-si-error="extended[insurance_img]"></small>
                     </div>
+                    ##else}
+                    <input type="hidden" name="extended[insurance_img]" data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}"
+                           value="##$extended.insurance_img}">
+                    <p class="input-label">Скан лицевой стороны СНИЛС уже загружен.</p>
+                    ##/if}
 
 
                     ##if !$extended.certificate_img}

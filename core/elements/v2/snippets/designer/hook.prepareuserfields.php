@@ -6,3 +6,4 @@ if($legalForm === 'ИП'){
 if($legalForm === 'Самозанятый'){
     $hook->setValue('inn', $hook->getValue('inn_self'));
 }
+return true;
