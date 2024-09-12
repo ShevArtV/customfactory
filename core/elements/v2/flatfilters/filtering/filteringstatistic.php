@@ -22,7 +22,7 @@ class FilteringStatistic extends FilteringResources
         $sql .= " LIMIT {$this->limit} OFFSET {$this->offset}";
         /* получаем список id для отображения на странице */
         if ($statement = $this->execute($sql)) {
-            $rids = $statement->fetchAll(PDO::FETCH_COLUMN);
+            $rids = $statement->fetchAll(\PDO::FETCH_COLUMN);
             $rids = implode(',', $rids);
         }
 

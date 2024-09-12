@@ -27,7 +27,7 @@ class IndexingStatistic extends IndexingResources
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
-            if(!$result = $q->stmt->fetchAll(PDO::FETCH_ASSOC)){
+            if(!$result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC)){
                 return $output;
             }
 

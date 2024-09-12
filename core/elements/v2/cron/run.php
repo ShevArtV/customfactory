@@ -35,6 +35,7 @@ switch ($argv[1]) {
         $designerService->removeUnactiveUsers();
         break;
     case 'import_articles':
+        // php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/elements/v2/cron/run.php import_articles
         $productService = new Product($modx);
         $productService->importArticles();
         break;

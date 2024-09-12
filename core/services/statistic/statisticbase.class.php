@@ -102,12 +102,18 @@ class StatisticBase
         return $this->modx->getObject('msProductData', $q);
     }
 
-    public function setStatictic()
+    public function setStatictic(?array $where = [])
     {
         $q = $this->modx->newQuery('msOrderProduct');
+        if(!empty($where)){
+            $q->where($where);
+        }
         $q->groupby('`msOrderProduct`.`product_id`');
         $products = $this->modx->getIterator('msOrderProduct', $q);
+        $count = $this->modx->getCount('msOrderProduct', $q);
+        $index = 0;
         foreach ($products as $product) {
+            $index++;
             $pid = $product->get('product_id');
             $q = $this->modx->newQuery('msOrderProduct');
             $q->leftJoin('msOrder', 'Order');
@@ -125,8 +131,9 @@ class StatisticBase
             if ($statement = $this->modx->query($q->toSQL())) {
                 $r = $statement->fetchAll(\PDO::FETCH_ASSOC);
                 if (is_array($r)) {
-                    foreach ($r as $k => $item) {
-                        $item['date'] = strtotime($item['createdon']);
+                    foreach ($r as $item) {
+                        $date = date('Y-m-d', strtotime($item['createdon']));
+                        $item['date'] = strtotime($date);
                         unset($item['createdon']);
                         if (!$statistic = $this->modx->getObject('SalesStatisticsItem', [
                             'product_id' => $item['product_id'],
@@ -134,14 +141,32 @@ class StatisticBase
                             'market' => $item['market'],
                         ])) {
                             $statistic = $this->modx->newObject('SalesStatisticsItem');
+                        }else{
+                            $item['orders'] += $statistic->get('orders');
+                            $item['pays'] += $statistic->get('pays');
+                            $item['returns'] += $statistic->get('returns');
+                            $item['sales'] += $statistic->get('sales');
                         }
                         $statistic->fromArray($item);
                         $statistic->save();
                     }
                 }
             }
+            file_put_contents($this->basePath . 'assets/setstatistic_progress.txt', "$index/$count");
         }
         $this->logging->writeLog("Base::setStatictic", "Статистика установлена.");
+    }
+
+    public function deleteStatictic(?array $where = []){
+        $q = $this->modx->newQuery('SalesStatisticsItem');
+        if(!empty($where)){
+            $q->where($where);
+        }
+        $statisctics = $this->modx->getIterator('SalesStatisticsItem', $q);
+        foreach ($statisctics as $statistic) {
+           $statistic->remove();
+        }
+        $this->logging->writeLog("Base::deleteStatictic", "Статистика удалена.");
     }
 
     public function execCURL(array $headers, string $url, string $method, array $post_data, bool $ispost = false): array

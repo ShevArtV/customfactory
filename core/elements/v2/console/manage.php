@@ -725,7 +725,7 @@ ORDER BY r.id DESC LIMIT 100";
         // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php getdesignlog
         $modx->addPackage('moderatorlog', MODX_CORE_PATH . 'components/moderatorlog/model/');
         $productService = new Product($modx);
-        $logs = $modx->getIterator('moderatorlogEvent', ['rid' => '79998']);
+        $logs = $modx->getIterator('moderatorlogEvent', ['rid' => '80961']);
         foreach ($logs as $log) {
             $data = $log->toArray();
             $data['createdon'] = date('d.m.Y H:i:s', $data['createdon']);
@@ -782,5 +782,152 @@ ORDER BY r.id DESC LIMIT 100";
         $result = $productService->loadWorkflow(79671);
         break;
 
+    case 'updateproductindexes':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php updateproductindexes
+        $flatfilters = $modx->getService('flatfilters', 'Flatfilters', MODX_CORE_PATH . 'components/flatfilters/');
+        $articles = include dirname(__FILE__) . '/temp.php';
+        $q = $modx->newQuery('modResource');
+        $q->leftJoin('msProductData', 'Data');
+        $q->where(['Data.article:IN' => $articles]);
+        $products = $modx->getIterator('modResource', $q);
+        foreach ($products as $r) {
+            $flatfilters->removeResourceIndex($r->get('id'));
+            $flatfilters->indexingDocument($r);
+        }
+        break;
 
+    case 'checkgeneratepreview':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php checkgeneratepreview
+        putenv('MAGICK_DEBUG=All');
+        $basePath = $modx->getOption('base_path');
+        $item = 'assets/loadtoselectel/80961/W11601049-70126.tif';
+        $preview = $modx->runSnippet('pThumb', [
+            'input' => $basePath . $item,
+            'options' => 'w=249&h=281&zc=1&q=60'
+        ]);
+        echo $preview;
+        break;
+
+    case 'remove_userFiles':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php remove_userFiles
+        $designerService = new \CustomServices\Designer($modx);
+        $basePath = $modx->getOption('base_path');
+        $userFilesPath = $basePath . 'assets/userfiles/';
+        $dirs = scandir($userFilesPath);
+        unset($dirs[0], $dirs[1]);
+        foreach ($dirs as $dir) {
+            if (!$profile = $modx->getObject('modUserProfile', ['internalKey' => $dir])) {
+                $designerService->removeDir($userFilesPath . $dir . '/');
+            } else {
+                if ($profile->get('status') == 2) {
+                    $files = scandir($userFilesPath . $dir . '/');
+                    unset($files[0], $files[1]);
+                    $modx->log(1, print_r($files, 1));
+                    foreach ($files as $file) {
+                        $filePath = $userFilesPath . $dir . '/' . $file;
+                        $parts = explode('.', $file);
+                        $tmp = str_replace('extended_', '', $parts[0]);
+                        if (in_array($tmp, ['insurance_img', 'pass_one_img', 'pass_two_img', 'selfemployed_img']) && file_exists($filePath)) {
+                            unlink($filePath);
+                        }
+                    }
+                    $designerService->removeDir($userFilesPath . $dir . '/');
+                }
+            }
+        }
+        break;
+
+    case 'get_user_orders':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php get_user_orders
+        $corePath = $modx->getOption('core_path');
+        if (!$modx->addPackage('salesstatistics', $corePath . 'components/salesstatistics/model/')) {
+            return false;
+        }
+
+        $rid = 38565;
+        /*$q = $modx->newQuery('msOrder');
+        $q->where([
+            'user_id' => 172,
+            'createdon:>' => '2024-07-01 00:00:00',
+            'createdon:<' => '2024-08-01 00:00:00',
+            'status' => '2',
+        ]);
+        $q->select([
+            'COUNT(*) as count',
+            'SUM(cost) as sum',
+        ]);
+        $q->groupby('user_id');
+        $q->prepare();*/
+
+
+        /*$q = $modx->newQuery('msOrderProduct');
+        $q->leftJoin('msOrder', 'Order');
+        $q->leftJoin('msOrderAddress', 'Address', '`Order`.`id`=`Address`.`order_id`');
+        $q->select('COUNT(`msOrderProduct`.`order_id`) as orders');
+        $q->select('SUM(CASE WHEN `Order`.`status` = 2 THEN `msOrderProduct`.`cost` ELSE 0 END) as pays');
+        $q->select('SUM(CASE WHEN `Order`.`status` = 2 THEN 1 ELSE 0 END) as sales');
+        $q->select('SUM(CASE WHEN `Order`.`status` = 4 THEN 1 ELSE 0 END) as returns');
+        $q->select('`msOrderProduct`.`product_id`');
+        $q->select('`Order`.`createdon`');
+        $q->select('`Address`.`text_address` as `market`');
+        $q->groupby('`Order`.`createdon`');
+        $q->where([
+            "`msOrderProduct`.`product_id` = $rid",
+            //'Order.createdon:>' => '2024-08-01 00:00:00',
+            //'Order.createdon:<' => '2024-09-01 00:00:00',
+            ]);
+        $q->prepare();
+        $output = [
+            'orders' => 0,
+            'pays' => 0,
+            'sales' => 0,
+            'returns' => 0,
+        ];
+       if($q->stmt->execute()){
+            $r = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+            foreach($r as $item){
+                $dates[] = $item['createdon'];
+                foreach($output as $k => $v){
+                    $output[$k] += $item[$k];
+                }
+            }
+        }
+        sort($dates);
+        $output['min'] = $dates[0];
+        $output['max'] = end($dates);
+        $modx->log(1, print_r($output, 1));*/
+
+        $wb = new StatisticWb($modx);
+        //$wb->deleteStatictic();
+        $wb->setStatictic();
+
+        /*$q = $modx->newQuery('SalesStatisticsItem');
+        $q->select('SalesStatisticsItem.market as market, SalesStatisticsItem.date as date');
+        $q->where(['SalesStatisticsItem.product_id' => $rid]);
+        $output = [];*/
+        /*if ($q->prepare() && $q->stmt->execute()) {
+            if(!$result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC)){
+                return $output;
+            }
+
+            $output = [
+                'market' => [],
+                'date' => []
+            ];
+
+            foreach($result as $item){
+                if(!in_array($item['market'], $output['market'])){
+                    $output['market'][] =  $item['market'];
+                }
+                if(!in_array($item['date'], $output['date'])){
+                    $output['date'][] =  $item['date'];
+                }
+            }
+
+        }*/
+        //$productService = new Product($modx);
+        //$_REQUEST['date'] = '2024-08-01,2024-09-01';
+        /*$statistics = $productService->getStatistic([$rid]);
+        $modx->log(1, print_r($statistics, 1));*/
+        break;
 }

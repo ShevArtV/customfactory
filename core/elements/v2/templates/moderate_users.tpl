@@ -143,7 +143,8 @@
                                         <div class="profile-header__avatar">
                                             <img src="{$photo}" alt="">
                                         </div>
-                                        <div class="profile-header__name">{$fullname?:$username}</div>
+                                        {set $name = [$extended['surname'], $extended['name'], $extended['fathername']]}
+                                        <div class="profile-header__name">{($name | count > 0)? ($name | join: ' ') : $username}</div>
                                     </div>
 
                                     <ul class="designer-card__info">
@@ -235,7 +236,7 @@
                                     <h3>Проверить документы {$legal_form === 'ИП' ? 'ИП' : 'самозанятого'}:</h3>
                                     <ul class="designer-card__info">
                                         <li>
-                                            ИНН: {$inn ?'<span data-copy title="Нажмите для копирования">'~$inn~'</span>': '<span class="red">Не указано</span>'}
+                                            ИНН: {$inn ?'<span data-copy title="Нажмите для копирования">'~($inn | replace: ' ': '')~'</span>': '<span class="red">Не указано</span>'}
                                         </li>
                                         <li class="{$legal_form === 'ИП' ? 'd-none' : ''}">
                                             Номер справки

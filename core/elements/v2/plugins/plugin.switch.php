@@ -163,4 +163,8 @@ switch ($modx->event->name) {
             $product->save();
         }
         break;
+
+    case 'OnWebLogin':
+        unset($_SESSION['flatfilters']);
+        break;
 }

@@ -524,6 +524,8 @@ class Designer extends Base
         if (!empty($where)) {
             $q->where($where);
         }
+        $q->prepare();
+        $this->modx->log(1, print_r($q->toSQL(), 1));
         $profiles = $this->modx->getIterator('modUserProfile', $q);
         $filesFields = [
             'certificate_img',

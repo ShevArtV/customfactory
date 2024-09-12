@@ -76,7 +76,6 @@ class LoadToSelectel extends Base
             }
 
             $rid = $product->get('id');
-            $this->modx->log(1, print_r($rid, 1));
             $createdby = $product->get('createdby');
             $internalPath = $this->preparePath($createdby . '/' . $rid . '/{day}-{month}-{year}-{time}/');
             if (!$filesData = $this->getProductPreviews($filelist)) {
@@ -161,6 +160,11 @@ class LoadToSelectel extends Base
             $workflow = [];
             $tempFiles = $product->get('temp_files');
             $filelist = $tempFiles ? explode('|', $tempFiles) : [];
+            foreach ($filelist as $key => $file) {
+                if (!file_exists($this->basePath . $file)) {
+                    unset($filelist[$key]);
+                }
+            }
             $flag = 0;
             if (empty($filelist) && !$product->get('print')) {
                 if ($status === 1 && $prevStatus === 0) {
@@ -213,8 +217,6 @@ class LoadToSelectel extends Base
                 if (!empty($files)) {
                     $product->set($key, implode('|', $files));
                     $workflow[$key] = implode('|', $files);
-                    $this->removeFiles($filesData[$key]);
-                    $this->removeEmptyDir(dirname($filesData[$key][0]['tmp_name']));
                     $flag++;
 
                     $this->setModerateLog([
@@ -229,6 +231,11 @@ class LoadToSelectel extends Base
             }
 
             if ($flag === 2) {
+                foreach ($keys as $key) {
+                    $this->removeFiles($filesData[$key]);
+                    $this->removeEmptyDir(dirname($filesData[$key][0]['tmp_name']));
+                }
+
                 if ($prevStatus === 7) {
                     $workflow['designer_date'] = date('Y-m-d H:i:s');
                     $workflow['designer_comment'] = $product->get('introtext');
@@ -256,7 +263,7 @@ class LoadToSelectel extends Base
                     'method' => 'prepareLoading',
                     'productData' => $product->toArray()
                 ]);
-            }else{
+            } else {
                 $this->setModerateLog([
                     'user_id' => 1,
                     'rid' => (int)$product->get('id'),
@@ -266,7 +273,6 @@ class LoadToSelectel extends Base
                     'productData' => $product->toArray()
                 ]);
             }
-
         }
     }
 
@@ -305,8 +311,15 @@ class LoadToSelectel extends Base
                 return [];
             }
 
-            $prints[] = $this->getFileData($this->basePath . $item);
-            $previews[] = $this->getFileData($this->basePath . preg_replace('/^\//', '', $preview));
+            if ($itemData = $this->getFileData($this->basePath . $item)) {
+                $prints[] = $itemData;
+            }
+            if (strpos($preview, $this->basePath) !== 0) {
+                $preview = $this->basePath . preg_replace('/^\//', '', $preview);
+            }
+            if ($previewData = $this->getFileData($preview)) {
+                $previews[] = $previewData;
+            }
         }
         if (empty($prints)) {
             return [];
@@ -337,7 +350,13 @@ class LoadToSelectel extends Base
                 $this->modx->log(1, '[LoadToSelectel::getProductPreviews] Не удалось сгенерировать превью');
                 return [];
             }
-            $previews[] = $this->getFileData($this->basePath . preg_replace($basePath, '', $preview));
+
+            if (strpos($preview, $this->basePath) !== 0) {
+                $preview = $this->basePath . preg_replace('/^\//', '', $preview);
+            }
+            if ($previewData = $this->getFileData($preview)) {
+                $previews[] = $previewData;
+            }
         }
 
         return $previews;
@@ -349,6 +368,10 @@ class LoadToSelectel extends Base
      */
     private function getFileData(string $fullPath)
     {
+        if (!file_exists($fullPath)) {
+            $this->modx->log(1, '[LoadToSelectel::getFileData] Файл не существует: ' . $fullPath);
+            return [];
+        }
         return [
             'name' => basename($fullPath),
             'tmp_name' => $fullPath,
@@ -445,6 +468,9 @@ class LoadToSelectel extends Base
      */
     private function removeEmptyDir(string $dir): void
     {
+        if(!file_exists($dir)){
+            return;
+        }
         if (strpos($dir, '/assets/') === false) {
             return;
         }

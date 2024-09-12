@@ -804,8 +804,8 @@ class Product extends Base
         $resources = explode(',', $properties['resources']);
 
         $lists = [
-            'categories' => $this->getParents(),
-            'types' => $this->getProductTypes(),
+            'categories' => $this->getParents(true),
+            'types' => $this->getProductTypes(true),
             'colors' => $this->getColors(),
             'allTags' => $this->getTagsByAlphabet(),
             'statuses' => $this->getStatuses(),
@@ -1151,11 +1151,25 @@ class Product extends Base
         $importData = json_decode($importData, true);
 
         foreach ($importData as $data) {
-            if ($r = $this->modx->getObject('msProductData', ['article' => $data['Артикул']])) {
+            $q = $this->modx->newQuery('modResource');
+            $q->leftJoin('msProductData', 'Data');
+            $q->where(['Data.article' => $data['Артикул']]);
+            if ($r = $this->modx->getObject('modResource', $q)) {
                 $r->set('article_wb', $data['АртикулWB']);
                 $r->set('article_oz', $data['OzonID']);
                 $r->set('article_ya', $data['Артикул']);
                 $r->save();
+
+                $this->flatfilters->removeResourceIndex((int)$r->get('id'));
+                $this->flatfilters->indexingDocument($r);
+
+                $this->setModerateLog([
+                    'rid' => $r->get('id'),
+                    'msg' => 'Установлены артикулы',
+                    'place' => '\CustomServices\Product',
+                    'method' => 'importArticles',
+                    'productData' => $r->toArray(),
+                ]);
             }
         }
     }

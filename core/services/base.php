@@ -62,7 +62,7 @@ class Base
         return $output;
     }
 
-    public function getProductTypes()
+    public function getProductTypes(?bool $showUnpublished = false)
     {
         $cacheKey = 'getProductTypes::cache';
         if ($output = $this->modx->cacheManager->get($cacheKey)) {
@@ -73,11 +73,15 @@ class Base
         $q->select('msProduct.id as id, msProduct.pagetitle as pagetitle');
         $q->where([
             'msProduct.template' => 14,
-            'msProduct.published' => 1,
-            'Parent.published' => 1,
             'msProduct.deleted' => 0,
             'Parent.deleted' => 0,
         ]);
+        if(!$showUnpublished) {
+            $q->andCondition([
+                'msProduct.published' => 1,
+                'Parent.published' => 1,
+            ]);
+        }
         $tstart = microtime(true);
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
@@ -92,7 +96,7 @@ class Base
         }
     }
 
-    public function getParents()
+    public function getParents(?bool $showUnpublished = false)
     {
         $cacheKey = 'getParents::cache';
         if ($output = $this->modx->cacheManager->get($cacheKey)) {
@@ -100,7 +104,10 @@ class Base
         }
         $q = $this->modx->newQuery('modResource');
         $q->select('id, pagetitle');
-        $q->where(['modResource.class_key' => 'msCategory', 'modResource.parent' => 13, 'modResource.published' => 1, 'modResource.deleted' => 0]);
+        $q->where(['modResource.class_key' => 'msCategory', 'modResource.parent' => 13, 'modResource.deleted' => 0]);
+        if(!$showUnpublished) {
+            $q->andCondition(['modResource.published' => 1]);
+        }
         $tstart = microtime(true);
         if ($q->prepare() && $q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
