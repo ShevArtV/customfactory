@@ -89,4 +89,14 @@ switch ($argv[1]) {
             $productService->removeProduct($product->toArray());
         }
         break;
+
+    case 'clear_logs':
+        // php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/elements/v2/cron/run.php clear_logs
+        // php7.4 ~/www/core/elements/v2/cron/run.php clear_logs
+        $now = new DateTime();
+        $thirtyDaysAgo = $now->modify('-30 days');
+        $timestamp = $thirtyDaysAgo->getTimestamp();
+        $sql = "DELETE FROM cust_moderatorlog_event WHERE createdon < $timestamp";
+        $count = $modx->exec($sql);
+        break;
 }

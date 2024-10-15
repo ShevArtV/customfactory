@@ -217,7 +217,7 @@
                             {set $previews = $preview | split: '|'}
                             {if $previews}
                                 {foreach $previews as $path}
-                                    <li style="background-image: url(https://311725.selcdn.ru/custom_factory/{$path})"></li>
+                                    <li style="background-image: url({$_modx->config.file_prefix}{$path})"></li>
                                 {/foreach}
                             {/if}
                         </ul>
@@ -276,7 +276,7 @@
                                 </ul>
                             </div>
                             <div class="good-list">
-                                {set $imgPrefix = 'https://311725.selcdn.ru/custom_factory/'}
+                                {set $imgPrefix = $_modx->config.file_prefix}
                                 <ul class="good-list__files">
                                     {foreach ($print | split: '|') as $img index=$i}
                                         <li><a href="{$imgPrefix}{$img}" download target="_blank">Печатный файл №{$i%2B1}</a></li>
@@ -496,7 +496,7 @@
 
     <div id="workflow" aria-hidden="false" class="modal">
         <div class="modal-main" data-mpc-chunk="common/workflow_moderator.tpl">
-            {set $imgPrefix = 'https://311725.selcdn.ru/custom_factory/'}
+            {set $imgPrefix = $_modx->config.file_prefix}
             <div class="modal-close" data-modal-close=""></div>
             <form data-si-form="modalProductStatus" data-si-nosave enctype="multipart/form-data" class="modal-area modal-content scrollbar">
                 <input type="hidden" name="selected_id[]" value="{$id}">

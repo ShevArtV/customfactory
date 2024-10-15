@@ -104,6 +104,8 @@ class StatisticBase
 
     public function setStatictic(?array $where = [])
     {
+        $this->deleteStatictic($where);
+
         $q = $this->modx->newQuery('msOrderProduct');
         if(!empty($where)){
             $q->where($where);

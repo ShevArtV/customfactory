@@ -34,7 +34,7 @@
                     {set $previews = $preview | split: '|'}
                     {if $previews}
                         {foreach $previews as $path}
-                            <li style="background-image: url(https://311725.selcdn.ru/custom_factory/{$path})"></li>
+                            <li style="background-image: url({$_modx->config.file_prefix}{$path})"></li>
                         {/foreach}
                     {/if}
                 </ul>
@@ -145,7 +145,7 @@
                 <input type="hidden" name="maxcount" form="reloadFiles" value="{$count_files}">
                 <div class="good-items">
                     {foreach $workflow as $item index=$i}
-                        {set $imgPrefix = 'https://311725.selcdn.ru/custom_factory/'}
+                        {set $imgPrefix = $_modx->config.file_prefix}
                         {if $item.screens}
                             {set $imgPrefix = ''}
                         {/if}

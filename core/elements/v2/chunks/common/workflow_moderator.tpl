@@ -1,5 +1,5 @@
 <div class="modal-main">
-            {set $imgPrefix = 'https://311725.selcdn.ru/custom_factory/'}
+            {set $imgPrefix = $_modx->config.file_prefix}
             <div class="modal-close" data-modal-close=""></div>
             <form data-si-form="modalProductStatus" data-si-nosave enctype="multipart/form-data" class="modal-area modal-content scrollbar">
                 <input type="hidden" name="selected_id[]" value="{$id}">

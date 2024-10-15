@@ -63,6 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
       switch (itemId) {
         case '1':
           checked = item.querySelector('[name="parent"]:checked');
+          if ([19,54754].includes(Number(checked.value))){
+            checked = item.querySelector('[name="data[cut][]"]:checked') && item.querySelector('[name="data[gender][]"]:checked');
+          }
           break;
         case '2':
           checked = Boolean(item.querySelector('[name="filelist"]').value);
@@ -416,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (userdataDates.length) {
       userdataDates.forEach(field => {
-          new AirDatepicker(field, {})
+        new AirDatepicker(field, {})
       })
     }
   }, project.datepickerStylesPath)
@@ -612,7 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('si:send:error', (e) => {
     const {result, headers, Sending} = e.detail;
     if (result.data && result.data.errors) {
-      (headers['X-SIPRESET'] === 'dataedit')  && SendIt?.Notify?.error(result.message);
+      (headers['X-SIPRESET'] === 'dataedit') && SendIt?.Notify?.error(result.message);
       for (let k in result.data.errors) {
         k = k.replace(/extended\[|\]/g, '');
         const fields = document.querySelectorAll(`[name="${k}"]`);
@@ -746,7 +749,7 @@ document.addEventListener('DOMContentLoaded', () => {
   })
 
   document.addEventListener('sf:set:before', e => {
-    const { savedData } = e.detail;
+    const {savedData} = e.detail;
     delete savedData['legal_form'];
   });
 

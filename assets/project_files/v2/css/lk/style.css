@@ -1684,7 +1684,7 @@ h3 {
 @media (min-width: 768px) {
   .type-table th {
     font-size: 20px;
-    width: 50%;
+    width: 25%;
   }
 }
 
@@ -4256,4 +4256,10 @@ input[disabled], textarea[disabled], select[disabled] {
 
 button[disabled]{
   pointer-events: none;
+}
+[data-qf-item="1"]{
+  max-width: 100%;
+}
+[data-qf-item="1"] .blockquote{
+  max-width: 600px;
 }

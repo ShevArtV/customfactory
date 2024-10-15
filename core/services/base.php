@@ -72,7 +72,7 @@ class Base
         $q->leftJoin('modResource', 'Parent', 'msProduct.parent = Parent.id');
         $q->select('msProduct.id as id, msProduct.pagetitle as pagetitle');
         $q->where([
-            'msProduct.template' => 14,
+            'msProduct.template:IN' => [14,26],
             'msProduct.deleted' => 0,
             'Parent.deleted' => 0,
         ]);

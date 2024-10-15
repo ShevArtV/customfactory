@@ -58,6 +58,8 @@ class Product extends Base
         $q->select(
             "Data.size AS size, 
                     Data.id AS root_id,
+                    Data.cut AS cut,
+                    Data.gender AS gender,
                     Data.count_files AS count_files,
                     Parent.pagetitle AS pagetitle, 
                     Parent.menuindex AS menuindex, 
@@ -86,6 +88,7 @@ class Product extends Base
                 $output[$item['pagetitle']]['sizes'][$size[0]] = $item;
             }
         }
+
         $this->modx->cacheManager->set($cacheKey, $output, $this->cacheTime, $this->cacheOptions);
         return $output;
     }
@@ -138,7 +141,7 @@ class Product extends Base
         return 0;
     }
 
-    public function prepareFiles(array $filelist, int $rid, $folder = 'loadtoselectel/', $field = 'temp_files'): void
+    public function prepareFiles(array $filelist, int $rid, $folder = 'loadtoselectel/', $field = 'temp_files', $isCopy = false): void
     {
         $senditTempPath = $this->modx->getOption('si_uploaddir', '', '[[+asseetsUrl]]components/sendit/uploaded_files/');
         $senditTempPath = str_replace('[[+asseetsUrl]]', $this->assetsPath, $senditTempPath);
@@ -151,7 +154,11 @@ class Product extends Base
             $sourceFile = $senditTempPath . session_id() . '/' . $file;
             if (file_exists($sourceFile)) {
                 $targetFile = $targetFolder . $file;
-                rename($sourceFile, $targetFile);
+                if(!$isCopy){
+                    rename($sourceFile, $targetFile);
+                }else{
+                    copy($sourceFile, $targetFile);
+                }
                 $files[] = str_replace($this->basePath, '', $targetFile);
             }
         }
@@ -489,7 +496,7 @@ class Product extends Base
     {
         $status = $product->get('status');
         $prevStatus = $product->get('prev_status');
-        $filePrefix = 'https://311725.selcdn.ru/custom_factory/';
+        $filePrefix = $this->modx->getOption('file_prefix');
         if ($prevStatus === 7) {
             return;
         }
@@ -1190,5 +1197,21 @@ class Product extends Base
             $data['ids'] = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
         }
         return $data;
+    }
+
+    public function getProductVariations(array $where)
+    {
+        $output = [];
+        $q = $this->modx->newQuery('modResource');
+        $q->leftJoin('msProductData', 'Data');
+        $q->select('modResource.id');
+        $q->select($this->modx->getSelectColumns('msProductData', 'Data', '', ['id'], true));
+        $q->select($this->modx->getSelectColumns('modResource', 'modResource', '', ['id'], true));
+        $q->where($where);
+        $q->prepare();
+        if ($q->stmt->execute()) {
+            $output = $q->stmt->fetchAll(\PDO::FETCH_GROUP|\PDO::FETCH_ASSOC);
+        }
+        return $output;
     }
 }

@@ -844,7 +844,7 @@ ORDER BY r.id DESC LIMIT 100";
             return false;
         }
 
-        $rid = 38565;
+        $rid = 68716;
         /*$q = $modx->newQuery('msOrder');
         $q->where([
             'user_id' => 172,
@@ -860,15 +860,17 @@ ORDER BY r.id DESC LIMIT 100";
         $q->prepare();*/
 
 
-        /*$q = $modx->newQuery('msOrderProduct');
+        $q = $modx->newQuery('msOrderProduct');
         $q->leftJoin('msOrder', 'Order');
         $q->leftJoin('msOrderAddress', 'Address', '`Order`.`id`=`Address`.`order_id`');
         $q->select('COUNT(`msOrderProduct`.`order_id`) as orders');
         $q->select('SUM(CASE WHEN `Order`.`status` = 2 THEN `msOrderProduct`.`cost` ELSE 0 END) as pays');
         $q->select('SUM(CASE WHEN `Order`.`status` = 2 THEN 1 ELSE 0 END) as sales');
+        $q->select('SUM(CASE WHEN `Order`.`status` = 1 THEN 1 ELSE 0 END) as new');
         $q->select('SUM(CASE WHEN `Order`.`status` = 4 THEN 1 ELSE 0 END) as returns');
         $q->select('`msOrderProduct`.`product_id`');
         $q->select('`Order`.`createdon`');
+        $q->select('`Order`.`status` as status');
         $q->select('`Address`.`text_address` as `market`');
         $q->groupby('`Order`.`createdon`');
         $q->where([
@@ -881,6 +883,7 @@ ORDER BY r.id DESC LIMIT 100";
             'orders' => 0,
             'pays' => 0,
             'sales' => 0,
+            'new' => 0,
             'returns' => 0,
         ];
        if($q->stmt->execute()){
@@ -895,11 +898,11 @@ ORDER BY r.id DESC LIMIT 100";
         sort($dates);
         $output['min'] = $dates[0];
         $output['max'] = end($dates);
-        $modx->log(1, print_r($output, 1));*/
+        $modx->log(1, print_r($output, 1));
 
-        $wb = new StatisticWb($modx);
-        //$wb->deleteStatictic();
-        $wb->setStatictic();
+       //$wb = new StatisticWb($modx);
+       // ['product_id' => $rid]
+        //$wb->setStatictic();
 
         /*$q = $modx->newQuery('SalesStatisticsItem');
         $q->select('SalesStatisticsItem.market as market, SalesStatisticsItem.date as date');
@@ -925,9 +928,37 @@ ORDER BY r.id DESC LIMIT 100";
             }
 
         }*/
-        //$productService = new Product($modx);
-        //$_REQUEST['date'] = '2024-08-01,2024-09-01';
-        /*$statistics = $productService->getStatistic([$rid]);
-        $modx->log(1, print_r($statistics, 1));*/
+        $productService = new Product($modx);
+        $statistics = $productService->getStatistic([$rid]);
+        $modx->log(1, print_r($statistics, 1));
+        break;
+
+    case 'get-updated-products':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php get-updated-products
+        $q = $modx->newQuery('modResource');
+        $q->leftJoin('msProductData', 'Data');
+        $q->select(['Data.article as article']);
+        $q->where([
+            'modResource.editedon:>' => strtotime('26.09.2024 10:30:00'),
+            'Data.status' => 5
+        ]);
+        $q->sortby('editedon');
+        $q->prepare();
+        $modx->log(1, print_r($q->toSQL(), 1));
+        if($q->stmt->execute()){
+            $result = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
+            $modx->log(1, print_r(count($result), 1));
+            $str = implode(PHP_EOL, $result);
+            file_put_contents(MODX_BASE_PATH . 'removed_articles.txt', $str);
+        }
+        break;
+
+    case 'clear-logs':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php clear-logs
+        $modx->addPackage('moderatorlog', MODX_CORE_PATH . 'components/moderatorlog/model/');
+        $time = strtotime('01.10.2024 00:00:00');
+        $sql = "DELETE FROM cust_moderatorlog_event WHERE createdon < $time";
+        $count = $modx->exec($sql);
+        echo $count;
         break;
 }

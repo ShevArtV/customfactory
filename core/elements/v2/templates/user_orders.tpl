@@ -154,7 +154,7 @@
                                 {if $previews}
                                     {foreach $previews as $path}
                                         <li>
-                                            <img src="https://311725.selcdn.ru/custom_factory/{$path}" alt="">
+                                            <img src="{$_modx->config.file_prefix}{$path}" alt="">
                                         </li>
                                     {/foreach}
                                 {/if}

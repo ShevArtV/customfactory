@@ -49,6 +49,8 @@
                 <tr>
                     <th>Укажите тип товара</th>
                     <th>Укажите размер</th>
+                    <th>Укажите крой</th>
+                    <th>Укажите пол</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -69,6 +71,34 @@
                                     ##/foreach}
                                 </select>
                             </td>
+                            ##if $data.parent == 19}
+                            <td>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="data[cut][]" value="Прямой"  class="checkbox" tabindex="-1">
+                                    <span class="checkbox-text">Прямой</span>
+                                </label>
+                            </td>
+                            <td>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="data[gender][]" value="Мужской"  class="checkbox" tabindex="-1">
+                                    <span class="checkbox-text">Мужской</span>
+                                </label>
+                            </td>
+                            ##/if}
+                            ##if $data.parent == 54754}
+                            <td>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="data[cut][]" value="Оверсайз"  class="checkbox" tabindex="-1">
+                                    <span class="checkbox-text">Оверсайз</span>
+                                </label>
+                            </td>
+                            <td>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="data[gender][]" value="Женский"  class="checkbox" tabindex="-1">
+                                    <span class="checkbox-text">Женский</span>
+                                </label>
+                            </td>
+                            ##/if}
                         </tr>
                     ##/foreach}
                 ##/if}
