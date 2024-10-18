@@ -44,66 +44,69 @@
                 Выберите из списка тип товара, который хотите загрузить и укажите размер
             </div>
 
-            <table class="type-table">
-                <thead>
-                <tr>
-                    <th>Укажите тип товара</th>
-                    <th>Укажите размер</th>
-                    <th>Укажите крой</th>
-                    <th>Укажите пол</th>
-                </tr>
-                </thead>
-                <tbody>
-                ##set $designTemplates = $_modx->runSnippet('@FILE snippets/product/snippet.getdesigntemplates.php', ['prohibited_categories' => $_modx->user.prohibited_categories])}
-                ##if $designTemplates}
+            <div class="table-wrapper">
+                <table class="type-table">
+                    <thead>
+                    <tr>
+                        <th>Укажите тип товара</th>
+                        <th>Укажите размер</th>
+                        <th>Укажите крой</th>
+                        <th>Укажите пол</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    ##set $designTemplates = $_modx->runSnippet('@FILE snippets/product/snippet.getdesigntemplates.php', ['prohibited_categories' => $_modx->user.prohibited_categories])}
+                    ##if $designTemplates}
                     ##foreach $designTemplates as $title => $data}
-                        <tr>
-                            <td>
-                                <label class="type-table__link">
-                                    <input type="radio" name="parent" value="##$data.parent}" data-mpc-attr="##$.get.parent==$data.parent?'checked': ''}" data-size-target="#sizes-##$data.parent}">
-                                    <span>##$title}</span>
-                                </label>
-                            </td>
-                            <td>
-                                <select class="type-table__select" data-mpc-attr="##$.get.parent != $data.parent ?'disabled': ''}"  name="data[root_id]" id="sizes-##$data.parent}">
-                                    ##foreach $data.sizes as $size => $d}
-                                        <option value="##$d.root_id}" data-count="##$d.count_files}" data-mpc-attr="##$.get.type==$d.root_id?'selected': ''}">##$size}</option>
-                                    ##/foreach}
-                                </select>
-                            </td>
-                            ##if $data.parent == 19}
-                            <td>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="data[cut][]" value="Прямой"  class="checkbox" tabindex="-1">
-                                    <span class="checkbox-text">Прямой</span>
-                                </label>
-                            </td>
-                            <td>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="data[gender][]" value="Мужской"  class="checkbox" tabindex="-1">
-                                    <span class="checkbox-text">Мужской</span>
-                                </label>
-                            </td>
-                            ##/if}
-                            ##if $data.parent == 54754}
-                            <td>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="data[cut][]" value="Оверсайз"  class="checkbox" tabindex="-1">
-                                    <span class="checkbox-text">Оверсайз</span>
-                                </label>
-                            </td>
-                            <td>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="data[gender][]" value="Женский"  class="checkbox" tabindex="-1">
-                                    <span class="checkbox-text">Женский</span>
-                                </label>
-                            </td>
-                            ##/if}
-                        </tr>
+                    <tr>
+                        <td>
+                            <label class="type-table__link">
+                                <input type="radio" name="parent" value="##$data.parent}" data-mpc-attr="##$.get.parent==$data.parent?'checked': ''}" data-size-target="#sizes-##$data.parent}">
+                                <span>##$title}</span>
+                            </label>
+                        </td>
+                        <td>
+                            <select class="type-table__select" data-mpc-attr="##$.get.parent != $data.parent ?'disabled': ''}"  name="data[root_id]" id="sizes-##$data.parent}">
+                                ##foreach $data.sizes as $size => $d}
+                                <option value="##$d.root_id}" data-count="##$d.count_files}" data-mpc-attr="##$.get.type==$d.root_id?'selected': ''}">##$size}</option>
+                                ##/foreach}
+                            </select>
+                        </td>
+                        ##if $data.parent == 19}
+                        <td>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="data[cut][]" value="Прямой"  class="checkbox" tabindex="-1">
+                                <span class="checkbox-text">Прямой</span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="data[gender][]" value="Мужской"  class="checkbox" tabindex="-1">
+                                <span class="checkbox-text">Мужской</span>
+                            </label>
+                        </td>
+                        ##/if}
+                        ##if $data.parent == 54754}
+                        <td>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="data[cut][]" value="Оверсайз"  class="checkbox" tabindex="-1">
+                                <span class="checkbox-text">Оверсайз</span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="data[gender][]" value="Женский"  class="checkbox" tabindex="-1">
+                                <span class="checkbox-text">Женский</span>
+                            </label>
+                        </td>
+                        ##/if}
+                    </tr>
                     ##/foreach}
-                ##/if}
-                </tbody>
-            </table>
+                    ##/if}
+                    </tbody>
+                </table>
+            </div>
+
 
         </div>
 

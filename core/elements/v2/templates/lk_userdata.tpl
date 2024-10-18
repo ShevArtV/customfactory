@@ -112,7 +112,7 @@
                                data-mpc-attr="##($_modx->user.status in list [1,2]) ? 'disabled' : ''}">
                         <small class="error" data-si-error="phone"></small>
                     </div>
-
+                    ##if $_modx->user.status != 2}
                     <div class="input-group">
                         <label class="input-label">
                             Адреса*
@@ -131,7 +131,6 @@
                                 <small class="error" data-si-error="address"></small>
                             </div>
                         </div>
-
                     </div>
 
                     <div class="input-group">
@@ -159,9 +158,11 @@
                             <span class="checkbox-text">Адрес для корреспонденции и Фактический адрес совпадают</span>
                         </label>
                     </div>
+                    ##/if}
                 </div>
             </div>
 
+            ##if $_modx->user.status != 2}
             <!--Организационно правовая форма-->
             <div class="profile-item">
 
@@ -396,6 +397,7 @@
                 </div>
 
             </div>
+            ##/if}
 
             <!--Документы-->
             <div class="profile-item">

@@ -29,6 +29,7 @@ switch ($argv[1]) {
         // php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/elements/v2/cron/run.php remove_user_files
         $designerService = new Designer($modx);
         $designerService->removeUserFiles(['status' => 2, 'files_deleted!=' => 1]);
+        $designerService->clearPersonalData(['status' => 2]);
         break;
     case 'remove_unactive_users':
         $designerService = new Designer($modx);

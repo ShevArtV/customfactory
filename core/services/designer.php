@@ -25,6 +25,24 @@ class Designer extends Base
      */
     private string $userfilesPath;
 
+    public function clearPersonalData(array $where = []): void
+    {
+        if (empty($where)) {
+            return;
+        }
+
+        $clearedFields = ['address', 'city', 'state', 'zip', 'pass_series', 'pass_num', 'inn', 'zip_fact', 'address_fact'];
+        $q = $this->modx->newQuery('modUserProfile');
+        $q->where($where);
+        $profiles = $this->modx->getIterator('modUserProfile', $q);
+        foreach ($profiles as $profile) {
+            foreach ($clearedFields as $field) {
+                $profile->set($field, '');
+            }
+            $profile->save();
+        }
+    }
+
     protected function initialize()
     {
         parent::initialize();
@@ -525,7 +543,6 @@ class Designer extends Base
             $q->where($where);
         }
         $q->prepare();
-        $this->modx->log(1, print_r($q->toSQL(), 1));
         $profiles = $this->modx->getIterator('modUserProfile', $q);
         $filesFields = [
             'certificate_img',
@@ -557,11 +574,12 @@ class Designer extends Base
         }
     }
 
-    private function removeEmptyDirs(array $dirs){
+    private function removeEmptyDirs(array $dirs)
+    {
         foreach ($dirs as $dir) {
-            if(file_exists($dir)){
+            if (file_exists($dir)) {
                 $files = scandir($dir);
-                if(count($files) === 2){
+                if (count($files) === 2) {
                     rmdir($dir);
                 }
             }

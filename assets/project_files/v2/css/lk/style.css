@@ -4263,3 +4263,7 @@ button[disabled]{
 [data-qf-item="1"] .blockquote{
   max-width: 600px;
 }
+.table-wrapper{
+  max-width: 100%;
+  overflow: auto;
+}
