@@ -6,6 +6,11 @@ use CustomServices\Product;
 require_once MODX_CORE_PATH . 'vendor/autoload.php';
 
 switch ($modx->event->name) {
+    case 'OnGetFormParams':
+        if($presetName === 'upload_excel'){
+            $_SESSION['selectedIds'] = [];
+        }
+        break;
     case 'OnBeforeReturnResponse':
         if ($_POST['email'] && in_array($presetName, ['auth', 'register'])) {
             $user = $modx->getObject('modUser', ['username' => $_POST['email']]);

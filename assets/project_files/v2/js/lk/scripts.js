@@ -207,8 +207,13 @@ document.addEventListener('DOMContentLoaded', () => {
       root && SendIt?.QuizForm?.change(root, step.dataset.qfStep, true);
     },
     selectAll(target) {
+      const ids = [];
       const selectedIds = document.querySelectorAll('[name="selected_id[]"]');
-      selectedIds && selectedIds.forEach(el => el.checked = target.checked)
+      selectedIds && selectedIds.forEach(el => {
+        el.checked = target.checked;
+        ids.push(el.value);
+      })
+      console.log(ids.join(','));
     },
     unSelectAll() {
       const selectedIds = document.querySelectorAll('[name="selected_id[]"]');
@@ -227,6 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const selectAll = document.querySelector('[data-select-all]');
       const filters = document.querySelector('#filterForm');
       const fileForm = document.querySelector('#fileForm');
+
       selectAll && (selectAll.checked = false);
       filters && await FlatFilters.MainHandler.update();
       fileForm && FlatFilters.PaginationHandler.goto(1);
@@ -313,7 +319,9 @@ document.addEventListener('DOMContentLoaded', () => {
     },
     insertProducts(data) {
       const results = document.querySelector('[data-results]');
+      const resultsCount = document.querySelector('[data-pn-total-results]');
       results && (results.innerHTML = data.html);
+      resultsCount && (resultsCount.innerHTML = data.totalResults);
     },
 
     duplicateField(target) {
@@ -512,6 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
       case 'getfilesproducts':
       case 'default_products':
+        localStorage.setItem('selectedIds', '');
         project.insertProducts(result.data);
         break;
     }
@@ -552,6 +561,10 @@ document.addEventListener('DOMContentLoaded', () => {
         await project.updateFiltersView();
         break;
       case 'changeStatus':
+        const onDeleteResults = document.querySelector('[data-results="on_delete"]');
+        if(onDeleteResults){
+          localStorage.setItem('selectedIds', JSON.stringify(result.data.selectedIds))
+        }
         await project.updateFiltersView();
         project.clearReason();
         break;
@@ -640,6 +653,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof fetchOptions.body.get === 'function') {
 
       switch (headers['X-SIPRESET']) {
+        case 'getfilesproducts':
+          if(localStorage.getItem('selectedIds')) {
+            fetchOptions.body.set('selectedIds',localStorage.getItem('selectedIds'));
+          }
+          break;
         case 'flatfilters':
           const queryField = document.querySelector('[name="query"]');
           queryField && FlatFilters.MainHandler.setSearchParams('text', 'query', queryField.value);

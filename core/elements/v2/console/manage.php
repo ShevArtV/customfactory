@@ -8,6 +8,7 @@ use CustomServices\Statistic\StatisticOzon;
 use CustomServices\Statistic\StatisticWb;
 use CustomServices\LoadToSelectel;
 use CustomServices\Product;
+use CustomServices\Report;
 
 define('MODX_API_MODE', true);
 require_once dirname(__FILE__, 5) . '/index.php';
@@ -960,5 +961,37 @@ ORDER BY r.id DESC LIMIT 100";
         $sql = "DELETE FROM cust_moderatorlog_event WHERE createdon < $time";
         $count = $modx->exec($sql);
         echo $count;
+        break;
+
+    case 'generate-file-to-remove':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php generate-file-to-remove
+        // /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL /home/host1860015/art-sites.ru/htdocs/customfactory/core/elements/v2/console/manage.php generate-file-to-remove
+        $fields = [
+            'article' => 'Артикул',
+        ];
+        $conditions = [
+            'Data.status' => 3,
+            'Data.prev_status:!=' => 6,
+            'Data.article:!=' => '',
+            'msProduct.class_key' => 'msProduct',
+            'msProduct.createdby:!=' => 1,
+            'msProduct.createdon:<' => strtotime('01.09.2024'),
+        ];
+        $productService = new Product($modx);
+        $data = $productService->getReportData($fields, $conditions);
+        //$modx->log(1, print_r($data, 1));
+        if (!empty($data['ids'])) {
+            $data['filename'] = 'test_report';
+            $reportService = new Report($modx);
+            $path = $reportService->generate($data);
+        }
+        break;
+
+    case 'test-timings':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php test-timings
+        $productService = new Product($modx);
+        $ids = '86528,85660,85658,85657,85656,85654,85652,85651,85649,85648,85647,85646';
+        $ids = explode(',', $ids);
+        $productService->changeStatus(['selected_id' => $ids, 'status' => 5]);
         break;
 }

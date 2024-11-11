@@ -44,7 +44,7 @@ class Report extends Base
     {
         parent::initialize();
         $this->statuses = $this->getStatuses();
-        $this->sizes = ['M', 'L', 'XL', 'XXL'];
+        $this->sizes = ['Прямой' => ['M', 'L', 'XL', 'XXL'], 'Оверсайз' => ['XXS-S', 'M-XL']];
         $this->tshirtParents = [19, 54754];
         $this->filename = 'report-' . date('d-m-Y-H-i-s');
         $this->setProductTypes();
@@ -66,7 +66,7 @@ class Report extends Base
     {
         $this->filename = $data['filename'] ?? $this->filename;
         $this->className = $data['className'];
-        $this->ids = $data['ids'] ?? $_SESSION['flatfilters'][$data['configId']]['rids'] ? explode(',', $_SESSION['flatfilters'][$data['configId']]['rids']) : [];
+        $this->ids = $data['ids'] ?? ($_SESSION['flatfilters'][$data['configId']]['rids'] ? explode(',', $_SESSION['flatfilters'][$data['configId']]['rids']) : []);
         $this->names = !is_array($data['names']) ? json_decode($data['names'], true) : $data['names'];
         $this->captions = !is_array($data['captions']) ? json_decode($data['captions'], true) : $data['captions'];
         $this->setFileHeaders();
@@ -123,8 +123,9 @@ class Report extends Base
             $q->andCondition($this->conditions);
         }
         $strNum = 1;
+        $q->prepare();
         $tstart = microtime(true);
-        if ($q->prepare() && $q->stmt->execute()) {
+        if ($q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
             $resources = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -136,7 +137,8 @@ class Report extends Base
                 }
                 if ($this->className === 'msProduct') {
                     if (in_array($resource['parent'], $this->tshirtParents)) {
-                        for ($i = 0; $i < 4; $i++) {
+                        $countSizes = count($this->sizes[$resource['cut']]);
+                        for ($i = 0; $i < $countSizes; $i++) {
                             $strNum++;
                             $output = array_merge($output, $this->getProductData($resource, $strNum, $i));
                         }
@@ -179,7 +181,7 @@ class Report extends Base
     public function getProductData(array $resourceData, int $strNum, int $j = 0): array
     {
         $output = [];
-
+        $cut = $resourceData['cut'];
         foreach ($this->names as $i => $name) {
             $index = $this->getColumnIndex($i + 1) . $strNum;
             $output[$index] = $resourceData[$name];
@@ -190,22 +192,22 @@ class Report extends Base
                     break;
                 case 'article_barcode':
                     if (in_array($resourceData['parent'], $this->tshirtParents)) {
-                        $output[$index] = $resourceData['article'] . ' ' . $this->sizes[$j];
+                        $output[$index] = $resourceData['article'] . ' ' . $this->sizes[$cut][$j];
                     }
                     break;
                 case 'article_oz':
                     if (in_array($resourceData['parent'], $this->tshirtParents)) {
-                        $output[$index] = preg_replace('/^(.*)\/(.*?)-(.*)/', '\1/\2-' . $this->sizes[$j] . '-\3', $resourceData['article']);
+                        $output[$index] = preg_replace('/^(.*)\/(.*?)-(.*)/', '\1/\2-' . $this->sizes[$cut][$j] . '-\3', $resourceData['article']);
                     }
                     break;
                 case 'article_wb':
                     if (in_array($resourceData['parent'], $this->tshirtParents)) {
-                        $output[$index] = $resourceData['article'] . '-' . $this->sizes[$j];
+                        $output[$index] = $resourceData['article'] . '-' . $this->sizes[$cut][$j];
                     }
                     break;
                 case 'name_barcode':
                     if (in_array($resourceData['parent'], $this->tshirtParents)) {
-                        $output[$index] = $this->types[$resourceData['root_id']] . ' ' . $resourceData['article'] . ' ' . $this->sizes[$j];
+                        $output[$index] = $this->types[$resourceData['root_id']] . ' ' . $resourceData['article'] . ' ' . $this->sizes[$cut][$j];
                     }
                     break;
                 case 'status':

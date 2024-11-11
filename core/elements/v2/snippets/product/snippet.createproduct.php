@@ -31,7 +31,7 @@ if (in_array($parent, [19, 54754])) {
         return $SendIt->error('Не удалось получить вариации.');
     }
     $i = 0;
-    $modx->log(1, print_r($variations, 1));
+    //$modx->log(1, print_r($variations, 1));
     foreach ($variations as $rootId => $variation) {
         $i++;
         $isCopy = count($variations) !== $i;
@@ -39,6 +39,7 @@ if (in_array($parent, [19, 54754])) {
             'root_id' => $rootId,
             'cut' => $variation[0]['cut'],
             'gender' => $variation[0]['gender'],
+            'pagetitle' => $data['pagetitle'] . ' ' . $variation[0]['cut'] . ' ' . $variation[0]['gender'],
         ]));
         if ($result['success']) {
             $productService->prepareFiles($filelist, $result['rid'], $folder = 'loadtoselectel/', $field = 'temp_files', $isCopy);

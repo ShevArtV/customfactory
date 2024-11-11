@@ -74,10 +74,10 @@
                         </td>
                         ##if $data.parent == 19}
                         <td>
-                            <label class="checkbox-label">
+                           {* <label class="checkbox-label">
                                 <input type="checkbox" name="data[cut][]" value="Прямой"  class="checkbox" tabindex="-1">
                                 <span class="checkbox-text">Прямой</span>
-                            </label>
+                            </label>*}
                         </td>
                         <td>
                             <label class="checkbox-label">

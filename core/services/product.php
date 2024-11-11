@@ -154,9 +154,9 @@ class Product extends Base
             $sourceFile = $senditTempPath . session_id() . '/' . $file;
             if (file_exists($sourceFile)) {
                 $targetFile = $targetFolder . $file;
-                if(!$isCopy){
+                if (!$isCopy) {
                     rename($sourceFile, $targetFile);
-                }else{
+                } else {
                     copy($sourceFile, $targetFile);
                 }
                 $files[] = str_replace($this->basePath, '', $targetFile);
@@ -365,6 +365,7 @@ class Product extends Base
 
     public function updateProduct(array $productData): array
     {
+        $tstart = microtime(true);
         if (!$product = $this->modx->getObject('modResource', ['class_key' => 'msProduct', 'id' => (int)$productData['id']])) {
             $msg = 'Дизайн с ID=' . $productData['id'] . ' не найден.';
             $this->setModerateLog([
@@ -447,7 +448,7 @@ class Product extends Base
             }
         }
 
-        if ($productData['status'] == 3) {
+        if ($productData['status'] == 3 && !$product->get('article')) {
             $result = $this->getArticle($product->toArray());
             $productData['article'] = $result['article'];
             if (!(int)$productData['article']) {
@@ -828,8 +829,9 @@ class Product extends Base
             $q->andCondition($properties['where']);
         }
         $q->sortby('FIELD(Product.id, ' . $properties['resources'] . ')', '');
+        $q->prepare();
         $tstart = microtime(true);
-        if ($q->prepare() && $q->stmt->execute()) {
+        if ($q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
             $count = $q->stmt->rowCount();
@@ -837,6 +839,7 @@ class Product extends Base
             if (isset($properties['limit']) && isset($properties['offset'])) {
                 $result = array_slice($result, $properties['offset'] ?: 0, $properties['limit']);
             }
+
             foreach ($result as $row) {
                 $row = array_merge($properties, $row, $lists);
                 $row['color'] = $row['color'] ? json_decode($row['color'], true) : [];
@@ -965,7 +968,9 @@ class Product extends Base
         $q = $this->modx->newQuery('modResource');
         $q->setClassAlias('Resource');
         $q->leftJoin('msProductData', 'Data');
-        $q->leftJoin('modTemplateVarResource', 'Workflow',
+        $q->leftJoin(
+            'modTemplateVarResource',
+            'Workflow',
             "Workflow.contentid = Data.id AND Workflow.tmplvarid = $this->workflowTVId"
         );
         $q->select(
@@ -1071,9 +1076,15 @@ class Product extends Base
         $q->setClassAlias('Data');
         $q->select('Data.id');
         $q->where(['Data.article:IN' => $articles]);
-        $q->orCondition(['Data.id:IN' => $articles]);
+        if ($_REQUEST['selectedIds']) {
+            $selectedIds = $_SESSION['selectedIds'] ?: [];
+            $selectedIds = array_unique(array_merge($selectedIds, json_decode($_REQUEST['selectedIds'])));
+            $q->where(['Data.id:NOT IN' => $selectedIds]);
+            $_SESSION['selectedIds'] = $selectedIds;
+        }
+        $q->prepare();
         $tstart = microtime(true);
-        if ($q->prepare() && $q->stmt->execute()) {
+        if ($q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
             $ids = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
@@ -1099,7 +1110,8 @@ class Product extends Base
             'success' => true,
             'msg' => '',
             'html' => $result['html'],
-            'totalPages' => ceil($result['count'] / 6),
+            'totalResults' => $result['count'],
+            'totalPages' => ceil($result['count'] / $limit),
             'currentPage' => $page
         ];
     }
@@ -1188,10 +1200,11 @@ class Product extends Base
         $data['captions'] = $fields;
         $q = $this->modx->newQuery('msProduct');
         $q->leftJoin('msProductData', 'Data');
-        $q->select('id');
+        $q->select('msProduct.id as id');
         $q->where($conditions);
+        $q->prepare();
         $tstart = microtime(true);
-        if ($q->prepare() && $q->stmt->execute()) {
+        if ($q->stmt->execute()) {
             $this->modx->queryTime += microtime(true) - $tstart;
             $this->modx->executedQueries++;
             $data['ids'] = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
@@ -1210,7 +1223,7 @@ class Product extends Base
         $q->where($where);
         $q->prepare();
         if ($q->stmt->execute()) {
-            $output = $q->stmt->fetchAll(\PDO::FETCH_GROUP|\PDO::FETCH_ASSOC);
+            $output = $q->stmt->fetchAll(\PDO::FETCH_GROUP | \PDO::FETCH_ASSOC);
         }
         return $output;
     }

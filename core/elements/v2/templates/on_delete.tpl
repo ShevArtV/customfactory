@@ -67,6 +67,9 @@
                         <div class="filter-item">
                             <button type="button" class="btn btn--dark btn--small" data-si-event="click" data-si-preset="changeStatus">Установить статус</button>
                         </div>
+                        <div class="filter-item">
+                            Всего дизайнов: <span data-pn-total-results>0</span>
+                        </div>
                     </div>
                 </li>
             </ul>
@@ -90,7 +93,7 @@
         </div>
     </form>
 
-    <div class="columns" data-results>
+    <div class="columns" data-results="on_delete">
         <div class="column col-4 md-col-6 sm-col-12" data-mpc-remove="1" data-mpc-chunk="getproductsfromfile/default/item.tpl">
             <div class="card-design">
                 <div class="card-design__check">
@@ -131,6 +134,6 @@
             <button type="button" class="toggler next" data-pn-next></button>
             <button type="button" class="toggler end" data-pn-last="{$totalPages}"></button>
         </div>
-        <input type="number" name="limit" min="6" max="102" data-pn-limit form="fileForm" data-si-preset="getfilesproducts" value="6">
+        <input type="number" name="limit" min="6" max="102" data-pn-limit form="fileForm" data-si-preset="getfilesproducts" value="30">
     </div>
 </div>

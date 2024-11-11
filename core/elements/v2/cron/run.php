@@ -51,6 +51,7 @@ switch ($argv[1]) {
         echo 'Statistic is ready' . PHP_EOL;
         break;
     case 'article_report':
+        // php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/elements/v2/cron/run.php article_report
         $fields = [
             'id' => 'ID',
             'root_id' => 'Тип товара',
@@ -66,8 +67,8 @@ switch ($argv[1]) {
         $conditions = [
             'Data.status' => 3,
             'Data.prev_status:!=' => 6,
-            'Data.class_key' => 'msProduct',
-            'Data.createdby:!=' => 1,
+            'msProduct.class_key' => 'msProduct',
+            'msProduct.createdby:!=' => 1,
             'Data.article_wb' => '',
             'Data.article_oz' => '',
         ];
