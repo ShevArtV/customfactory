@@ -26,12 +26,14 @@ if (in_array($parent, [19, 54754])) {
         'Data.gender:IN' => $data['gender'],
         'Data.root_id' => $data['root_id'],
     ];
+    $modx->log(1, print_r($where, 1));
+
     $variations = $productService->getProductVariations($where);
     if (empty($variations)) {
         return $SendIt->error('Не удалось получить вариации.');
     }
     $i = 0;
-    //$modx->log(1, print_r($variations, 1));
+
     foreach ($variations as $rootId => $variation) {
         $i++;
         $isCopy = count($variations) !== $i;

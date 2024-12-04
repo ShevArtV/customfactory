@@ -10,6 +10,8 @@ use CustomServices\LoadToSelectel;
 use CustomServices\Product;
 use CustomServices\Report;
 
+use CustomServices\OuterStatistic\OuterBase;
+
 define('MODX_API_MODE', true);
 require_once dirname(__FILE__, 5) . '/index.php';
 require_once MODX_CORE_PATH . 'vendor/autoload.php';
@@ -726,7 +728,7 @@ ORDER BY r.id DESC LIMIT 100";
         // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php getdesignlog
         $modx->addPackage('moderatorlog', MODX_CORE_PATH . 'components/moderatorlog/model/');
         $productService = new Product($modx);
-        $logs = $modx->getIterator('moderatorlogEvent', ['rid' => '80961']);
+        $logs = $modx->getIterator('moderatorlogEvent', ['rid' => '54756']);
         foreach ($logs as $log) {
             $data = $log->toArray();
             $data['createdon'] = date('d.m.Y H:i:s', $data['createdon']);
@@ -878,7 +880,7 @@ ORDER BY r.id DESC LIMIT 100";
             "`msOrderProduct`.`product_id` = $rid",
             //'Order.createdon:>' => '2024-08-01 00:00:00',
             //'Order.createdon:<' => '2024-09-01 00:00:00',
-            ]);
+        ]);
         $q->prepare();
         $output = [
             'orders' => 0,
@@ -887,11 +889,11 @@ ORDER BY r.id DESC LIMIT 100";
             'new' => 0,
             'returns' => 0,
         ];
-       if($q->stmt->execute()){
+        if ($q->stmt->execute()) {
             $r = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
-            foreach($r as $item){
+            foreach ($r as $item) {
                 $dates[] = $item['createdon'];
-                foreach($output as $k => $v){
+                foreach ($output as $k => $v) {
                     $output[$k] += $item[$k];
                 }
             }
@@ -901,8 +903,8 @@ ORDER BY r.id DESC LIMIT 100";
         $output['max'] = end($dates);
         $modx->log(1, print_r($output, 1));
 
-       //$wb = new StatisticWb($modx);
-       // ['product_id' => $rid]
+        //$wb = new StatisticWb($modx);
+        // ['product_id' => $rid]
         //$wb->setStatictic();
 
         /*$q = $modx->newQuery('SalesStatisticsItem');
@@ -946,7 +948,7 @@ ORDER BY r.id DESC LIMIT 100";
         $q->sortby('editedon');
         $q->prepare();
         $modx->log(1, print_r($q->toSQL(), 1));
-        if($q->stmt->execute()){
+        if ($q->stmt->execute()) {
             $result = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
             $modx->log(1, print_r(count($result), 1));
             $str = implode(PHP_EOL, $result);
@@ -993,5 +995,64 @@ ORDER BY r.id DESC LIMIT 100";
         $ids = '86528,85660,85658,85657,85656,85654,85652,85651,85649,85648,85647,85646';
         $ids = explode(',', $ids);
         $productService->changeStatus(['selected_id' => $ids, 'status' => 5]);
+        break;
+
+    case 'test-new-stat':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php test-new-stat
+        // php7.4 -d display_errors -d error_reporting=E_ALL elements/v2/console/manage.php test-new-stat
+        // /usr/local/php/php-7.4/bin/php -d display_errors -d error_reporting=E_ALL /home/host1860015/art-sites.ru/htdocs/customfactory/core/elements/v2/console/manage.php test-new-stat
+        $modx->log(1, print_r('test-new-stat', 1));
+
+        $OuterBase = new OuterBase($modx);
+        $start_date = new DateTime('2022-01-01');
+        $end_date = new DateTime('today');
+
+        while ($start_date <= $end_date) {
+            $dateFrom = $start_date->format('Y-m-d');
+            $dateTo = $start_date->modify('+1 day')->format('Y-m-d');
+            foreach ($OuterBase->markets as $method => $market) {
+                $query = ['dateFrom' => $dateFrom, 'dateTo' => $dateTo];
+                $OuterBase->getData($method, $query);
+            }
+        }
+        $modx->log(1, print_r('Выгрузка статистики завершена', 1));
+        echo 'Выгрузка статистики завершена' . PHP_EOL;
+
+        break;
+
+    case 'index-new-stat':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php index-new-stat
+        // php7.4 -d display_errors -d error_reporting=E_ALL elements/v2/console/manage.php index-new-stat
+        $OuterBase = new OuterBase($modx);
+        $OuterBase->indexing();
+        break;
+
+    case 'put-stat-to-csv':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php put-stat-to-csv
+        $modx->addPackage('salesstatistics', MODX_CORE_PATH . 'components/salesstatistics/model/');
+        $fp = fopen(MODX_ASSETS_PATH . 'old_statistic.csv', 'w');
+
+        $sql = "DESCRIBE cust_salesstatistics_items";
+        $stmt = $modx->query($sql);
+        $fields = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $fields[] = $row['Field'];
+        }
+
+        fputcsv($fp, $fields);
+
+        $q = $modx->newQuery('SalesStatisticsItem');
+        $q->select($modx->getSelectColumns('SalesStatisticsItem', 'SalesStatisticsItem'));
+        //$q->limit(10,0);
+        $q->sortby('date', 'ASC');
+        $q->prepare();
+        $q->stmt->execute();
+
+        while ($row = $q->stmt->fetch(PDO::FETCH_ASSOC)) {
+            $row['date'] = date('d.m.Y', $row['date']);
+            fputcsv($fp, $row);
+        }
+
+        fclose($fp);
         break;
 }

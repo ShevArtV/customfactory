@@ -4,10 +4,15 @@ require_once dirname(__FILE__, 5) . '/components/flatfilters/handlers/indexing/i
 
 class IndexingStatistic extends IndexingResources
 {
+    /**
+     * @var string
+     */
+    private string $statisticClassName = 'OuterStatisticsItem';
     protected function initialize(): void
     {
         parent::initialize();
-        $this->modx->addPackage('salesstatistics', MODX_CORE_PATH . 'components/salesstatistics/model/');
+        //$this->modx->addPackage('salesstatistics', MODX_CORE_PATH . 'components/salesstatistics/model/');
+        $this->modx->addPackage('outerstatistics', MODX_CORE_PATH . 'components/outerstatistics/model/');
     }
     public function getResourceData($resource)
     {
@@ -19,9 +24,9 @@ class IndexingStatistic extends IndexingResources
         return array_merge($resourceData, $result);
     }
     protected function getStatisticFields($rid){
-        $q = $this->modx->newQuery('SalesStatisticsItem');
-        $q->select('SalesStatisticsItem.market as market, SalesStatisticsItem.date as date');
-        $q->where(['SalesStatisticsItem.product_id' => $rid]);
+        $q = $this->modx->newQuery($this->statisticClassName);
+        $q->select("{$this->statisticClassName}.market as market, {$this->statisticClassName}.date as date");
+        $q->where(["{$this->statisticClassName}.product_id" => $rid]);
         $output = [];
         $tstart = microtime(true);
         if ($q->prepare() && $q->stmt->execute()) {

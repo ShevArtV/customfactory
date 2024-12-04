@@ -32,6 +32,10 @@ class Product extends Base
 
     /** @var int $workflowTVId */
     private int $workflowTVId = 15;
+    /**
+     * @var string
+     */
+    private string $statisticClassName = 'OuterStatisticsItem';
 
     protected function initialize()
     {
@@ -42,7 +46,8 @@ class Product extends Base
         $this->statuses = $this->getStatuses();
         $this->loadToSelectel = new LoadToSelectel($this->modx);
         $this->modx->addPackage('tagger', $this->corePath . 'components/tagger/model/');
-        $this->modx->addPackage('salesstatistics', MODX_CORE_PATH . 'components/salesstatistics/model/');
+        //$this->modx->addPackage('salesstatistics', MODX_CORE_PATH . 'components/salesstatistics/model/');
+        $this->modx->addPackage('outerstatistics', MODX_CORE_PATH . 'components/outerstatistics/model/');
     }
 
     public function getDesignTemplates($prohibited_categories = '9999999999'): array
@@ -74,6 +79,7 @@ class Product extends Base
             'Parent.old_id:NOT IN' => $prohibited_categories,
             'Product.id:NOT IN' => $prohibited_categories,
             'Product.old_id:NOT IN' => $prohibited_categories,
+            'Data.root_id' => 0
         ]);
         $q->sortby('Parent.menuindex');
 
@@ -897,7 +903,7 @@ class Product extends Base
     public function getStatistic($resources, $total = ''): array
     {
         $statistic = [];
-        $q = $this->modx->newQuery('SalesStatisticsItem');
+        $q = $this->modx->newQuery($this->statisticClassName);
         $q->select([
             "product_id as {$total}id",
             "SUM(`sales`) AS {$total}sales",
@@ -931,8 +937,8 @@ class Product extends Base
             $result = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
             foreach ($result as $item) {
                 $prefix = $total ? str_replace('_', '', $total) : '';
-                $item[$total . 'min'] = date('d.m.Y', $item[$total . 'min']);
-                $item[$total . 'max'] = date('d.m.Y', $item[$total . 'max']);
+                $item[$total . 'min'] = date('d.m.Y', (int)$item[$total . 'min']);
+                $item[$total . 'max'] = date('d.m.Y', (int)$item[$total . 'max']);
                 $statistic[$prefix . $item['id']] = $item;
             }
         }
@@ -1061,7 +1067,10 @@ class Product extends Base
         $highestRow = $worksheet->getHighestRow();
 
         for ($row = 2; $row <= $highestRow; $row++) {
-            $articles[] = trim($worksheet->getCell('A' . $row)->getValue());
+            if(!$value = trim($worksheet->getCell('A' . $row)->getValue())) {
+                continue;
+            }
+            $articles[] = $value;
         }
 
         if (empty($articles)) {
@@ -1071,6 +1080,7 @@ class Product extends Base
                 'html' => ''
             ];
         }
+
         $ids = [];
         $q = $this->modx->newQuery('msProductData');
         $q->setClassAlias('Data');

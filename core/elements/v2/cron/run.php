@@ -9,6 +9,7 @@ use CustomServices\Product;
 use CustomServices\Report;
 use CustomServices\Statistic\StatisticOzon;
 use CustomServices\Statistic\StatisticWb;
+use CustomServices\OuterStatistic\OuterBase;
 
 define('MODX_API_MODE', true);
 
@@ -47,8 +48,30 @@ switch ($argv[1]) {
         $ozon->run();
         $wb->run();
         $wb->setStatictic();
-        $wb->indexing();
+        //$wb->indexing();
         echo 'Statistic is ready' . PHP_EOL;
+        break;
+    case 'get_statistic_new':
+        // php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/elements/v2/cron/run.php get_statistic_new
+        /*
+         0 2 * * * php7.4 ~/www/core/elements/v2/cron/run.php get_statistic_new
+         0 14 * * * php7.4 ~/www/core/elements/v2/cron/run.php get_statistic_new
+         */
+        $OuterBase = new OuterBase($modx);
+        $end_date = new DateTime('today');
+        $start_date = new DateTime('today');
+        $start_date = $start_date->modify('-30 days');
+
+        while ($start_date < $end_date) {
+            $dateFrom = $start_date->format('Y-m-d');
+            $dateTo = $start_date->modify('+1 day')->format('Y-m-d');
+            foreach ($OuterBase->markets as $method => $market) {
+                $query = ['dateFrom' => $dateFrom, 'dateTo' => $dateTo];
+                $OuterBase->getData($method, $query);
+            }
+        }
+
+        $OuterBase->indexing();
         break;
     case 'article_report':
         // php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/elements/v2/cron/run.php article_report

@@ -301,5 +301,12 @@ return [
         'hooks' => '',
         'snippet' => '@FILE snippets/product/snippet.getstatistictotal.php',
         'successMessage' => '',
+    ],
+    'flatfilters' => [
+        'hooks' => '',
+        'snippet' => 'ffConnector'
+    ],
+    'ff_disabling' => [
+        'extends' => 'flatfilters'
     ]
 ];
