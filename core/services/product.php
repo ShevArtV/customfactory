@@ -454,7 +454,16 @@ class Product extends Base
             }
         }
 
-        if ($productData['status'] == 3 && !$product->get('article')) {
+        $setArticle = false;
+        if( ($productData['status'] == 3 && !$product->get('article'))
+        || ($product->get('status') === 3 && $product->get('tag_label') !== $productData['tag_label']) ){
+            if($productData['tag_label']){
+                $product->set('tag_label', $productData['tag_label']);
+            }
+            $setArticle = true;
+        }
+
+        if ($setArticle) {
             $result = $this->getArticle($product->toArray());
             $productData['article'] = $result['article'];
             if (!(int)$productData['article']) {
@@ -667,6 +676,7 @@ class Product extends Base
 
     public function changeTags($data)
     {
+        $this->setProductsField($data, 'tag_label');
         return [
             'success' => true,
             'msg' => 'Тэги изменены.',
@@ -696,7 +706,6 @@ class Product extends Base
     {
         $selectedIds = !is_array($data['selected_id']) ? json_decode($data['selected_id'], true) : $data['selected_id'];
         $productData = !is_array($data['data']) ? json_decode($data['data'], true) : $data['data'];
-
         if (!empty($selectedIds)) {
             foreach ($selectedIds as $selectedId) {
                 $value = $productData[$selectedId][$key];
@@ -706,6 +715,7 @@ class Product extends Base
                 if ($key === 'deleted') {
                     $value = 1;
                 }
+
                 $result = $this->updateProduct(['id' => $selectedId, $key => $value, 'content' => $data['content']]);
                 if (!$result['success']) {
                     $this->modx->log(1, '[Product::setProductsField] ' . $result['msg']);
