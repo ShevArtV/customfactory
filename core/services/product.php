@@ -459,8 +459,8 @@ class Product extends Base
         || ($product->get('status') === 3 && $product->get('tag_label') !== $productData['tag_label']) ){
             if($productData['tag_label']){
                 $product->set('tag_label', $productData['tag_label']);
+                $setArticle = true;
             }
-            $setArticle = true;
         }
 
         if ($setArticle) {
