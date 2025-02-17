@@ -145,7 +145,7 @@ return [
     ],
     'upload_screens' => [
         'hooks' => '',
-        'maxSize' => 0.5,
+        'maxSize' => 1,
         'maxCount' => 3,
         'allowExt' => 'jpg,png,jpeg,webp',
         'portion' => 0.1,

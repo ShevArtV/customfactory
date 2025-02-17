@@ -54,12 +54,12 @@ class Report extends Base
 
     private function setProductTypes()
     {
-        $this->types = $this->getProductTypes();
+        $this->types = $this->getProductTypes(true);
     }
 
     private function setParents()
     {
-        $this->parents = $this->getParents();
+        $this->parents = $this->getParents(true);
     }
 
     public function generate(array $data): string
@@ -137,6 +137,10 @@ class Report extends Base
                 }
                 if ($this->className === 'msProduct') {
                     if (in_array($resource['parent'], $this->tshirtParents)) {
+                        if (!$resource['cut']) {
+                            $this->modx->log(1, "У ресурса {$resource['id']} не указан крой");
+                            continue;
+                        }
                         $countSizes = count($this->sizes[$resource['cut']]);
                         for ($i = 0; $i < $countSizes; $i++) {
                             $strNum++;

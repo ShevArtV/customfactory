@@ -728,7 +728,7 @@ ORDER BY r.id DESC LIMIT 100";
         // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php getdesignlog
         $modx->addPackage('moderatorlog', MODX_CORE_PATH . 'components/moderatorlog/model/');
         $productService = new Product($modx);
-        $logs = $modx->getIterator('moderatorlogEvent', ['rid' => '54756']);
+        $logs = $modx->getIterator('moderatorlogEvent', ['rid' => '81770']);
         foreach ($logs as $log) {
             $data = $log->toArray();
             $data['createdon'] = date('d.m.Y H:i:s', $data['createdon']);
@@ -1004,7 +1004,7 @@ ORDER BY r.id DESC LIMIT 100";
         $modx->log(1, print_r('test-new-stat', 1));
 
         $OuterBase = new OuterBase($modx);
-        $start_date = new DateTime('2022-01-01');
+        $start_date = new DateTime('2025-01-16');
         $end_date = new DateTime('today');
 
         while ($start_date <= $end_date) {
@@ -1012,6 +1012,7 @@ ORDER BY r.id DESC LIMIT 100";
             $dateTo = $start_date->modify('+1 day')->format('Y-m-d');
             foreach ($OuterBase->markets as $method => $market) {
                 $query = ['dateFrom' => $dateFrom, 'dateTo' => $dateTo];
+                //$modx->log(1, print_r($query, 1));
                 $OuterBase->getData($method, $query);
             }
         }
@@ -1054,5 +1055,220 @@ ORDER BY r.id DESC LIMIT 100";
         }
 
         fclose($fp);
+        break;
+
+    case 'generate-article':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php generate-article
+        $q = $modx->newQuery('modResource');
+        $q->where(['status' => 3, 'article' => '']);
+        $q->select('id');
+        $q->prepare();
+        if ($q->stmt->execute()) {
+            $ids = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
+        }
+        $ids = explode(',', $ids);
+        //$ids = ['92958'];
+        $productService = new Product($modx);
+        foreach ($ids as $id) {
+            if (!$product = $modx->getObject('msProduct', trim($id))) {
+                $modx->log(1, print_r('Товар не найден', 1));
+                continue;
+            }
+            $productData = $product->toArray();
+            if ($productData['article']) {
+                $modx->log(1, 'Товар уже имеет артикул ' . $productData['article']);
+                continue;
+            }
+            $article = $productService->getArticle($productData);
+            $product->set('article', $article['article']);
+            $product->save();
+        }
+
+        break;
+
+    case 'duplicate-resources':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php duplicate-resources
+        $q = $modx->newQuery('modResource');
+        $q->leftJoin('msProductData', 'Data', 'Data.id=modResource.id');
+        $q->leftJoin('msProductLink', 'Link', 'modResource.id=Link.master');
+        $q->where(['template' => 13, 'parent' => 14, 'Data.status:IN' => [3, 4], 'Data.root_id' => 18732]);
+        $q->where('Link.master IS NULL');
+        //$q->where(['id' => 18732]);
+        $q->select('modResource.id as id, modResource.pagetitle, modResource.alias, modResource.createdby');
+        //$q->limit(1, 0);
+        $q->prepare();
+        //$modx->log(1, print_r($q->toSQL(), 1));
+        if ($q->stmt->execute()) {
+            $resources = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+        }
+        if (empty($resources)) {
+            return;
+        }
+        $tableName = $modx->getTableName('msProductLink');
+        foreach ($resources as $r) {
+            $fields = [
+                'id' => $r['id'],
+                'name' => 'Наволочка декоративная ' . $r['pagetitle'],
+            ];
+            //$modx->log(1, print_r($fields, 1));
+            if ($modx->getCount('modResource', ['pagetitle' => $fields['name']])) {
+                continue;
+            }
+
+            $response = $modx->runProcessor('resource/duplicate', $fields);
+
+            if ($response->isError()) {
+                $modx->log(1, 'Failed to copy Resource ' . $r['id']);
+            }
+            $newRes = $response->getObject();
+            $resource = $modx->getObject('modResource', $newRes['id']);
+
+            $alias = 'pillowcase-' . $r['alias'];
+            $article = $resource->get('article');
+            $article = preg_replace('/^.*\//', '60/', $article);
+
+            $resource->set('parent', 96500);
+            $resource->set('article', $article);
+            $resource->set('article_ya', $article);
+            $resource->set('count_files', 1);
+            $resource->set('alias', $alias);
+            $resource->set('root_id', 96507);
+            $resource->set('createdby', $r['createdby']);
+            $resource->save();
+
+            $sql = "INSERT INTO $tableName (link, master, slave) VALUES (1, {$fields['id']}, {$resource->get('id')})
+        ON DUPLICATE KEY UPDATE link = VALUES(link), master = VALUES(master), slave = VALUES(slave);";
+            $modx->exec($sql);
+        }
+        break;
+
+    case 'create-link-with-pillowcase':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php create-link-with-pillowcase
+        $q = $modx->newQuery('modResource');
+        $q->leftJoin('msProductData', 'Data', 'Data.id=modResource.id');
+        $q->where(['template' => 13, 'parent' => 14, 'Data.status:IN' => [3, 4], 'Data.root_id' => 18732]);
+        //$q->where(['id' => 18732]);
+        $q->select('modResource.id as id, pagetitle, alias, createdby');
+        //$q->limit(1, 0);
+        $q->prepare();
+        //$modx->log(1, print_r($q->toSQL(), 1));
+        if ($q->stmt->execute()) {
+            $resources = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+        }
+        if (empty($resources)) {
+            return;
+        }
+        $c = 0;
+
+        $pillowcases = [];
+        $q = $modx->newQuery('modResource');
+        $q->where(['template' => 13, 'parent' => 96500]);
+        $q->select('modResource.pagetitle as pagetitle, modResource.id as id');
+        $q->prepare();
+        if ($q->stmt->execute()) {
+            $pillowcases = $q->stmt->fetchAll(\PDO::FETCH_KEY_PAIR);
+        }
+
+        foreach ($resources as $r) {
+            $fields = [
+                'id' => $r['id'],
+                'name' => 'Наволочка декоративная ' . $r['pagetitle'],
+            ];
+            if (!$pillowcases[$fields['name']]) {
+                continue;
+            }
+            $values[] = "(1, {$fields['id']}, {$pillowcases[$fields['name']]})";
+            $c++;
+        }
+        if (empty($values)) {
+            return;
+        }
+        $tableName = $modx->getTableName('msProductLink');
+        $values = implode(',', $values);
+        $sql = "INSERT INTO $tableName (link, master, slave) VALUES $values
+        ON DUPLICATE KEY UPDATE link = VALUES(link), master = VALUES(master), slave = VALUES(slave);";
+        $modx->exec($sql);
+        $modx->log(1, $sql);
+        $modx->log(1, "Create $c links");
+        // INSERT INTO ms2_product_links (link, master, slave) VALUES (1, 93710, 105130),(1, 85543, 104580) ON DUPLICATE KEY UPDATE link = VALUES(link), master = VALUES(master), slave = VALUES(slave);
+        break;
+    case 'set-status-pillowcase':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php set-status-pillowcase
+        $products = $modx->getIterator('modResource', ['parent' => 96500, 'template' => 13]);
+        foreach ($products as $product) {
+            $product->set('status', 3);
+            $product->set('prev_status', 4);
+            $product->save();
+        }
+        break;
+
+    case 'check-duplicate-alias':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php check-duplicate-alias
+        $sql = "SELECT c1.id, c1.alias
+        FROM cust_site_content c1
+        JOIN (
+          SELECT alias
+          FROM cust_site_content
+          GROUP BY alias
+          HAVING COUNT(alias) > 1
+        ) c2 ON c1.alias = c2.alias";
+        $statement = $modx->query($sql);
+        $ids = $statement->fetchAll(\PDO::FETCH_COLUMN);
+        if(empty($ids)){
+            return;
+        }
+        $resources = $modx->getIterator('modResource', ['id:IN' =>$ids]);
+        foreach($resources as $resource){
+            $alias = $resource->cleanAlias($resource->get('pagetitle'));
+            $alias .= '-'.$resource->get('id');
+            $resource->set('alias', $alias);
+            $resource->save();
+        }
+        break;
+
+    case 'indexing-pillowcases':
+        $q = $modx->newQuery('modResource');
+        $q->leftJoin('msProductData', 'Data', 'Data.id=modResource.id');
+        $q->where(['template' => 13, 'Data.status:IN' => [3,4], 'Data.root_id' => 18732,  'modResource.deleted' => 0]);
+        $q->select('modResource.id as id, pagetitle, alias, createdby');
+        $q->prepare();
+        if ($q->stmt->execute()) {
+            $resources = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+            echo count($resources) . '<br>';
+        }
+        $q = $modx->newQuery('modResource');
+        $q->leftJoin('msProductData', 'Data', 'Data.id=modResource.id');
+        $q->where(['modResource.template' => 13, 'Data.status:IN' => [3,4], 'Data.root_id' => 96507, 'modResource.deleted' => 0]);
+        $q->select('modResource.id as id, pagetitle, alias, createdby');
+        $q->prepare();
+        if ($q->stmt->execute()) {
+            $resources = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+            echo count($resources) . '<br>';
+        }
+
+        $sql = "SELECT DISTINCT rid  FROM cust_ff_indexes_2 ResIndex
+WHERE ResIndex.template = 13
+AND ResIndex.root_id = 96507
+AND ResIndex.deleted = 0
+AND ResIndex.status IN ('3','4')";
+        $statement = $modx->query($sql);
+        $ids = $statement->fetchAll(PDO::FETCH_COLUMN);
+        $q = $modx->newQuery('modResource');
+        $q->leftJoin('msProductData', 'Data', 'Data.id=modResource.id');
+        $q->where([
+            'modResource.id:NOT IN' => $ids,
+            'modResource.template' => 13,
+            'Data.status:IN' => [3,4],
+            'Data.root_id' => 96507,
+            'modResource.deleted' => 0]);
+        $resources = $modx->getIterator('modResource', $q);
+        $ids = [];
+        $FF = $modx->getService('flatfilters', 'Flatfilters', MODX_CORE_PATH . 'components/flatfilters/');
+        foreach($resources as $r){
+            $ids[] = $r->get('id') . '<br>';
+            $FF->indexingDocument($r);
+        }
+        echo count($ids) . '<br>';
+        print_r($ids);
         break;
 }

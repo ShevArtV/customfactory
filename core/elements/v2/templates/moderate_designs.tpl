@@ -9,8 +9,8 @@
             Проверьте изображения от дизайнеров на соответствие техническим требованиям и допустимому содержанию
         </div>
     </div>
-    ##set $parents = $_modx->runSnippet('@FILE snippets/product/snippet.getparents.php')}
-    ##set $types = $_modx->runSnippet('@FILE snippets/product/snippet.gettypes.php')}
+    ##set $parents = $_modx->runSnippet('@FILE snippets/product/snippet.getparents.php', ['showUnpublished' => 1])}
+    ##set $types = $_modx->runSnippet('@FILE snippets/product/snippet.gettypes.php', ['showUnpublished' => 1])}
     <div data-mpc-unwrap="1" data-mpc-snippet="!ffFiltering|designs">
         <p class="page input-group" data-mpc-chunk="fffiltering/designs/ffempty.tpl">Дизайнов удовлетворяющих заданным параметрам не найдено.</p>
         <div data-mpc-chunk="fffiltering/designs/ffouter.tpl">
@@ -35,9 +35,9 @@
 
                                         <li data-mpc-remove="1" data-mpc-chunk="fffiltering/designs/ffcheckboxgroup.tpl">
                                             {set $statuses = ('statuses' | placeholder)}
-                                            {if $key == 'status' && $value == 7 && $_modx->resource.template == 19}
+                                            {*{if $key == 'status' && $value == 7 && $_modx->resource.template == 19}
                                                 {set $flag = true}
-                                            {/if}
+                                            {/if}*}
                                             {if !$flag}
                                                 <label class="checkbox-label">
                                                     {set $values = ($.get[$key] | split: ',') ?: []}

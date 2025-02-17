@@ -72,7 +72,7 @@ class Product extends Base
         );
         $q->leftJoin('modResource', 'Product', 'Data.id = Product.id');
         $q->leftJoin('modResource', 'Parent', 'Product.parent = Parent.id');
-        $q->where(['Product.template' => 14, 'Parent.published' => 1, 'Parent.deleted' => 0]);
+        $q->where(['Product.template' => 14, 'Parent.published' => 1, 'Parent.deleted' => 0, 'Product.published' => 1]);
         $q->andCondition('Data.size IS NOT NULL');
         $q->andCondition([
             'Parent.id:NOT IN' => $prohibited_categories,
@@ -267,7 +267,7 @@ class Product extends Base
         }
 
         $productData['pagetitle'] .= date('d-m-Y H:i:s');
-        $productData['alias'] .= date('d-m-Y-H-i-s');
+        $productData['alias'] = $this->getAlias($productData['alias']);
         $defaultProductData = $rootProduct->toArray();
         unset(
             $defaultProductData['id'],
@@ -347,6 +347,16 @@ class Product extends Base
             'msg' => 'Дизайн ID=' . $newProduct->get('id') . ' отправлен на модерацию.',
             'rid' => $newProduct->get('id')
         ];
+    }
+
+    private function getAlias(string $alias, int $time = 0): string
+    {
+        $time = $time ?: time();
+        $alias .= date('d-m-Y-H-i-s', $time);
+        if($this->modx->getCount('modResource', ['alias' => $alias])){
+            return $this->getAlias($alias, $time + 1);
+        }
+        return $alias;
     }
 
     protected function getProfileNum(?int $user_id): int
@@ -455,10 +465,15 @@ class Product extends Base
         }
 
         $setArticle = false;
-        if( ($productData['status'] == 3 && !$product->get('article'))
-        || ($product->get('status') === 3 && $product->get('tag_label') !== $productData['tag_label']) ){
-            if($productData['tag_label']){
+
+        if ((int)$productData['status'] === 3 && !$product->get('article')) {
+            $setArticle = true;
+        }
+
+        if ($product->get('status') === 3 && $product->get('tag_label') !== $productData['tag_label']) {
+            if ($productData['tag_label']) {
                 $product->set('tag_label', $productData['tag_label']);
+
                 $setArticle = true;
             }
         }
@@ -501,11 +516,66 @@ class Product extends Base
             ]);
         }
 
+        if ($productData['status'] == 3 && $product->get('parent') === 14 && $product->get('root_id') == 18732) {
+            $this->createPillowcase([
+                'id' => $product->get('id'),
+                'createdby' => $product->get('createdby'),
+                'name' => 'Наволочка декоративная ' . $product->get('pagetitle'),
+                'alias' => 'pillowcase-' . $product->get('alias'),
+            ]);
+        }
+
         return [
             'success' => true,
             'msg' => 'Дизайн обновлен.',
             'rid' => $productData['id']
         ];
+    }
+
+    private function createPillowcase(array $fields): void
+    {
+        if($this->modx->getCount('modResource', ['pagetitle' => $fields['name']])){
+            return;
+        }
+        $tableName = $this->modx->getTableName('msProductLink');
+        $oldUser = $this->modx->user;
+        $this->modx->user = $this->modx->getObject('modUser', 1);
+        $response = $this->modx->runProcessor('resource/duplicate', $fields);
+
+        if ($response->isError()) {
+            $this->modx->log(1, 'Failed to copy Resource '.$fields['id']);
+            return;
+        }
+
+        $newRes = $response->getObject();
+        $product = $this->modx->getObject('modResource', $newRes['id']);
+        $article = $product->get('article');
+        $article = preg_replace('/^.*\//', '60/', $article);
+
+        $product->set('parent', 96500);
+        $product->set('article', $article);
+        $product->set('count_files', 1);
+        $product->set('alias', $fields['alias']);
+        $product->set('root_id', 96507);
+        $product->set('createdby', $fields['createdby']);
+        $product->save();
+
+        $sql = "INSERT INTO $tableName (link, master, slave) VALUES (1, {$fields['id']}, {$product->get('id')})
+        ON DUPLICATE KEY UPDATE link = VALUES(link), master = VALUES(master), slave = VALUES(slave);";
+        $this->modx->exec($sql);
+
+        $this->flatfilters->removeResourceIndex((int)$newRes['id']);
+        $this->flatfilters->indexingDocument($product);
+
+        $this->setModerateLog([
+            'rid' => $product->get('id'),
+            'msg' => 'Дизайн создан',
+            'place' => '\CustomServices\Product',
+            'method' => 'createPillowcase',
+            'productData' => $product->toArray()
+        ]);
+
+        $this->modx->user = $oldUser;
     }
 
     public function sendModerateNotify($product)
@@ -1077,7 +1147,7 @@ class Product extends Base
         $highestRow = $worksheet->getHighestRow();
 
         for ($row = 2; $row <= $highestRow; $row++) {
-            if(!$value = trim($worksheet->getCell('A' . $row)->getValue())) {
+            if (!$value = trim($worksheet->getCell('A' . $row)->getValue())) {
                 continue;
             }
             $articles[] = $value;
@@ -1155,7 +1225,7 @@ class Product extends Base
         $q->leftJoin('modResource', 'Product', 'Data.id = Product.id');
         $q->leftJoin('modResource', 'Parent', 'Product.parent = Parent.id');
         $q->leftJoin('modTemplateVarResource', 'TV', 'Product.id = TV.contentid AND TV.tmplvarid = 1');
-        $q->where(['Product.template' => 14, 'Parent.published' => 1, 'Parent.deleted' => 0]);
+        $q->where(['Product.template' => 14, 'Parent.published' => 1, 'Parent.deleted' => 0, 'Product.published' => 1]);
         if ($data['parent']) {
             $q->andCondition(['Product.parent:IN' => json_decode($data['parent'], true)]);
         }

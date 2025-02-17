@@ -32,10 +32,29 @@ class Designer extends Base
         }
 
         $clearedFields = ['address', 'city', 'state', 'zip', 'pass_series', 'pass_num', 'inn', 'zip_fact', 'address_fact'];
+        $clearedExtendedFields = [
+            'certificate_num',
+            'certificate_date',
+            'insurance',
+            'pass_date',
+            'pass_code',
+            'pass_where',
+            'pass_address',
+            'rs',
+            'bik',
+            'card_data',
+        ];
         $q = $this->modx->newQuery('modUserProfile');
         $q->where($where);
         $profiles = $this->modx->getIterator('modUserProfile', $q);
         foreach ($profiles as $profile) {
+            $extended = $profile->get('extended');
+            if (!empty($extended)) {
+                foreach ($clearedExtendedFields as $field) {
+                    $extended[$field] = '';
+                }
+                $profile->set('extended', $extended);
+            }
             foreach ($clearedFields as $field) {
                 $profile->set($field, '');
             }
@@ -98,6 +117,10 @@ class Designer extends Base
             if ($progress == 100 || ($progress == 80 && !$steps['prods'])) {
                 $allow = true;
             }
+
+            if (!isset($extended[$offer_key])) {
+                $allow = false;
+            }
         }
 
         $this->modx->setPlaceholders(
@@ -145,7 +168,10 @@ class Designer extends Base
             $resource->set('introtext', time());
             $resource->save();
             unlink($filePath);
-            $profiles = $this->modx->getIterator('modUserProfile', ['active' => 1]);
+            $q = $this->modx->newQuery('modUserProfile');
+            $q->leftJoin('modUser', 'User', 'User.id = modUserProfile.internalKey');
+            $q->where(['User.active' => 1]);
+            $profiles = $this->modx->getIterator('modUserProfile', $q);
             foreach ($profiles as $profile) {
                 $extended = $profile->get('extended');
                 $extended['offer'] = 'Нет';
@@ -155,7 +181,8 @@ class Designer extends Base
                 $this->flatfilters->removeResourceIndex($user->get('id'));
                 $this->flatfilters->indexingUser($user);
             }
-            $this->modx->runProcessor('security/logout', array('username' => 'all'));
+            $sessionTable = $this->modx->getTableName('modSession');
+            $this->modx->query("TRUNCATE TABLE $sessionTable");
         }
     }
 
