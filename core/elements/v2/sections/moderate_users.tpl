@@ -12,6 +12,6 @@
 'offerTplRow' => '@FILE chunks/fffiltering/designers/ffoptionoffer.tpl',
 'tpl' => '@FILE chunks/fffiltering/designers/item.tpl',
 'sortby' => '{ "Profile.createdon":"DESC"}',
-'element' => 'pdoUsers',
+'element' => '@FILE snippets/designer/snippet.getusers.php',
 ]}
 </div>

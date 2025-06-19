@@ -36,6 +36,27 @@
     <meta http-equiv="Cache-Control" content="private, no-store, no-cache"/>
     <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta name="description" content="{$description}">
+    
+    <meta name="language" content="ru" />
+    <meta name="keywords" content="{$introtext}" />
+    <meta name="description" content="{$description}" />
+    <meta property="og:site_name" content="{$site_name}" />
+    <meta property="og:url" content="{$site_url}" />
+    <meta property="og:title" content="{$pagetitle}" />
+    <meta property="og:description" content="{$description}" />
+    <meta property="og:image" content="https://customfactory.ru/assets/project_files/v2/img/landing/logotype.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ru_RU" />
+    
+    <meta name="twitter:site" content="{$site_name}">
+    <meta name="twitter:title" content="{$pagetitle}">
+    <meta name="twitter:image" content="https://customfactory.ru/assets/project_files/v2/img/landing/logotype.svg">
+    <meta name="twitter:description" content="{$description}">
+    
+    <meta name="robots" content="MAX-SNIPPET:-1, index, follow">
+    
+    <link rel="canonical" href="{$site_url}">
+    
     {if $ym_id}
         <meta name="ym_id" content="{$ym_id}">
     {/if}
@@ -63,6 +84,8 @@
     <script src="assets/project_files/v2/js/landing/fancybox.min.js"></script>
     <script src="assets/project_files/v2/js/landing/micromodal.js"></script>
     <script src="assets/project_files/v2/js/landing/script.js"></script>
+    <script src="//code.jivo.ru/widget/Dc6HgKuRAU" async></script>
+
 
     {$metrics?:''}
 </head>

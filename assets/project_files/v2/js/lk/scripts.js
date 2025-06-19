@@ -306,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const params = new FormData();
       params.append('rid', rid);
       SendIt?.setComponentCookie('sitrusted', 1);
-      await SendIt?.Sending?.prepareSendParams(document, 'load_workflow', 'click', 'send', params);
+      await SendIt?.Sending?.prepareSendParams(document, 'load_workflow', params);
     },
 
     insertWorkflow(data) {
@@ -351,6 +351,39 @@ document.addEventListener('DOMContentLoaded', () => {
     clearReason() {
       const commentModal = document.querySelector('#modal-comment');
       commentModal && (commentModal.querySelector('textarea[name="content"]').value = '');
+    },
+    rejectProduct(e) {
+      const commentModal = document.querySelector('#modal-comment');
+      const commentContent = commentModal.querySelector('textarea[name="content"]');
+      const listForm = document.querySelector('#listActionProducts');
+      
+      if (!commentContent || !commentContent.value.trim()) {
+        // Если комментарий пустой, показываем уведомление
+        SendIt?.Notify?.error('Комментарий для отмены не указан');
+        return;
+      }
+      
+      if (listForm) {
+        // Устанавливаем статус "Отклонен" (5)
+        const statusSelect = listForm.querySelector('select[name="status"]');
+        if (statusSelect) {
+          statusSelect.value = "5"; // Статус "Отклонен"
+        }
+        
+        // Копируем комментарий в форму
+        const commentField = listForm.querySelector('textarea[name="content"]');
+        if (!commentField) {
+          const textarea = document.createElement('textarea');
+          textarea.name = 'content';
+          textarea.style.display = 'none';
+          listForm.appendChild(textarea);
+        }
+        
+        listForm.querySelector('textarea[name="content"]').value = commentContent.value;
+        
+        // Отправляем форму
+        SendIt?.Sending?.prepareSendParams(listForm, 'changeStatus' );
+      }
     }
   }
 
@@ -361,7 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (queryInput) {
         queryInput.value = '';
         SendIt?.setComponentCookie('sitrusted', '1');
-        await SendIt?.Sending?.prepareSendParams(queryInput, queryInput.dataset.siPreset, 'input');
+        await SendIt?.Sending?.prepareSendParams(queryInput, queryInput.dataset.siPreset);
       }
     }
   })
@@ -438,22 +471,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   document.addEventListener('click', async (e) => {
-    e.target.closest('[data-tab-target]') && project.toggleTab(e)
-    e.target.closest('[data-checkbox-btn]') && project.showSelectedCheckbox(e.target.closest('[data-checkbox-btn]'))
-    e.target.closest('[data-checkbox-value]') && project.removeSelectedCheckbox(e)
-    e.target.closest('[data-copy]') && project.copyText(e)
-    e.target.closest('[data-qf-step]') && project.toggleStep(e.target.closest('[data-qf-step]'))
-    e.target.closest('[data-unselect-all]') && project.unSelectAll()
-    e.target.closest('[data-modal-close]') && project.modalClose()
-    e.target.closest('[data-modal-show]') && project.modalShow(e, e.target.closest('[data-modal-show]'))
-    e.target.closest('[data-popup-link]') && project.popupShow(e.target.closest('[data-popup-link]'))
-    !e.target.closest('[data-popup]') && !e.target.closest('[data-popup-link]') && project.popupClose()
-    e.target.closest('[data-period-value]') && project.selectPeriod(e.target.closest('[data-period-value]'))
-    e.target.closest('[data-apply-period]') && project.triggerChangePeriod();
-    e.target.closest('[data-for]') && project.checkedFor(e.target.closest('[data-for]'));
-    e.target.closest('[data-load-workflow]') && project.loadWorkflow(e.target.closest('[data-load-workflow]'));
-    e.target.closest('[data-toggle]') && project.toggleMenu(e.target.closest('[data-toggle]'));
-    e.target.closest('[name="selected_id[]"]') && document.querySelector('[data-select-all]') && (document.querySelector('[data-select-all]').checked = false);
+    const target = e.target.closest('[data-tab-target], [data-checkbox-btn], [data-checkbox-value], [data-copy], [data-qf-step], [data-unselect-all], [data-modal-close], [data-modal-show], [data-popup-link], [data-period-value], [data-apply-period], [data-for], [data-load-workflow], [data-toggle], [data-reject-product]');
+    
+    if (!target) {
+      // Проверка для закрытия popup
+      if (!e.target.closest('[data-popup]') && !e.target.closest('[data-popup-link]')) {
+        project.popupClose();
+      }
+      
+      // Проверка для selected_id[]
+      if (e.target.closest('[name="selected_id[]"]') && document.querySelector('[data-select-all]')) {
+        document.querySelector('[data-select-all]').checked = false;
+      }
+      
+      return;
+    }
+    
+    // Обработка в зависимости от data-атрибута
+    if (target.hasAttribute('data-tab-target')) project.toggleTab(e);
+    else if (target.hasAttribute('data-checkbox-btn')) project.showSelectedCheckbox(target);
+    else if (target.hasAttribute('data-checkbox-value')) project.removeSelectedCheckbox(e);
+    else if (target.hasAttribute('data-copy')) project.copyText(e);
+    else if (target.hasAttribute('data-qf-step')) project.toggleStep(target);
+    else if (target.hasAttribute('data-unselect-all')) project.unSelectAll();
+    else if (target.hasAttribute('data-modal-close')) project.modalClose();
+    else if (target.hasAttribute('data-modal-show')) project.modalShow(e, target);
+    else if (target.hasAttribute('data-popup-link')) project.popupShow(target);
+    else if (target.hasAttribute('data-period-value')) project.selectPeriod(target);
+    else if (target.hasAttribute('data-apply-period')) project.triggerChangePeriod();
+    else if (target.hasAttribute('data-for')) project.checkedFor(target);
+    else if (target.hasAttribute('data-load-workflow')) project.loadWorkflow(target);
+    else if (target.hasAttribute('data-toggle')) project.toggleMenu(target);
+    else if (target.hasAttribute('data-reject-product')) project.rejectProduct(e);
   })
 
   document.addEventListener('change', (e) => {
@@ -473,7 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('ff:init', (e) => {
     const total = document.querySelector('[data-total]');
     total && SendIt.setComponentCookie('sitrusted', 1);
-    total && SendIt.Sending.prepareSendParams(FlatFilters.MainHandler.form, 'get_totals', 'change');
+    total && SendIt.Sending.prepareSendParams(FlatFilters.MainHandler.form, 'get_totals');
   })
 
   document.addEventListener('ff:values:disabled', (e) => {
@@ -501,23 +550,24 @@ document.addEventListener('DOMContentLoaded', () => {
     queryField && (queryField.value = '');
   })
 
-  document.addEventListener('ff:results:loaded', (e) => {
-    e.detail.data.getDisabled = 0;
-    CustomSelect.create(project.customSelectConfig);
-    const updField = document.querySelector('[name="upd"]');
-    const total = document.querySelector('[data-total]');
-    updField && (updField.value = '');
-    total && SendIt.Sending.prepareSendParams(FlatFilters.MainHandler.form, 'get_totals', 'change');
+  document.addEventListener('si:send:finish', (e) => {
+    if(e.detail.headers['X-SIPRESET'] === FlatFilters?.MainHandler?.presets.filtering){
+      CustomSelect.create(project.customSelectConfig);
+      const updField = document.querySelector('[name="upd"]');
+      const total = document.querySelector('[data-total]');
+      updField && (updField.value = '');
+      total && SendIt.Sending.prepareSendParams(FlatFilters.MainHandler.form, 'get_totals');
+    }
   })
 
   document.addEventListener('si:send:after', (e) => {
     const {result, target, headers, Sending} = e.detail;
 
     switch (headers['X-SIPRESET']) {
-      case 'search_tag':
+     /* case 'search_tag':
         const tagsModal = target.closest('.modal');
         tagsModal && tagsModal.querySelector('[data-checkbox-wrap]') && (tagsModal.querySelector('[data-checkbox-wrap]').innerHTML = result.result)
-        break;
+        break;*/
       case 'getfilesproducts':
       case 'default_products':
         localStorage.setItem('selectedIds', '');
@@ -537,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
         break;
 
       case 'add_avatar':
-        await SendIt.Sending.prepareSendParams(document, 'get_avatar', 'change');
+        await SendIt.Sending.prepareSendParams(document, 'get_avatar');
         break;
 
       case 'get_avatar':
@@ -601,6 +651,10 @@ document.addEventListener('DOMContentLoaded', () => {
           el.classList.remove('complete');
         })
         break;
+      case 'rejectProduct':
+        await project.updateFiltersView();
+        project.clearReason();
+        break;
     }
 
     if (target === document) return false;
@@ -609,8 +663,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const errorBlock = document.querySelector(Sending.config.errorBlockSelector.replace('${fieldName}', result.data.allowFiles));
       errorBlock && (errorBlock.textContent = '')
     }
-    if (!['upload_screens', 'upload_design', 'removeFile'].includes(headers['X-SIPRESET'])) {
-      (typeof Fancybox !== 'undefined') && Fancybox.close();
+    if (!['upload_screens', 'upload_design', 'removeFile','search_tag'].includes(headers['X-SIPRESET'])) {
+      project.modalClose();
     }
   })
 
@@ -658,10 +712,10 @@ document.addEventListener('DOMContentLoaded', () => {
             fetchOptions.body.set('selectedIds',localStorage.getItem('selectedIds'));
           }
           break;
-        case 'flatfilters':
+        /*case 'flatfilters':
           const queryField = document.querySelector('[name="query"]');
           queryField && FlatFilters.MainHandler.setSearchParams('text', 'query', queryField.value);
-          break;
+          break;*/
         case 'dataedit':
           fetchOptions.body.set('fullname', `${fetchOptions.body.get('extended[surname]')} ${fetchOptions.body.get('extended[name]')} ${fetchOptions.body.get('extended[fathername]')}`);
           const numbers = [
@@ -781,4 +835,42 @@ document.addEventListener('DOMContentLoaded', () => {
         .slideToggle(200);
     })
   }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    const updateCommentButton = function() {
+      const commentModals = document.querySelectorAll('.modal');
+      commentModals.forEach(modal => {
+        const commentInput = modal.querySelector('textarea[name="content"]');
+        const commentSubmit = modal.querySelector('[data-comment-submit]');
+        
+        if (commentInput && commentSubmit) {
+          // Удаляем предыдущие обработчики, чтобы избежать дублирования
+          const newInput = commentInput.cloneNode(true);
+          commentInput.parentNode.replaceChild(newInput, commentInput);
+          
+          newInput.addEventListener('input', function() {
+            // Кнопка всегда активна, но меняем стиль в зависимости от наличия текста
+            if (newInput.value.trim()) {
+              commentSubmit.classList.remove('btn--line');
+              commentSubmit.classList.add('btn--dark');
+            } else {
+              commentSubmit.classList.add('btn--line');
+              commentSubmit.classList.remove('btn--dark');
+            }
+          });
+          
+          // Убираем disabled атрибут, чтобы кнопка была всегда активна
+          commentSubmit.disabled = false;
+        }
+      });
+    };
+    
+    // Вызываем функцию при загрузке страницы
+    updateCommentButton();
+    
+    // Вызываем функцию при открытии модального окна
+    document.addEventListener('modal:show', function() {
+      setTimeout(updateCommentButton, 100);
+    });
+  });
 })

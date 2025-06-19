@@ -8,7 +8,7 @@
                     <li>##$item1.content}</li>##/foreach}
                     </ul>
                 <div class="tg-showcase__footer">
-                    <a href="##$target}" class="btn btn--full">
+                    <a href="##$target}" class="btn btn--full" target="_blank">
                         ##$btn_text}
                     </a>
                 </div>

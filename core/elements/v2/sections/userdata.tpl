@@ -1,6 +1,6 @@
 <div id="{$id}">
     <form data-si-preset="dataedit" data-si-form="userData" enctype="multipart/form-data">
-        <input type="hidden" name="status" value="##$_modx->user.status ?: 1}">
+        <input type="hidden" name="status" value="1">
         <div class="container-small">
             ##set $extended = $_modx->user.extended}
             <div class="profile-header">
@@ -12,7 +12,7 @@
                     <img src="##$photo}" class="user-avatar" alt="">
                 </div>
                 <div class="profile-header__name">
-                    ##$_modx->user.fullname}
+                    ##$_modx->user.extended.surname} ##$_modx->user.extended.name}
                 </div>
             </div>
 
@@ -49,10 +49,9 @@
                         </div>
 
                     </div>
-
                     <div class="column col-4 md-col-12 md-order-1">
-                        <div class="blockquote blockquote_success ##$_modx->user.status == 2 ? '' : 'd-none'}">
-                            Ваши данные успешно прошли модерацию. Для внесения изменений обратитесь в техническую поддержку.
+                        <div class="blockquote ##$_modx->user.status == 2 ? '' : 'd-none'}">
+                            Ваши данные успешно прошли модерацию. Для внесения изменений обратитесь в <a href="{51973 | resource: 'content'}">техническую поддержку</a>.
                         </div>
                         <div class="blockquote blockquote_warning ##$_modx->user.status == 1 ? '' : 'd-none'}">
                             Ваши данные проходят модерацию. О результатах Вы получите уведомление.
@@ -64,7 +63,8 @@
                             <p><strong>Причина:</strong> ##$_modx->user.comment}</p>
                             ##/if}
 
-                            <p>ВНИМАНИЕ! После успешной проверки исправить данные можно будет только обратившись в техническую поддержку.</p>
+                            <p>ВНИМАНИЕ! После успешной проверки исправить данные можно будет только обратившись в
+                                <a href="{51973 | resource: 'content'}">техническую поддержку</a>.</p>
                         </div>
                     </div>
                 </div>
@@ -101,10 +101,10 @@
                             Телефон*
                             <small>Телефон нужен для связи и выплаты денег</small>
                         </label>
-                        <input type="text" class="input" name="phone" value="##$_modx->user.phone}" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
+                        <input type="text" class="input" name="phone" placeholder="+7(9" value="##$_modx->user.phone}" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
                         <small class="error" data-si-error="phone"></small>
                     </div>
-
+                    ##if $_modx->user.status != 2}
                     <div class="input-group">
                         <label class="input-label">
                             Адреса*
@@ -121,7 +121,6 @@
                                 <small class="error" data-si-error="address"></small>
                             </div>
                         </div>
-
                     </div>
 
                     <div class="input-group">
@@ -138,7 +137,7 @@
                                 <small class="error" data-si-error="address_fact"></small>
                             </div>
                         </div>
-                        <label class="checkbox-label">
+                        <label class="checkbox-label" style="margin-top:30px;">
                             ##if $_modx->user.address_fact == $_modx->user.address && $_modx->user.address_fact && $_modx->user.address}
                             ##set $checked = 'checked'}
                             ##/if}
@@ -146,66 +145,16 @@
                             <span class="checkbox-text">Адрес для корреспонденции и Фактический адрес совпадают</span>
                         </label>
                     </div>
+                    ##/if}
                 </div>
             </div>
 
-            <!--Паспорт-->
-            <div class="profile-item">
-                <h2>Паспортные данные <small>Нужны для заключения договора</small>
-</h2>
-
-                <div class="container-small">
-                    <div class="input-group">
-                        <div class="columns">
-                            <div class="column col-6 md-col-12">
-                                <label class="input-label">Серия*</label>
-                                <input type="text" class="input" name="pass_series" value="##$_modx->user.pass_series}" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
-                                <small class="error" data-si-error="pass_series"></small>
-                            </div>
-                            <div class="column col-6 md-col-12">
-                                <label class="input-label">Номер*</label>
-                                <input type="text" class="input" name="pass_num" value="##$_modx->user.pass_num}" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
-                                <small class="error" data-si-error="pass_num"></small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Кем и когда выдан*</label>
-                        <div class="columns">
-                            <div class="column col-6 md-col-12">
-                                <input type="text" class="input" name="extended[pass_date]" value="##$extended[pass_date]}" placeholder="Дата выдачи" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
-                                <small class="error" data-si-error="extended[pass_date]"></small>
-                            </div>
-                            <div class="column col-6 md-col-12">
-                                <input type="text" class="input" name="extended[pass_code]" value="##$extended[pass_code]}" placeholder="Код подразделения" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
-                                <small class="error" data-si-error="extended[pass_code]"></small>
-                            </div>
-                            <div class="column col-12">
-                                <input type="text" class="input" name="extended[pass_where]" value="##$extended[pass_where]}" placeholder="Орган, выдавший паспорт" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
-                                <small class="error" data-si-error="extended[pass_where]"></small>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label class="input-label">Адрес регистрации*</label>
-                        <input type="text" class="input" name="extended[pass_address]" value="##$extended[pass_address]}" data-match-recepient="extended[address_ip]" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
-                        <small class="error" data-si-error="extended[pass_address]"></small>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Дата рождения*</label>
-                        <input type="text" class="input" name="dob" value="##$_modx->user.dob? ($_modx->user.dob | date: 'd.m.Y') :''}" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
-                        <small class="error" data-si-error="dob"></small>
-                    </div>
-                </div>
-            </div>
-
+            ##if $_modx->user.status != 2}
             <!--Организационно правовая форма-->
             <div class="profile-item">
 
                 <div class="container-small">
-                    <h2>Организационно правовая форма</h2>
+                    <h2>Организационно-правовая форма</h2>
 
                     <div class="input-group">
                         Сервис работает с самозанятыми и ИП. Как оформить самозанятость или стать ИП, читайте в разделе помощь
@@ -254,7 +203,7 @@
 
                                 <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый">
                                     <label class="input-label">Номер СНИЛС*</label>
-                                    <input type="text" class="input" name="extended[insurance]" value="##$extended[insurance]}" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
+                                    <input type="text" class="input" name="extended[insurance]" value="##$extended[insurance]}" placeholder="11 цифр" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
                                     <small class="error" data-si-error="extended[insurance]"></small>
                                 </div>
 
@@ -262,7 +211,7 @@
                                     <label class="input-label">Адрес регистрации ИП*</label>
                                     <input type="text" class="input" name="extended[address_ip]" value="##$extended[address_ip]}" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
                                     <small class="error" data-si-error="extended[address_ip]"></small>
-                                    <label class="checkbox-label">
+                                    <label class="checkbox-label" style="margin-top:30px;">
                                         ##if $extended.address_ip == $extended.pass_address && $extended.pass_address && $extended.address_ip}
                                         ##set $checked = 'checked'}
                                         ##/if}
@@ -278,10 +227,23 @@
                                     <small class="error" data-si-error="extended[ogrnip]"></small>
                                 </div>
 
-                                <div class="input-group">
+                                <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? 'd-none' : ''}" data-legal-form="ИП">
                                     <label class="input-label">ИНН*</label>
-                                    <input type="text" class="input" name="inn" value="##$_modx->user.inn}" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
-                                    <small class="error" data-si-error="inn"></small>
+                                    <input type="text" class="input" name="inn_ip" value="##$_modx->user.inn}" placeholder="12 цифр" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
+                                    <small class="error" data-si-error="inn_ip"></small>
+                                </div>
+
+                                <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый">
+                                    <label class="input-label">ИНН*</label>
+                                    <input type="text" class="input" name="inn_self" value="##$_modx->user.inn}" placeholder="12 цифр" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
+                                    <small class="error" data-si-error="inn_self"></small>
+                                </div>
+
+                                <div class="input-group">
+                                    ##set $offerPageKey = 'offer'~(51976 | resource: 'introtext')}
+                                    ##set $offerDate = $extended[$offerPageKey]}
+                                    <label class="input-label">Дата принятия оферты*</label>
+                                    <input type="text" readonly class="input" value="##$offerDate}">
                                 </div>
                             </div>
 
@@ -302,6 +264,81 @@
                 </div>
             </div>
 
+            <!--Паспорт-->
+            <div class="profile-item">
+                <h2>Паспортные данные <small>Нужны для заключения договора</small>
+                </h2>
+                <div class="columns">
+                    <div class="column col-8 md-col-12">
+                        <div class="container-small">
+                            <div class="input-group">
+                                <div class="columns">
+                                    <div class="column col-6 md-col-12">
+                                        <label class="input-label">Серия*</label>
+                                        <input type="text" class="input" name="pass_series" value="##$_modx->user.pass_series}" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
+                                        <small class="error" data-si-error="pass_series"></small>
+                                    </div>
+                                    <div class="column col-6 md-col-12">
+                                        <label class="input-label">Номер*</label>
+                                        <input type="text" class="input" name="pass_num" value="##$_modx->user.pass_num}" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
+                                        <small class="error" data-si-error="pass_num"></small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Кем и когда выдан*</label>
+                                <div class="columns">
+                                    <div class="column col-6 md-col-12">
+                                        <input type="text" class="input" name="extended[pass_date]" value="##$extended[pass_date]}" placeholder="Дата выдачи" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
+                                        <small class="error" data-si-error="extended[pass_date]"></small>
+                                    </div>
+                                    <div class="column col-6 md-col-12">
+                                        <input type="text" class="input" name="extended[pass_code]" value="##$extended[pass_code]}" placeholder="Код подразделения" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
+                                        <small class="error" data-si-error="extended[pass_code]"></small>
+                                    </div>
+                                    <div class="column col-12">
+                                        <input type="text" class="input" name="extended[pass_where]" value="##$extended[pass_where]}" placeholder="Орган, выдавший паспорт" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
+                                        <small class="error" data-si-error="extended[pass_where]"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Адрес регистрации*</label>
+                                <input type="text" class="input" name="extended[pass_address]" value="##$extended[pass_address]}" data-match-recepient="extended[address_ip]" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
+                                <small class="error" data-si-error="extended[pass_address]"></small>
+                            </div>
+
+                            <div class="input-group">
+                                <label class="input-label">Дата рождения*</label>
+                                <input type="text" class="input" name="dob" value="##$_modx->user.dob? ($_modx->user.dob | date: 'd.m.Y') :''}" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''}>
+                                <small class="error" data-si-error="dob"></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column col-4 md-col-12 md-order-1">
+                        <div class="blockquote ##$_modx->user.status == 2 ? '' : 'd-none'}">
+                            Ваши личные данные удалятся через день после модерации.
+                            <br>
+                            Мы храним их на бумажных носителях в офисных сейфах, поэтому третьи лица не смогут их похитить.
+                        </div>
+                        <div class="blockquote blockquote_warning ##$_modx->user.status == 1 ? '' : 'd-none'}">
+                            Ваши личные данные удалятся через день после модерации.
+                            <br>
+                            Мы храним их на бумажных носителях в офисных сейфах, поэтому третьи лица не смогут их похитить.
+                        </div>
+                        <div class="blockquote ##$_modx->user.status == 3 ? '' : 'd-none'}">
+                            <p>Ваши данные не прошли модерацию.</p>
+                            <span style="color: #FE0845;">Напоминаем:</span>
+                            <br>
+                            
+                            Ваши личные данные удалятся через день после успешной модерации.
+                            Мы храним их на бумажных носителях в офисных сейфах, поэтому третьи лица не смогут их похитить.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!--Реквизиты-->
             <div class="profile-item">
 
@@ -311,7 +348,7 @@
                         <div class="container-small">
 
                             <h2>Полные реквизиты для получения оплаты* <small>Подробнее о том, какие реквизиты нужно указать, смотрите в разделе "Частые вопросы"</small>
-</h2>
+                            </h2>
 
                             <div class="input-group">
                                 <label class="input-label">Расчетный счет*</label>
@@ -349,13 +386,14 @@
                 </div>
 
             </div>
+            ##/if}
 
             <!--Документы-->
             <div class="profile-item">
 
                 <div class="container-small">
                     <h2>Документы</h2>
-
+                    ##if !$extended.selfemployed_img}
                     <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="selfemployed_img" data-si-form="certUploadForm">
                         <div data-fu-wrap>
                             <label class="input-label">Справка о постановке на учет в качестве плательщика «Налога на профессиональный доход»*</label>
@@ -371,7 +409,12 @@
                         </div>
                         <small class="error" data-si-error="extended[selfemployed_img]"></small>
                     </div>
+                    ##else}
+                    <input type="hidden" name="extended[selfemployed_img]" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''} value="##$extended.selfemployed_img}">
+                    <p class="input-label">Справка о постановке на учет в качестве плательщика «Налога на профессиональный доход» уже загружена.</p>
+                    ##/if}
 
+                    ##if !$extended.pass_one_img}
                     <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="pass_one_img" data-si-form="passOneUploadForm">
                         <div data-fu-wrap>
                             <label class="input-label">Скан основного разворота паспорта*</label>
@@ -387,7 +430,12 @@
                         </div>
                         <small class="error" data-si-error="extended[pass_one_img]"></small>
                     </div>
+                    ##else}
+                    <input type="hidden" name="extended[pass_one_img]" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''} value="##$extended.pass_one_img}">
+                    <p class="input-label">Скан основного разворота паспорта уже загружен.</p>
+                    ##/if}
 
+                    ##if !$extended.pass_two_img}
                     <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="pass_two_img" data-si-form="passTwoUploadForm">
                         <div data-fu-wrap>
                             <label class="input-label">Скан разворота паспорта с пропиской*</label>
@@ -403,7 +451,12 @@
                         </div>
                         <small class="error" data-si-error="extended[pass_two_img]"></small>
                     </div>
+                    ##else}
+                    <input type="hidden" name="extended[pass_two_img]" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''} value="##$extended.pass_two_img}">
+                    <p class="input-label">Скан разворота паспорта с пропиской уже загружен.</p>
+                    ##/if}
 
+                    ##if !$extended.insurance_img}
                     <div class="input-group ##$_modx->user.legal_form == 'Самозанятый' ? '' : 'd-none'}" data-legal-form="Самозанятый" data-si-preset="insurance_img" data-si-form="insuranceUploadForm">
                         <div data-fu-wrap>
                             <label class="input-label">Скан лицевой стороны СНИЛС*</label>
@@ -419,6 +472,10 @@
                         </div>
                         <small class="error" data-si-error="extended[insurance_img]"></small>
                     </div>
+                    ##else}
+                    <input type="hidden" name="extended[insurance_img]" ##($_modx->user.status in list [1,2]) ? 'disabled' : ''} value="##$extended.insurance_img}">
+                    <p class="input-label">Скан лицевой стороны СНИЛС уже загружен.</p>
+                    ##/if}
 
 
                     ##if !$extended.certificate_img}
@@ -471,7 +528,7 @@
         </div>
     </form>
     <div id="modal-change-pass" aria-hidden="true" class="modal">
-        <form data-si-preset="editpass" class="modal-main modal-main_sm">
+        <form data-si-preset="editpass" data-si-form="editpassForm" class="modal-main modal-main_sm">
             <div class="modal-close" data-modal-close></div>
             <div class="modal-title">Изменение пароля</div>
             <div class="input-group">

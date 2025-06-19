@@ -616,7 +616,6 @@ class Product extends Base
             case '3':
                 if ($profile = $this->modx->getObject('modUserProfile', [
                     'internalKey' => $product->get('manager_id'),
-                    'OR:old_id' => $product->get('manager_id')
                 ])) {
                     $this->sendEmail([
                         'to' => $profile->get('email'),
@@ -994,6 +993,7 @@ class Product extends Base
             "MAX(`date`) as {$total}max",
         ]);
         $q->where(['product_id:IN' => $resources]);
+        $this->modx->log(1, print_r($_REQUEST['date'], 1));
         if ($_REQUEST['date']) {
             $dates = explode(',', $_REQUEST['date']);
             $start = strtotime($dates[0]);

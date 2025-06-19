@@ -1,23 +1,39 @@
-<div class="modal-main">
+<div class="modal-main" style="max-width: 900px; width: 95%;">
             {set $imgPrefix = $_modx->config.file_prefix}
             <div class="modal-close" data-modal-close=""></div>
-            <form data-si-form="modalProductStatus" data-si-nosave enctype="multipart/form-data" class="modal-area modal-content scrollbar">
+            <form data-si-form="modalProductStatus" data-si-nosave enctype="multipart/form-data" class="modal-area modal-content scrollbar" style="max-height: 80vh;">
                 <input type="hidden" name="selected_id[]" value="{$id}">
                 <div class="good-items">
-                    {foreach $workflow as $item last=$l}
-                        {if $l}
+                    {foreach $workflow as $item index=$i}
+                        {if $i === 0}
+                        {/if}
+                        
+                        {if $i == count($workflow) - 1}
                             <div class="good-item">
                                 <div class="columns">
                                     <div class="column col-6 md-col-12">
-                                        <div class="good-images">
-                                            {foreach ($item.preview | split: '|') as $img index=$i}
-                                                <div class="good-image">
-                                                    <div class="good-image__img">
-                                                        <img src="{$imgPrefix}{$img}" alt="">
+                                        <div class="good-images" style="gap: 15px; margin-bottom: 20px;">
+                                            {if $item.screens}
+                                                {foreach ($item.screens | split: '|') as $img index=$imgIdx}
+                                                    <div class="good-image">
+                                                        <a href="{$site_url}{$img}" data-fancybox="gallery-{$id}" class="good-image__img">
+                                                            <img src="{$site_url}{$img}" alt="" style="max-width: 100%; height: auto;">
+                                                        </a>
+                                                        <a href="{$site_url}{$img}" download="" class="good-image__title" style="word-break: break-all;">Скачать</a>
                                                     </div>
-                                                    <div class="good-image__title">{$img}</div>
-                                                </div>
-                                            {/foreach}
+                                                {/foreach}
+                                            {/if}
+                                            
+                                            {if $item.preview}
+                                                {foreach ($item.preview | split: '|') as $img index=$imgIdx}
+                                                    <div class="good-image">
+                                                        <a href="{$imgPrefix}{$img}" data-fancybox="gallery-{$id}" class="good-image__img">
+                                                            <img src="{$imgPrefix}{$img}" alt="" style="max-width: 100%; height: auto;">
+                                                        </a>
+                                                        <a href="{$imgPrefix}{$img}" download="" class="good-image__title" style="word-break: break-all;">Скачать</a>
+                                                    </div>
+                                                {/foreach}
+                                            {/if}
                                         </div>
                                         <div data-fu-wrap data-si-preset="upload_screens" data-si-nosave>
                                             <input type="hidden" name="filelist" form="toRework" data-fu-list>
@@ -28,10 +44,10 @@
                                                     <div class="good-image__img">
                                                         <img src="$path" alt="">
                                                     </div>
-                                                    <div class="good-image__title">$filename</div>
+                                                    <div class="good-image__title" style="word-break: break-all;">$filename</div>
                                                 </div>
                                             </template>
-                                            <div class="good-images" style="width:100%;flex-wrap:wrap;" data-fu-dropzone>
+                                            <div class="good-images" style="width:100%;flex-wrap:wrap;gap:15px;" data-fu-dropzone>
                                                 <div class="good-image">
                                                     <div class="good-image__add">
                                                         <span>Загрузите скриншоты</span>
@@ -41,7 +57,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="good-list">
+                                        <div class="good-list" style="margin-top: 20px;">
                                             <div class="good-item__title">Проверить файлы</div>
                                             <ul class="good-list__files">
                                                 {foreach ($item.print | split: '|') as $img index=$i}
@@ -54,20 +70,28 @@
                                         <div class="good-reports">
                                             {if $item.designer_comment}
                                                 <div class="good-report">
-                                                    <div class="good-report__date">{$item.designer_date}</div>
-                                                    <div class="good-report__quote">
+                                                    <div class="good-report__date">От дизайнера: {$item.designer_date}</div>
+                                                    <div class="good-report__quote" style="word-wrap: break-word;">
                                                         {$item.designer_comment}
                                                     </div>
                                                 </div>
                                             {/if}
+                                            {if $item.moderator_comment}
+                                                <div class="good-report good-report__right">
+                                                    <div class="good-report__date">От модератора: {$item.moderator_date}</div>
+                                                    <div class="good-report__quote" style="word-wrap: break-word;">
+                                                        {$item.moderator_comment}
+                                                    </div>
+                                                </div>
+                                            {/if}
 
-                                            <textarea class="input textarea" name="content" data-sync="#content" placeholder="Введите комментарий"></textarea>
+                                            <textarea class="input textarea" name="content" data-sync="#content" placeholder="Введите комментарий" style="min-height: 120px; margin: 20px 0;"></textarea>
 
                                             <div class="good-report">
-                                                <div class="good-item__title">
+                                                <div class="good-item__title" style="margin-bottom: 15px;">
                                                     Установить статус:
                                                 </div>
-                                                <div class="btn-group">
+                                                <div class="btn-group" style="flex-wrap: wrap; gap: 10px;">
                                                     <div class="js-custom-select select-pill">
                                                         <select class="" name="status">
                                                             {foreach $statuses['product'] as $sid => $data}
@@ -88,15 +112,28 @@
                             <div class="good-item">
                                 <div class="columns">
                                     <div class="column col-6 md-col-12">
-                                        <div class="good-images">
-                                            {foreach ($item.preview | split: '|') as $img index=$i}
-                                                <div class="good-image">
-                                                    <div class="good-image__img">
-                                                        <img src="{$imgPrefix}{$img}" alt="">
+                                        <div class="good-images" style="gap: 15px; margin-bottom: 20px;">
+                                            {if $item.screens}
+                                                {foreach ($item.screens | split: '|') as $img index=$imgIdx}
+                                                    <div class="good-image">
+                                                        <a href="{$site_url}{$img}" data-fancybox="gallery-{$id}" class="good-image__img">
+                                                            <img src="{$site_url}{$img}" alt="" style="max-width: 100%; height: auto;">
+                                                        </a>
+                                                        <a href="{$site_url}{$img}" download="" class="good-image__title" style="word-break: break-all;">Скачать</a>
                                                     </div>
-                                                    <div class="good-image__title">{$img}</div>
-                                                </div>
-                                            {/foreach}
+                                                {/foreach}
+                                            {/if}
+                                            
+                                            {if $item.preview}
+                                                {foreach ($item.preview | split: '|') as $img index=$imgIdx}
+                                                    <div class="good-image">
+                                                        <a href="{$imgPrefix}{$img}" data-fancybox="gallery-{$id}" class="good-image__img">
+                                                            <img src="{$imgPrefix}{$img}" alt="" style="max-width: 100%; height: auto;">
+                                                        </a>
+                                                        <a href="{$imgPrefix}{$img}" download="" class="good-image__title" style="word-break: break-all;">Скачать</a>
+                                                    </div>
+                                                {/foreach}
+                                            {/if}
                                         </div>
                                     </div>
                                     <div class="column col-6 md-col-12">
@@ -104,7 +141,7 @@
                                             {if $item.designer_comment}
                                                 <div class="good-report">
                                                     <div class="good-report__date">{$item.designer_date}</div>
-                                                    <div class="good-report__quote">
+                                                    <div class="good-report__quote" style="word-wrap: break-word;">
                                                         {$item.designer_comment}
                                                     </div>
                                                 </div>
@@ -112,7 +149,7 @@
                                             {if $item.moderator_comment}
                                                 <div class="good-report good-report__right">
                                                     <div class="good-report__date">{$item.moderator_date}</div>
-                                                    <div class="good-report__quote">
+                                                    <div class="good-report__quote" style="word-wrap: break-word;">
                                                         {$item.moderator_comment}
                                                     </div>
                                                 </div>
@@ -125,8 +162,8 @@
                     {/foreach}
                 </div>
             </form>
-            {if $status in list [1,2]}
-                <form id="toRework" data-si-form class="modal-footer center">
+            {if $status in list [1,2,7]}
+                <form id="toRework" data-si-form class="modal-footer center" style="padding: 15px 0;">
                     <input type="hidden" name="selected_id[]" value="{$id}">
                     <input type="hidden" name="status" value="7">
                     <input type="hidden" name="content" id="content" value="">

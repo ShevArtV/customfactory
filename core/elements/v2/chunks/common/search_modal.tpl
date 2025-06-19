@@ -4,12 +4,12 @@
                     <div class="modal-content">
                         <div class="input-group">
                             <label class="input-label">Введите запрос</label>
-                            <input type="text" class="input" name="query" data-ff-filter="query" form="filterForm" value="{$.get.query}">
+                            <input type="text" class="input" name="query" data-ff-filter="query" data-query form="filterForm" value="{$.get.query}">
                             <small class="error" data-si-error="query"></small>
                         </div>
                     </div>
                     <div class="modal-footer center">
-                        <button type="button" data-start-search form="filterForm" class="btn" data-modal-close>Найти</button>
+                        <button type="submit" form="filterForm" class="btn">Найти</button>
                     </div>
                 </div>
             </div>

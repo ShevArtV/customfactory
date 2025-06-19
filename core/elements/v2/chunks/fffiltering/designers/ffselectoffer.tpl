@@ -3,7 +3,7 @@
                             <label class="">Оферта:</label>
                             <div class="js-custom-select">
                                 <select class="" data-ff-filter="{$key}" name="{$key}">
-                                    <option value="" {!$.get[$key] ? 'selected' : ''}>Не важно</option>
+                                    <option value="" {!$.get[$key] ? 'selected' : ''}>Все</option>
                                     {$options}
                                     
                                 </select>

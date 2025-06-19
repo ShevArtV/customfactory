@@ -2,13 +2,20 @@
             <!--filter-->
             <form id="filterForm" data-ff-form="filterDesignForm" class="filter">
                 <input type="hidden" name="configId" value="{$configId}">
-                <div class="filter-column filter-column-design">
+                <input type="hidden" name="configId" form="generateReport" value="{$configId}">
+                <div class="filter-column">
                     <div class="filter-item">
                         <div class="filter-name">Дизайнов: <span id="total">{$totalResources?:0}</span>
 </div>
                     </div>
-                    {$filters}
-                    
+                    <div class="filter-item">
+                        <ul class="filter-list">
+                            {$filters}
+                            
+                        </ul>
+                    </div>
+                </div>
+                <div class="filter-column">
                     <div class="filter-item">
                         <div class="filter-name filter-name--select" data-popup-link="datepicker">
                             {if $.get.createdon == ('' | period: 'week')}
@@ -34,8 +41,9 @@
                     <div class="datepicker-popup__layout">
                         <div class="datepicker-popup__aside">
                             <ul class="datepicker-popup__date">
-                                <li data-period-value="{'' | period: 'week'}" class="active">7 дней</li>
-                                <li data-period-value="{'' | period: 'month'}">Месяц</li>
+                                <li data-period-value="{'' | period: 'week'}" class="active">Последние 7 дней</li>
+                                <li data-period-value="{'' | period: 'month'}">Текущий месяц</li>
+                                <li data-period-value="{'' | period: 'prev_month'}">Предыдущий месяц</li>
                                 <li data-period-value="{'' | period: 'year'}">Год</li>
                             </ul>
                         </div>
@@ -71,91 +79,108 @@
                 <button class="filter-balloon filter-balloon--reset" type="reset" form="filterDesignForm" data-ff-reset>Сбросить всё</button>
             </div>
 
-            <!--filter-->
-            <div class="filter filter--glass">
-                <div class="filter-column">
-                    <ul class="filter-list">
-                        <li>
-                            <div class="btn-group">
-                                <div class="filter-item">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" class="checkbox">
-                                        <span class="checkbox-text">Выбрать все</span>
-                                    </label>
-                                </div>
-                                <div class="filter-item">
-                                    <button class="btn btn--line btn--small">Очистить выбор</button>
-                                </div>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="btn-group">
-                                <div class="filter-item">
-                                    <button class="btn btn--select btn--small" data-popup-link="popup-status">Новый</button>
-                                    <div class="popup-menu popup-menu--checked" data-popup="popup-status">
-                                        <ul>
-                                            <li>
-                                                <label class="checkbox-label">
-                                                    <input type="checkbox" class="checkbox">
-                                                    <span class="checkbox-text checkbox-text--small">В продаже</span>
-                                                </label>
-                                            </li>
-                                            <li>
-                                                <label class="checkbox-label">
-                                                    <input type="checkbox" class="checkbox">
-                                                    <span class="checkbox-text checkbox-text--small">На проверке тех.требований</span>
-                                                </label>
-                                            </li>
-                                            <li>
-                                                <label class="checkbox-label">
-                                                    <input type="checkbox" class="checkbox">
-                                                    <span class="checkbox-text checkbox-text--small">Отклонён</span>
-                                                </label>
-                                            </li>
-                                            <li>
-                                                <label class="checkbox-label">
-                                                    <input type="checkbox" class="checkbox">
-                                                    <span class="checkbox-text checkbox-text--small">Присвоение артикулов</span>
-                                                </label>
-                                            </li>
-                                        </ul>
+            {if $_modx->resource.template === 19}
+                <!--filter-->
+                <form data-si-form="listActionProducts" id="listActionProducts" data-si-nosave class="filter filter--glass">
+                    <div class="filter-column">
+                        <ul class="filter-list">
+                            <li>
+                                <div class="btn-group">
+                                    <div class="filter-item">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" class="checkbox" data-select-all>
+                                            <span class="checkbox-text">Выбрать все</span>
+                                        </label>
+                                    </div>
+                                    <div class="filter-item">
+                                        <button type="button" class="btn btn--line btn--small" data-unselect-all>Очистить выбор</button>
                                     </div>
                                 </div>
-                                <div class="filter-item">
-                                    <button class="btn btn--dark btn--small">Установить статус</button>
+                            </li>
+                            <li>
+                                <div class="btn-group">
+                                    <div class="filter-item">
+                                        <div class="js-custom-select select-pill">
+                                            {set $statuses = ('statuses' | placeholder)}
+                                            <select class="" data-list-status="5" name="status">
+                                                {foreach $statuses['product'] as $id => $data}
+                                                    {if $id !== 7}
+                                                        <option value="{$id}">{$data.caption}</option>
+                                                    {/if}
+                                                {/foreach}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="filter-item">
+                                        <button type="button" class="btn btn--dark btn--small" data-si-event="click" data-si-preset="changeStatus">Установить статус</button>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="filter-column">
+                        <div class="btn-group">
+                            <button class="btn btn--small" type="button" form="listActionProducts" data-si-event="click" data-si-preset="changeDeleted">Удалить</button>
+                            <button class="btn btn--glass btn--small" type="button" data-modal-show="#modal-excel">Скачать в Excel</button>
+                        </div>
+                    </div>
+                    <div id="modal-comment" aria-hidden="true" class="modal modal-main_sm">
+                        <div class="modal-main">
+                            <div class="modal-close" data-modal-close></div>
+                            <div class="modal-content">
+                                <div class="designer-card__content">
+                                    <h3>Причина отказа:</h3>
+                                    <textarea class="input textarea" name="content" placeholder="Если дизайн не прошёл модерацию, обязательно укажите причину" data-comment-input style="min-height: 120px; margin-bottom: 20px;"></textarea>
+                                </div>
+                                <div class="modal-footer center" style="margin-top: 15px;">
+                                    <button type="button" class="btn btn--small btn--line" data-reject-product data-comment-submit>Отклонить</button>
                                 </div>
                             </div>
-                        </li>
-                    </ul>
-                </div>
-                <div class="filter-column">
-                    <div class="btn-group">
-                        <button class="btn btn--small">Удалить</button>
-                        <button class="btn btn--glass btn--small">Скачать в Excel</button>
+                        </div>
                     </div>
-                </div>
-            </div>
+                </form>
+            {/if}
 
             <div class="columns" data-ff-results>
                 {$resources}
                 
             </div>
 
-            <div class="d-flex justify-content-between">
-                <div data-pn-pagination class="pagination {$totalPages < 2 ? 'd-none' : ''}">
-                    <button type="button" class="toggler start" data-pn-first="1"></button>
-                    <button type="button" class="toggler prev" data-pn-prev></button>
-                    <input type="number" name="page" data-pn-current form="filterForm" min="1" max="{$totalPages}" value="{$.get.page?:1}">
-
-                    <span data-pn-total>{$totalPages}</span>
-                    <button type="button" class="toggler next" data-pn-next></button>
-                    <button type="button" class="toggler end" data-pn-last="{$totalPages}"></button>
-                </div>
-                <label>
-                    <span>Показывать по:</span>
-                    <input type="number" name="limit" data-pn-limit form="filterForm" class="red-input" min="1" value="{$limit}">
-                </label>
-            </div>
+            {include "file:chunks/fffiltering/designs/pagination.tpl"}
 
             {include "file:chunks/common/search_modal.tpl"}
+
+            {if $_modx->resource.template === 19}
+                <div id="modal-excel" aria-hidden="true" class="modal">
+                    <form id="generateReport" data-si-form="generateReport" data-si-nosave class="modal-main">
+                        <div class="modal-close" data-modal-close></div>
+                        <div class="modal-content scrollbar">
+                            <h2>Выберите данные для отображения в файле.</h2>
+                            <div class="columns-list columns-list-2">
+                                <input type="hidden" name="className" value="msProduct">
+                                <input type="checkbox" name="captions[id][]" value="ID" checked class="v_hidden">
+                                <input type="checkbox" name="names[]" value="id" checked class="v_hidden">
+                                {set $groups = $_modx->runSnippet('@FILE snippets/product/snippet.getproductfields.php', [])}
+                                {foreach $groups as $group => $fields}
+                                    <div class="columns-list__item">
+                                        <div class="columns-list__letter">{$group}</div>
+                                        {foreach $fields as $key => $caption}
+                                            <div class="columns-list__name">
+                                                <input type="checkbox" name="captions[{$key}][]" data-caption="{$key}" value="{$caption}" class="v_hidden">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" name="names[]" value="{$key}" data-key="{$key}" class="checkbox">
+                                                    <span class="checkbox-text">{$caption}</span>
+                                                </label>
+                                            </div>
+                                        {/foreach}
+                                    </div>
+                                {/foreach}
+                            </div>
+                        </div>
+                        <div class="modal-footer center">
+                            <button type="button" class="btn" data-si-event="click" data-si-preset="generate_report">Скачать</button>
+                        </div>
+                    </form>
+                </div>
+            {/if}
         </div>

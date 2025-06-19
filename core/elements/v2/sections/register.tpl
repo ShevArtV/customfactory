@@ -11,15 +11,15 @@
                 <div class="login-form__layout">
                     <div class="login-form__content col-6 md-col-12">
                         <div class="form-group">
-                            <input type="text" class="input" name="fullname" placeholder="Имя">
-                            <small class="red" data-si-error="fullname"></small>
+                            <input type="text" class="input" name="extended[name]" placeholder="Имя">
+                            <small class="red" data-si-error="extended[name]"></small>
                         </div>
                         <div class="form-group">
                             <input type="email" name="email" class="input" placeholder="E-mail" value="">
                             <small class="red" data-si-error="email"></small>
                         </div>
                         <div class="form-group">
-                            <input type="tel" name="phone" class="input" placeholder="Телефон" value="">
+                            <input type="tel" name="phone" class="input" placeholder="+7(9" value="">
                             <small class="red" data-si-error="phone"></small>
                         </div>
                         <div class="form-group">

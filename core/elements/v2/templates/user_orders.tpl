@@ -13,14 +13,8 @@
 
     ##set $parents = $_modx->runSnippet('@FILE snippets/product/snippet.getparents.php')}
     ##set $types = $_modx->runSnippet('@FILE snippets/product/snippet.gettypes.php')}
-    <div data-mpc-unwrap="1" data-mpc-snippet="!ffFiltering|orders">
-        <tr data-mpc-chunk="fffiltering/orders/ffempty.tpl">
-            <td>
-                <p class="page input-group">Дизайнов удовлетворяющих заданным параметрам не найдено.</p>
-            </td>
-        </tr>
-
-        <div data-mpc-chunk="fffiltering/orders/outer.tpl">
+    <div data-mpc-unwrap="1" data-mpc-snippet="!ffGetFilterForm|orders">
+        <div data-mpc-unwrap="1" data-mpc-chunk="fffiltering/orders/outer.tpl">
             <div class="container-small">
                 <!--statistic-showcase-->
                 <div class="statistic-showcase">
@@ -28,35 +22,52 @@
                         <div class="statistic-showcase__title">
                             {set $dates = $.get.date | split: ','}
                             Всего за период <br>
-                            с <span data-total="total_min">{$dates[0]}</span> по <span data-total="total_max">{$dates[1]}</span>
+                            с
+                            <span data-total="total_min">{$dates[0]}</span>
+                            по
+                            <span data-total="total_max">{$dates[1]}</span>
                         </div>
                     </div>
                     <div class="statistic-showcase__item">
                         <div class="statistic-showcase__title">Заказов:</div>
-                        <div class="statistic-showcase__value"><span data-total="total_orders">0</span> шт.</div>
+                        <div class="statistic-showcase__value">
+                            <span data-total="total_orders">0</span>
+                            шт.
+                        </div>
                     </div>
                     <div class="statistic-showcase__item">
                         <div class="statistic-showcase__title">Продаж:</div>
-                        <div class="statistic-showcase__value"><span data-total="total_sales">0</span> шт.</div>
+                        <div class="statistic-showcase__value">
+                            <span data-total="total_sales">0</span>
+                            шт.
+                        </div>
                     </div>
                     <div class="statistic-showcase__item">
                         <div class="statistic-showcase__title">Возвратов:</div>
-                        <div class="statistic-showcase__value"><span data-total="total_returns">0</span> шт.</div>
+                        <div class="statistic-showcase__value">
+                            <span data-total="total_returns">0</span>
+                            шт.
+                        </div>
                     </div>
                     <div class="statistic-showcase__item active">
                         <div class="statistic-showcase__title">Выплат:</div>
-                        <div class="statistic-showcase__value"><span data-total="total_pays">0</span> ₽</div>
+                        <div class="statistic-showcase__value">
+                            <span data-total="total_pays">0</span>
+                            ₽
+                        </div>
                     </div>
                 </div>
 
             </div>
 
-            <form id="filterForm" data-ff-form="filterDesignForm" class="filter">
+            <form id="filterForm" data-ff-form="" data-si-preset="{$presetName}" class="filter">
                 <input type="hidden" name="configId" value="{$configId}">
 
                 <div class="filter-column">
                     <div class="filter-item">
-                        <div class="filter-name">Дизайнов: <span id="total">{$totalResources?:0}</span></div>
+                        <div class="filter-name">Дизайнов:
+                            <span data-ff-total="total">{$totalResources?:0}</span>
+                        </div>
                     </div>
                     <div class="filter-item">
                         <ul class="filter-list">
@@ -142,53 +153,58 @@
                 </template>
                 <button class="filter-balloon filter-balloon--reset" type="reset" form="filterDesignForm" data-ff-reset>Сбросить всё</button>
             </div>
-
-            <table class="statistic-table">
-                <tbody data-ff-results>
-                {$resources}
-                <tr data-mpc-remove="1" data-mpc-chunk="fffiltering/orders/item.tpl">
-                    <td>
-                        <div class="statistic-table__wrap">
-                            <ul class="statistic-table__images">
-                                {set $previews = $preview | split: '|'}
-                                {if $previews}
-                                    {foreach $previews as $path}
-                                        <li>
-                                            <img src="{$_modx->config.file_prefix}{$path}" alt="">
-                                        </li>
-                                    {/foreach}
-                                {/if}
-                            </ul>
-                            <div class="statistic-table__content">
-                                <div class="statistic-table__title">{$types[$root_id]}</div>
-                                <ul class="statistic-table__params">
-                                    <li>Создан {$createdon | date: 'd.m.Y H:i'}</li>
-                                    <li>Артикул: {$article}</li>
-                                    <li>Вознаграждение: {$price}₽</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <ul class="statistic-table__info">
-                            <li>Заказов: {$orders?:0}</li>
-                            <li>Выкупов: {$sales?:0}</li>
-                            <li>Возвратов: {$returns?:0}</li>
-                        </ul>
-                    </td>
-                    <td>
-                        <div class="statistic-table__total">
-                            Сумма выплат:
-                            <span class="red">{$pays?:0} ₽</span>
-                        </div>
-                    </td>
-                </tr>
-                </tbody>
-            </table>
-
-            <div data-mpc-chunk="fffiltering/designs/pagination.tpl" data-mpc-include="1" data-mpc-copy="moderate_designs.tpl" class="d-flex justify-content-between" style="gap:20px;flex-wrap:wrap;margin-top:60px;"></div>
         </div>
     </div>
+
+    ##set $presetName = 'filters.presetName' | placeholder}
+    <table class="statistic-table">
+        <tbody data-pn-result="filters" data-mpc-snippet="!Pagination|orders">
+        <tr data-mpc-chunk="fffiltering/orders/ffempty.tpl">
+            <td>
+                <p class="page input-group">Дизайнов удовлетворяющих заданным параметрам не найдено.</p>
+            </td>
+        </tr>
+        <tr data-mpc-remove="1" data-mpc-chunk="fffiltering/orders/item.tpl">
+            <td>
+                <div class="statistic-table__wrap">
+                    <ul class="statistic-table__images">
+                        {set $previews = $preview | split: '|'}
+                        {if $previews}
+                            {foreach $previews as $path}
+                                <li>
+                                    <img src="{$_modx->config.file_prefix}{$path}" alt="">
+                                </li>
+                            {/foreach}
+                        {/if}
+                    </ul>
+                    <div class="statistic-table__content">
+                        <div class="statistic-table__title">{$types[$root_id]}</div>
+                        <ul class="statistic-table__params">
+                            <li>Создан {$createdon | date: 'd.m.Y H:i'}</li>
+                            <li>Артикул: {$article}</li>
+                            <li>Вознаграждение: {$price}₽</li>
+                        </ul>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <ul class="statistic-table__info">
+                    <li>Заказов: {$orders?:0}</li>
+                    <li>Выкупов: {$sales?:0}</li>
+                    <li>Возвратов: {$returns?:0}</li>
+                </ul>
+            </td>
+            <td>
+                <div class="statistic-table__total">
+                    Сумма выплат:
+                    <span class="red">{$pays?:0} ₽</span>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    ##include "file:chunks/fffiltering/designs/pagination.tpl"}
 
     <div id="modal-search" aria-hidden="true" data-mpc-chunk="common/search_modal.tpl" data-mpc-include="1" data-mpc-copy="moderate_users.tpl" class="modal"></div>
 </div>

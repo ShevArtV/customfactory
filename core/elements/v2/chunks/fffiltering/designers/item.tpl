@@ -8,7 +8,8 @@
                                         <div class="profile-header__avatar">
                                             <img src="{$photo}" alt="">
                                         </div>
-                                        <div class="profile-header__name">{$fullname?:$username}</div>
+                                        {set $name = [$extended['surname'], $extended['name'], $extended['fathername']]}
+                                        <div class="profile-header__name">{($name | count > 0)? ($name | join: ' ') : $username}</div>
                                     </div>
 
                                     <ul class="designer-card__info">
@@ -31,15 +32,31 @@
                                         </li>
                                         <li>
                                             Дата принятия
-                                            оферты: {$extended[('offerPageKey' | placeholder)] ? '<span data-copy title="Нажмите для копирования">'~$extended[('offerPageKey' | placeholder)]~'</span>' : '<span class="red">Не принята</span>'}
+                                            оферты: {$extended[$offerPageKey] ? '<span data-copy title="Нажмите для копирования">'~$extended[('offerPageKey' | placeholder)]~'</span>' : '<span class="red">Не принята</span>'}
                                         </li>
                                         <li>
-                                            Фактический
-                                            адрес: {$address_fact ?'<span data-copy title="Нажмите для копирования">'~$zip_fact~', '~$address_fact~'</span>': '<span class="red">Не указано</span>'}
+                                            {if $address_fact}
+                                                {if $zip_fact}
+                                                    {set $address_fact = '<span data-copy title="Нажмите для копирования">'~$zip_fact~', '~$address_fact~'</span>'}
+                                                {else}
+                                                    {set $address_fact = '<span data-copy title="Нажмите для копирования">'~$address_fact~'</span>'}
+                                                {/if}
+                                            {else}
+                                                {set $address_fact = '<span class="red">Не указано</span>'}
+                                            {/if}
+                                            Фактический адрес: {$address_fact}
                                         </li>
                                         <li>
-                                            Адрес для
-                                            корреспонденции: {$address ?'<span data-copy title="Нажмите для копирования">'~$zip~', '~$address~'</span>': '<span class="red">Не указано</span>'}
+                                            {if $address}
+                                                {if $zip}
+                                                    {set $address = '<span data-copy title="Нажмите для копирования">'~$zip~', '~$address~'</span>'}
+                                                {else}
+                                                    {set $address = '<span data-copy title="Нажмите для копирования">'~$address~'</span>'}
+                                                {/if}
+                                            {else}
+                                                {set $address = '<span class="red">Не указано</span>'}
+                                            {/if}
+                                            Адрес для корреспонденции: {$address}
                                         </li>
                                     </ul>
                                 </div>
@@ -55,8 +72,16 @@
                                             паспорта: {$pass_num ?'<span data-copy title="Нажмите для копирования">'~$pass_num~'</span>': '<span class="red">Не указано</span>'}
                                         </li>
                                         <li>
-                                            Кем и когда
-                                            выдан: {$extended[pass_where] ?'<span data-copy title="Нажмите для копирования">'~$extended[pass_date]~', '~$extended[pass_where]~'</span>': '<span class="red">Не указано</span>'}
+                                            {if $extended.pass_where}
+                                                {if $extended.pass_date}
+                                                    {set $extended.pass_where = '<span data-copy title="Нажмите для копирования">'~$extended.pass_date~', '~$extended.pass_where~'</span>'}
+                                                {else}
+                                                    {set $extended.pass_where = '<span data-copy title="Нажмите для копирования">'~$extended.pass_where~'</span>'}
+                                                {/if}
+                                            {else}
+                                                {set $extended.pass_where = '<span class="red">Не указано</span>'}
+                                            {/if}
+                                            Кем и когда выдан: {$extended.pass_where}
                                         </li>
                                         <li>
                                             Код
@@ -76,7 +101,7 @@
                                     <h3>Проверить документы {$legal_form === 'ИП' ? 'ИП' : 'самозанятого'}:</h3>
                                     <ul class="designer-card__info">
                                         <li>
-                                            ИНН: {$inn ?'<span data-copy title="Нажмите для копирования">'~$inn~'</span>': '<span class="red">Не указано</span>'}
+                                            ИНН: {$inn ?'<span data-copy title="Нажмите для копирования">'~($inn | replace: ' ': '')~'</span>': '<span class="red">Не указано</span>'}
                                         </li>
                                         <li class="{$legal_form === 'ИП' ? 'd-none' : ''}">
                                             Номер справки
@@ -198,7 +223,7 @@
                                         </li>
                                         <li>
                                             <div class="js-custom-select select-pill">
-                                                {set $statuses = ('statuses' | placeholder)}
+                                                {set $statuses = $statuses ?: ('statuses' | placeholder)}
                                                 {set $allow = $statuses['designer'][$status]['allow']}
                                                 <select class="" name="status">
                                                     {foreach $statuses['designer'] as $id => $data}

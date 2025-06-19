@@ -2966,7 +2966,7 @@ h3 {
 }
 
 .good-report:nth-child(even) .good-report__date {
-  margin-left: auto;
+  left: auto;
 }
 
 .good-report:nth-child(even) .good-report__quote::before,
@@ -2980,6 +2980,7 @@ h3 {
   font-size: 12px;
   font-weight: 500;
   width: fit-content;
+  left: auto;
 }
 
 .good-report__quote {
@@ -3017,6 +3018,10 @@ h3 {
 
 .good-image__img {
   display: flex;
+  border-radius: 10px; /* Закругление углов */
+  border: 1px solid var(--status); /* Цвет обводки */
+  max-width: 100%; /* Максимальная ширина */
+  height: auto; /* Автоматическая высота */
 }
 
 @media (max-width: 767px) {
@@ -4266,4 +4271,37 @@ button[disabled]{
 .table-wrapper{
   max-width: 100%;
   overflow: auto;
+}
+
+@media (max-width: 768px) {
+  .modal-main {
+    width: 95% !important;
+    max-height: 90vh !important;
+  }
+  
+  .good-images {
+    flex-direction: column !important;
+  }
+  
+  .good-image {
+    width: 100% !important;
+  }
+  
+  .btn-group {
+    flex-direction: column !important;
+  }
+  
+  .btn-group .btn, 
+  .btn-group .js-custom-select {
+    width: 100% !important;
+    margin-bottom: 10px !important;
+  }
+  
+  .card-design__params li {
+    margin-bottom: 8px !important;
+  }
+  
+  .product-articles__grid {
+    grid-template-columns: 1fr !important;
+  }
 }

@@ -124,4 +124,11 @@ switch ($argv[1]) {
         $sql = "DELETE FROM cust_moderatorlog_event WHERE createdon < $timestamp";
         $count = $modx->exec($sql);
         break;
+
+    case 'regenerate_previews':
+        // php7.4 -d display_errors -d error_reporting=E_ALL ~/www/core/elements/v2/cron/run.php regenerate_previews
+        // php7.4 ~/www/core/elements/v2/cron/run.php regenerate_previews
+        $loadtoselectel = new CustomServices\LoadToSelectel($modx);
+        $c = $loadtoselectel->generatePreviews();
+        break;
 }

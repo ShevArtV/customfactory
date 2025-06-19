@@ -47,7 +47,7 @@
                                 <div class="filter-item">
                                     <div class="js-custom-select select-pill">
                                         {set $statuses = ('statuses' | placeholder)}
-                                        <select class="" data-listuser-status name="status">
+                                        <select class="" data-list-status="3" name="status">
                                             {foreach $statuses['designer'] as $id => $data}
                                                 <option value="{$id}">{$data.caption}</option>
                                             {/foreach}
@@ -63,7 +63,7 @@
                 </div>
                 <div class="filter-column">
                     <div class="btn-group">
-                        <button class="btn btn--small" type="button" data-si-event="click" data-si-preset="removeUsers">Удалить выбранные</button>
+                        <button class="btn btn--small" type="button" data-si-event="click" data-si-preset="unactiveUsers">Удалить выбранные</button>
                     </div>
                 </div>
                 <div id="modal-comment" aria-hidden="true" class="modal modal-main_sm">
@@ -88,7 +88,7 @@
                 <div data-pn-pagination class="pagination {$totalPages < 2 ? 'd-none' : ''}">
                     <button type="button" class="toggler start" data-pn-first="1"></button>
                     <button type="button" class="toggler prev" data-pn-prev></button>
-                    <input type="number" name="page" data-pn-current form="filterForm" min="1" max="{$totalPages}" value="{$.get.page?:1}">
+                    <input type="number" name="page" data-pn-current form="filterForm" data-si-preset="flatfilters" min="1" max="{$totalPages}" value="{$.get.page?:1}">
 
                     <span data-pn-total>{$totalPages}</span>
                     <button type="button" class="toggler next" data-pn-next></button>
@@ -107,6 +107,8 @@
                         <h2>Выберите данные для отображения в файле.</h2>
                         <div class="columns-list columns-list-2">
                             <input type="hidden" name="className" value="modUser">
+                            <input type="checkbox" name="captions[id][]" value="ID" checked class="v_hidden">
+                            <input type="checkbox" name="names[]" value="id" checked class="v_hidden">
                             {set $groups = $_modx->runSnippet('@FILE snippets/designer/snippet.getuserfields.php', [])}
                             {foreach $groups as $group => $fields}
                                 <div class="columns-list__item">

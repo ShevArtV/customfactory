@@ -61,10 +61,6 @@ switch ($modx->event->name) {
                 }
             }
         }
-        /*if ($configData['id'] === 2 && ($modx->user->isMember(['Managers']) || $modx->user->isMember(['Moderators']))) {
-           $conditions[] = '`status` != 7';
-        }*/
-
         $modx->event->returnedValues['conditions'] = $conditions;
         break;
     case 'ffOnBeforeGetFilterValues':

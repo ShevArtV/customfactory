@@ -21,7 +21,7 @@
                         <div class="cases-title">{$item1.title}</div>
                         <!--cases-box-->
                         <div class="{$item1.subtitle}">
-                            <div class="{$item1.subtitle}__image" style="background:url('assets/project_files/img/landing/caces/bars.png');">{$item1.img}</div>
+                            <div class="{$item1.subtitle}__image" style="background:url({$item1.img});"></div>
                             <div class="{$item1.subtitle === 'cases-item' ? 'cases-item__content' : 'cases-box__row'}">{$item1.content}</div>
                         </div>
                     {/foreach}

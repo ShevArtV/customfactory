@@ -70,7 +70,9 @@ class LoadToSelectel extends Base
         $products = $this->getNoPreviewProducts();
         $c = 0;
         foreach ($products as $product) {
+            $this->modx->log(1, print_r("Обрабатываем товар с ID: {$product->get('id')}", 1));
             $filelist = explode('|', $product->get('print'));
+            $this->modx->log(1, "Список файлов: " . print_r($filelist, 1));
             if (empty($filelist)) {
                 continue;
             }
@@ -120,8 +122,10 @@ class LoadToSelectel extends Base
             'modResource.template' => 13,
             'modResource.deleted' => 0,
         ]);
-        $q->andCondition('(msProductData.preview IS NULL)');
-        $q->limit(2);
+        $q->andCondition('(msProductData.preview IS NULL OR msProductData.preview = "")');
+        //$q->limit(2);
+        $q->prepare();
+        //$this->modx->log(1, print_r($q->toSQL(), 1));
         return $this->modx->getIterator('modResource', $q);
     }
 
@@ -300,7 +304,7 @@ class LoadToSelectel extends Base
         /*if(strpos($this->basePath,'art-sites') === false && $this->mediaSource->get('id') === 3){
             $basePath = '/jail/' . $this->basePath;
         }*/
-
+        //$this->modx->log(1, print_r($basePath, 1));
         foreach ($filelist as $item) {
             $preview = $this->modx->runSnippet('pThumb', [
                 'input' => $basePath . $item,
@@ -348,7 +352,19 @@ class LoadToSelectel extends Base
 
             if ($preview === $basePath . $item) {
                 $this->modx->log(1, '[LoadToSelectel::getProductPreviews] Не удалось сгенерировать превью');
-                return [];
+                $localPath = 'assets/temp-images/' . basename($item);
+                $this->modx->log(1, '[LoadToSelectel::getProductPreviews] Загружаем файл из облака ' . $basePath . $item . ' в ' . $localPath);
+                if (!file_exists($this->basePath . $localPath) && !$this->download($basePath . $item, $localPath)) {
+                    $this->modx->log(1, '[LoadToSelectel::getProductPreviews] Не удалось загрузить файл из облака');
+                    return [];
+                }
+                $preview = $this->modx->runSnippet('pThumb', [
+                    'input' => $this->basePath . $localPath,
+                    'options' => 'w=249&h=281&zc=1&q=60'
+                ]);
+                if (file_exists($this->basePath . $localPath)) {
+                    unlink($this->basePath . $localPath);
+                }
             }
 
             if (strpos($preview, $this->basePath) !== 0) {
@@ -358,6 +374,7 @@ class LoadToSelectel extends Base
                 $previews[] = $previewData;
             }
         }
+
 
         return $previews;
     }
@@ -468,7 +485,7 @@ class LoadToSelectel extends Base
      */
     private function removeEmptyDir(string $dir): void
     {
-        if(!file_exists($dir)){
+        if (!file_exists($dir)) {
             return;
         }
         if (strpos($dir, '/assets/') === false) {
@@ -499,6 +516,22 @@ class LoadToSelectel extends Base
         $path = $this->mediaSource->getBasePath() . $path;
 
         $this->mediaSource->removeContainer($path);
+        return true;
+    }
+
+    /**
+     * @param $path
+     * @return bool
+     */
+    public function removeObject($path): bool
+    {
+        if (!$this->mediaSource) {
+            $this->modx->log(1, '[LoadToSelectel::removeObject] Не удалось получить медиа источник.');
+            return false;
+        }
+        $path = $this->mediaSource->getBasePath() . $path;
+
+        $this->mediaSource->removeObject($path);
         return true;
     }
 }

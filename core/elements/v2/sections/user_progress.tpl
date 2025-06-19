@@ -34,6 +34,7 @@
 'tpl' => '@FILE chunks/pdoresources/help_aside/item.tpl',
 'resources' => '51972,51973,51974',
 'includeTVs' => 'img',
+'includeContent' => '1',
 'tvPrefix' => '',
 'sortby' => '{ "menuindex":"ASC"}',
 ]}</div>

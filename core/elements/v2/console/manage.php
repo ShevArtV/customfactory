@@ -453,6 +453,36 @@ switch ($argv[1]) {
 
     case 'generatepreviews':
         // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php generatepreviews
+// https://0d063d6b-72d2-4603-812f-6ccc80a5294d.selstorage.ru/84/116026/06-04-2025-05-40-17/grpc70lumjgr9vsk.jpg
+
+        $csvFile = MODX_ASSETS_PATH . 'project_files/ProdcutUpdatePreview.csv';
+        if (($handle = fopen($csvFile, 'r')) !== false) {
+            fgetcsv($handle);
+
+            $productIdsWithTifPreview = [];
+            while (($data = fgetcsv($handle)) !== false) {
+                $productId = $data[0];
+                $preview = $data[2];
+
+                if (preg_match('/\.tif(\||$)/i', $preview)) {
+                    $productIdsWithTifPreview[] = $productId;
+                } else {
+                    $productIdsWithJpgPreview[] = $productId;
+                }
+            }
+
+            fclose($handle);
+
+            $modx->log(1, print_r("Product IDs with TIF in preview:\n", 1));
+            $modx->log(1, print_r($productIdsWithJpgPreview, 1));
+            $productsData = $modx->getIterator('msProductData', ['id:IN' => $productIdsWithJpgPreview]);
+            foreach ($productsData as $productData) {
+                $productData->set('preview', '');
+                $productData->save();
+            }
+        } else {
+            $modx->log(1, print_r("Не удалось открыть файл: " . $csvFile, 1));
+        }
 
         $loadtoselectel = new CustomServices\LoadToSelectel($modx);
         $c = $loadtoselectel->generatePreviews();
@@ -728,7 +758,7 @@ ORDER BY r.id DESC LIMIT 100";
         // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php getdesignlog
         $modx->addPackage('moderatorlog', MODX_CORE_PATH . 'components/moderatorlog/model/');
         $productService = new Product($modx);
-        $logs = $modx->getIterator('moderatorlogEvent', ['rid' => '81770']);
+        $logs = $modx->getIterator('moderatorlogEvent', ['rid' => '59107']);
         foreach ($logs as $log) {
             $data = $log->toArray();
             $data['createdon'] = date('d.m.Y H:i:s', $data['createdon']);
@@ -1214,13 +1244,13 @@ ORDER BY r.id DESC LIMIT 100";
         ) c2 ON c1.alias = c2.alias";
         $statement = $modx->query($sql);
         $ids = $statement->fetchAll(\PDO::FETCH_COLUMN);
-        if(empty($ids)){
+        if (empty($ids)) {
             return;
         }
-        $resources = $modx->getIterator('modResource', ['id:IN' =>$ids]);
-        foreach($resources as $resource){
+        $resources = $modx->getIterator('modResource', ['id:IN' => $ids]);
+        foreach ($resources as $resource) {
             $alias = $resource->cleanAlias($resource->get('pagetitle'));
-            $alias .= '-'.$resource->get('id');
+            $alias .= '-' . $resource->get('id');
             $resource->set('alias', $alias);
             $resource->save();
         }
@@ -1229,7 +1259,7 @@ ORDER BY r.id DESC LIMIT 100";
     case 'indexing-pillowcases':
         $q = $modx->newQuery('modResource');
         $q->leftJoin('msProductData', 'Data', 'Data.id=modResource.id');
-        $q->where(['template' => 13, 'Data.status:IN' => [3,4], 'Data.root_id' => 18732,  'modResource.deleted' => 0]);
+        $q->where(['template' => 13, 'Data.status:IN' => [3, 4], 'Data.root_id' => 18732, 'modResource.deleted' => 0]);
         $q->select('modResource.id as id, pagetitle, alias, createdby');
         $q->prepare();
         if ($q->stmt->execute()) {
@@ -1238,7 +1268,7 @@ ORDER BY r.id DESC LIMIT 100";
         }
         $q = $modx->newQuery('modResource');
         $q->leftJoin('msProductData', 'Data', 'Data.id=modResource.id');
-        $q->where(['modResource.template' => 13, 'Data.status:IN' => [3,4], 'Data.root_id' => 96507, 'modResource.deleted' => 0]);
+        $q->where(['modResource.template' => 13, 'Data.status:IN' => [3, 4], 'Data.root_id' => 96507, 'modResource.deleted' => 0]);
         $q->select('modResource.id as id, pagetitle, alias, createdby');
         $q->prepare();
         if ($q->stmt->execute()) {
@@ -1258,17 +1288,34 @@ AND ResIndex.status IN ('3','4')";
         $q->where([
             'modResource.id:NOT IN' => $ids,
             'modResource.template' => 13,
-            'Data.status:IN' => [3,4],
+            'Data.status:IN' => [3, 4],
             'Data.root_id' => 96507,
-            'modResource.deleted' => 0]);
+            'modResource.deleted' => 0
+        ]);
         $resources = $modx->getIterator('modResource', $q);
         $ids = [];
         $FF = $modx->getService('flatfilters', 'Flatfilters', MODX_CORE_PATH . 'components/flatfilters/');
-        foreach($resources as $r){
+        foreach ($resources as $r) {
             $ids[] = $r->get('id') . '<br>';
             $FF->indexingDocument($r);
         }
         echo count($ids) . '<br>';
         print_r($ids);
+        break;
+
+    case 'repair-articles':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php repair-articles
+        $q = $modx->newQuery('msProductData');
+        $q->where(['article:LIKE' => '%shpionirogolubiro%']);
+        $ps = $modx->getIterator('msProductData', $q);
+        $tagLabel = 815;
+        foreach($ps as $p){
+            $article = $p->get('article');
+            $article = str_replace('ShpioniroGolubiro', $tagLabel, $article);
+            $p->set('tag_label', $tagLabel);
+            $p->set('article', $article);
+            $modx->log(1, print_r([$article => $tagLabel], 1));
+           // $p->save();
+        }
         break;
 }

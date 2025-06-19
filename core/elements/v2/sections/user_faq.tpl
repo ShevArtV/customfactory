@@ -5,15 +5,17 @@
 
             <div class="head">
                 <div class="head-title">##$title}</div>
-                <div class="head-more">
-                    <a href="##$target | resource: 'uri'}">##$btn_text}</a>
-                </div>
+                {if $resource.template !== 24}
+                    <div class="head-more">
+                        <a href="##$target | resource: 'uri'}">##$btn_text}</a>
+                    </div>
+                {/if}
             </div>
 
             <div class="page">##$subtitle}</div>
-
             <div data-tab-wrapper>##'getFAQ' | snippet: [
                         'data' => $list_faq,
+'rid' => $_modx->resource.id,
 'wrapTpl' => '@FILE chunks/getfaq/default/wrap.tpl',
 'navItemTpl' => '@FILE chunks/getfaq/default/nav_item.tpl',
 'tabTpl' => '@FILE chunks/getfaq/default/tab.tpl',
@@ -28,6 +30,7 @@
 'tpl' => '@FILE chunks/pdoresources/help_aside/item.tpl',
 'resources' => '51973,51974',
 'includeTVs' => 'img',
+'includeContent' => '1',
 'tvPrefix' => '',
 'sortby' => '{ "menuindex":"ASC"}',
 'extends' => 'pdoresources.help_aside',

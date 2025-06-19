@@ -1,14 +1,14 @@
 <div class="offset-top">
     <form method="post" enctype="multipart/form-data" data-si-form="uploadQuizForm" id="uploadQuizForm" data-si-preset="upload_quiz" data-si-nosave>
-        <input type="hidden" name="data[pagetitle]" value="Дизайн ##$_modx->user.fullname} от ##'' | date: 'd_m_Y H_i_s'}">
-        <input type="hidden" name="data[alias]" value="design-##'' | date: 'd-m-Y-H-i-s'}">
+        <input type="hidden" name="data[pagetitle]" value="Дизайн ##$_modx->user.fullname} от ">
+        <input type="hidden" name="data[alias]" value="design-">
         <input type="hidden" name="data[createdby]" value="{$_modx->user.id}">
         <input type="hidden" name="data[designer]" value="{$_modx->user.fullname}">
         <input type="hidden" name="data[status]" value="0">
         <input type="hidden" name="data[published]" value="0">
         <input type="hidden" name="data[count_files]" value="1">
         <input type="hidden" name="data[tags][]" value="">
-        <input type="hidden" name="data[profile_num]" value="{$_modx->user.profile_num}">
+        <input type="hidden" name="data[profilenum]" value="{$_modx->user.profile_num}">
 
         <ul class="timeline md-hidden">
             <li data-qf-step="1" class="active">Товар</li>
@@ -24,39 +24,74 @@
             <h3 class="md-visible">Товар</h3>
 
             <div class="blockquote">
-                Выберите из списка тип товара, который хотите загрузить и укажите размер
+                Выберите из списка тип товара, который хотите загрузить, и укажите размер
             </div>
 
-            <table class="type-table">
-                <thead>
-                <tr>
-                    <th>Укажите тип товара</th>
-                    <th>Укажите размер</th>
-                </tr>
-                </thead>
-                <tbody>
-                ##set $designTemplates = $_modx->runSnippet('@FILE snippets/product/snippet.getdesigntemplates.php', ['prohibited_categories' => $_modx->user.prohibited_categories])}
-                ##if $designTemplates}
+            <div class="table-wrapper">
+                <table class="type-table">
+                    <thead>
+                    <tr>
+                        <th>Укажите тип товара</th>
+                        <th>Укажите размер</th>
+                        <!--
+                        <th>Укажите крой</th>
+                        <th>Укажите пол</th>
+                        -->
+                    </tr>
+                    </thead>
+                    <tbody>
+                    ##set $designTemplates = $_modx->runSnippet('@FILE snippets/product/snippet.getdesigntemplates.php', ['prohibited_categories' => $_modx->user.prohibited_categories])}
+                    ##if $designTemplates}
                     ##foreach $designTemplates as $title => $data}
-                        <tr>
-                            <td>
-                                <label class="type-table__link">
-                                    <input type="radio" name="parent" value="##$data.parent}" data-size-target="#sizes-##$data.parent}">
-                                    <span>##$title}</span>
-                                </label>
-                            </td>
-                            <td>
-                                <select class="type-table__select" disabled name="data[root_id]" id="sizes-##$data.parent}">
-                                    ##foreach $data.sizes as $size => $d}
-                                        <option value="##$d.root_id}" data-count="##$d.count_files}">##$size}</option>
-                                    ##/foreach}
-                                </select>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>
+                            <label class="type-table__link">
+                                <input type="radio" name="parent" value="##$data.parent}" ##$.get.parent==$data.parent?'checked': ''} data-size-target="#sizes-##$data.parent}">
+                                <span>##$title}</span>
+                            </label>
+                        </td>
+                        <td>
+                            <select class="type-table__select" ##$.get.parent != $data.parent ?'disabled': ''} name="data[root_id]" id="sizes-##$data.parent}">
+                                ##foreach $data.sizes as $size => $d}
+                                <option value="##$d.root_id}" data-count="##$d.count_files}" ##$.get.type==$d.root_id?'selected': ''}>##$size}</option>
+                                ##/foreach}
+                            </select>
+                        </td>
+                        ##if $data.parent == 19}
+                        <td>
+                           {* <label class="checkbox-label">
+                                <input type="checkbox" name="data[cut][]" value="Прямой" class="checkbox" tabindex="-1">
+                                <span class="checkbox-text">Прямой</span>
+                            </label>*}
+                        </td>
+                        <td>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="data[gender][]" value="Мужской" class="checkbox" tabindex="-1">
+                                <span class="checkbox-text">Мужской</span>
+                            </label>
+                        </td>
+                        ##/if}
+                        ##if $data.parent == 54754}
+                        <td>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="data[cut][]" value="Оверсайз" class="checkbox" tabindex="-1">
+                                <span class="checkbox-text">Оверсайз</span>
+                            </label>
+                        </td>
+                        <td>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="data[gender][]" value="Женский" class="checkbox" tabindex="-1">
+                                <span class="checkbox-text">Женский</span>
+                            </label>
+                        </td>
+                        ##/if}
+                    </tr>
                     ##/foreach}
-                ##/if}
-                </tbody>
-            </table>
+                    ##/if}
+                    </tbody>
+                </table>
+            </div>
+
 
         </div>
 
@@ -160,14 +195,14 @@
                 <div class="modal-main">
                     <div class="modal-close" data-modal-close></div>
                     <div class="modal-content scrollbar">
-                        {set $colors = 51982 | resource: 'colors'}
+                        {set $colors = $_modx->runSnippet('@FILE snippets/product/snippet.getcolors.php', [])}
                         {if $colors}
                             <div class="columns-list">
                                 {set $colors = $colors | split: ','}
                                 {foreach $colors as $color index=$id}
                                     <div class="columns-list__name">
                                         <label class="checkbox-label">
-                                            <input type="checkbox" value="{$color | strip}" class="checkbox" name="data[color][]" form="uploadQuizForm" data-checkbox="{$color | strip}">
+                                            <input type="checkbox" value="{$color | strip}" class="checkbox" name="data[color][]" data-color form="uploadQuizForm" data-checkbox="{$color | strip}">
                                             <span class="checkbox-text">{$color | strip}</span>
                                         </label>
                                     </div>
@@ -199,7 +234,7 @@
         <div data-qf-finish class="v_hidden">{$content}</div>
 
         <div class="btn-footer">
-            <button data-qf-btn="prev" class="btn btn--blue" type="button">Назад</button>
+            <button data-qf-btn="prev" class="btn btn--line" type="button">Назад</button>
             <button data-qf-btn="next" class="btn" type="button">Далее</button>
             <div data-qf-btn="reset" class="v_hidden">
                 <button class="btn" type="reset">Загрузить новый</button>

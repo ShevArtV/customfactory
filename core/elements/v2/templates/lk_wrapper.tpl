@@ -222,7 +222,7 @@
 
             <div class="footer-bottom">
                 <div class="footer-copyright">
-                    © {'' | date: 'Y'} Все права защищены. 121 Россия, Иваново, пр-т Ленина, дом 21, литер Л
+                    © {'' | date: 'Y'} Все права защищены. 
                 </div>
             </div>
 

@@ -1,13 +1,12 @@
 <li>
-                                            {if $key === 'status'}
-                                                {set $statuses = ('statuses' | placeholder)}
-                                            {/if}
+                                            {set $statuses = ('statuses' | placeholder)}
                                             <label class="checkbox-label">
                                                 {set $values = ($.get[$key] | split: ',') ?: []}
                                                 {switch $key}
                                                 {case 'parent'}
+                                                {set $caption = $categories[$value]}
                                                 {case 'root_id'}
-                                                {set $caption = $value | resource: 'pagetitle'}
+                                                {set $caption = $types[$value]}
                                                 {case 'status'}
                                                 {set $caption = $statuses['product'][$value]['caption']}
                                                 {default}

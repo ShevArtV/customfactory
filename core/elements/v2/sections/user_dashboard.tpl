@@ -9,17 +9,26 @@
         <div class="page">{$content}</div>
     </div>
 
-    ##'msProducts' | snippet: []}
-    {if $popular}
-        <div class="offset-top">
-            <h2>{$title}</h2>
+    ##set $popular = 'msProducts' | snippet: [
+                        'parents' => '13',
+'tpl' => '@FILE chunks/msproducts/popular/item.tpl',
+'limit' => '0',
+'includeTVs' => 'img',
+'tvPrefix' => '',
+'templates' => '14',
+'where' => '{ "Data.popular":1}',
+'toPls' => 'popular',
+]}
+    ##if $popular}
+    <div class="offset-top">
+        <h2>{$title}</h2>
 
-            <div class="columns">
-                {$popular}
-                
-            </div>
-
+        <div class="columns">
+            ##$popular}
+            
         </div>
-    {/if}
+
+    </div>
+    ##/if}
     ##/if}
 </div>

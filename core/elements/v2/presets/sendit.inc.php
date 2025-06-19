@@ -218,7 +218,9 @@ return [
         'tplChar' => '@FILE chunks/gettagsbyalphabet/char.tpl',
         'tplTag' => '@FILE chunks/gettagsbyalphabet/tag.tpl',
         'tplEmpty' => '@FILE chunks/gettagsbyalphabet/empty.tpl',
-        'snippet' => 'getTagsByAlphabet'
+        'snippet' => 'getTagsByAlphabet',
+        'resultBlockSelector' => '[data-checkbox-wrap]',
+        'resultShowMethod' => 'insert'
     ],
     'updateUser' => [
         'hooks' => '',
@@ -302,11 +304,9 @@ return [
         'snippet' => '@FILE snippets/product/snippet.getstatistictotal.php',
         'successMessage' => '',
     ],
-    'flatfilters' => [
+    'remove_preview' => [
         'hooks' => '',
-        'snippet' => 'ffConnector'
-    ],
-    'ff_disabling' => [
-        'extends' => 'flatfilters'
+        'snippet' => '@FILE snippets/product/snippet.removepreviews.php',
+        'successMessage' => '',
     ]
 ];

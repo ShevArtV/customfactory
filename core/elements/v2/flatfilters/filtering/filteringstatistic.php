@@ -9,8 +9,9 @@ require_once dirname(__FILE__, 5) . '/components/flatfilters/handlers/filtering/
 class FilteringStatistic extends FilteringResources
 {
 
-    protected function getOutputIds($rids)
+    protected function getOutputIds($rids): string
     {
+        $this->modx->log(1, print_r($rids, 1));
         $productService = new Product($this->modx);
 
         if ($statistics = $productService->getStatistic(explode(',', $rids))) {

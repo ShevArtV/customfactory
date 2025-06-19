@@ -8,10 +8,13 @@
             Проверьте изображения от дизайнеров на соответствие техническим требованиям и допустимому содержанию
         </div>
     </div>
-    ##set $parents = $_modx->runSnippet('@FILE snippets/product/snippet.getparents.php')}
-    ##set $types = $_modx->runSnippet('@FILE snippets/product/snippet.gettypes.php')}
-    <div data-mpc-unwrap="1" data-mpc-snippet="!ffFiltering|products">
-        <div class="column col-4 xl-col-6 sm-col-12" data-mpc-remove="1" data-mpc-chunk="fffiltering/products/item.tpl">
+    ##set $parents = $_modx->runSnippet('@FILE snippets/product/snippet.getparents.php', ['showUnpublished' => 1])}
+    ##set $types = $_modx->runSnippet('@FILE snippets/product/snippet.gettypes.php', ['showUnpublished' => 1])}
+    <ul data-mpc-unwrap="1" data-mpc-snippet="!ffGetFilterForm|designs"></ul>
+
+    ##set $presetName = 'filters.presetName' | placeholder}
+    <div class="columns" data-pn-result="filters" data-mpc-snippet="!Pagination|products">
+        <div class="column col-4 xl-col-6 sm-col-12" data-mpc-chunk="fffiltering/products/item.tpl">
             {set $statusCaption = $statuses['product'][$status]['caption']}
             {if $status == 1 || ($prev_status == 1 && $status == 7)}
                 {set $class = 'product--new'}
@@ -76,7 +79,6 @@
                     </div>
                 {/if}
 
-
                 <div class="product-content">
                     <div class="product-title">{$types[$root_id]}</div>
                     <ul class="product-params">
@@ -86,31 +88,28 @@
                 </div>
                 <div class="product-articles">
                     <div class="product-articles__title">Артикулы</div>
-                    <ul class="product-articles__grid">
-                        <li>
+                    
+                    <ul class="product-articles__grid" style="display: block;">
+                        <li style="margin-bottom: 10px; width: 100%;">
                             <div class="product-articles__name">Внутренний</div>
                             <div class="product-articles__value">
                                 <span>{$article?:'не присвоен'}</span>
                             </div>
                         </li>
-                        <li>
-                            <div class="product-articles__name">Ozon</div>
-                            <div class="product-articles__value">
-                                <span>{$article_oz?:'не присвоен'}</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="product-articles__name">WB</div>
-                            <div class="product-articles__value">
-                                <span>{$article_wb?:'не присвоен'}</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="product-articles__name">Я.Маркет</div>
-                            <div class="product-articles__value">
-                                <span>{$article_ya?:'не присвоен'}</span>
-                            </div>
-                        </li>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <li>
+                                <div class="product-articles__name">WB</div>
+                                <div class="product-articles__value">
+                                    <span>{$article_wb?:'не присвоен'}</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="product-articles__name">Ozon</div>
+                                <div class="product-articles__value">
+                                    <span>{$article_oz?:'не присвоен'}</span>
+                                </div>
+                            </li>
+                        </div>
                     </ul>
                 </div>
                 <ul class="product-footer">
@@ -135,7 +134,7 @@
             </div>
         </div>
     </div>
-
+    ##include "file:chunks/fffiltering/designs/pagination.tpl"}
 
     <div id="workflow" aria-hidden="false" class="modal">
         <div class="modal-main" data-mpc-chunk="common/workflow_designer.tpl">
