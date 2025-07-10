@@ -4,24 +4,38 @@
     </div>
     ##set $parents = $_modx->runSnippet('@FILE snippets/product/snippet.getparents.php', ['showUnpublished' => 1])}
     ##set $types = $_modx->runSnippet('@FILE snippets/product/snippet.gettypes.php', ['showUnpublished' => 1])}
-    ##'!ffFiltering' | snippet: [
+    ##'!ffGetFilterForm' | snippet: [
                         'configId' => '2',
-'limit' => '6',
-'hooks' => '',
-'wrapper' => '@FILE chunks/fffiltering/designs/ffouter.tpl',
-'empty' => '@FILE chunks/fffiltering/designs/ffempty.tpl',
+'wrapper' => '@FILE chunks/fffiltering/designs/ffform.tpl',
 'defaultTplOuter' => '@FILE chunks/fffiltering/designs/fffcheckboxgroupouter.tpl',
 'defaultTplRow' => '@FILE chunks/fffiltering/designs/ffcheckboxgroup.tpl',
 'createdonTplOuter' => '',
 'createdonTplRow' => '',
-'tpl' => '@FILE chunks/fffiltering/products/item.tpl',
-'sortby' => '{ "Resource.id":"DESC"}',
-'element' => '@FILE snippets/product/snippet.render.php',
 'categories' => $parents,
 'types' => $types,
-'extends' => 'fffiltering.designs',
+'presetName' => 'flatfilters',
 ]}
 
+    ##set $presetName = 'filters.presetName' | placeholder}
+    <div class="columns" data-pn-result="filters">##'!Pagination' | snippet: [
+                        'configId' => '2',
+'render' => '@FILE snippets/product/snippet.render.php',
+'snippet' => '!Pagination',
+'presetName' => $presetName,
+'pagination' => 'filters',
+'resultBlockSelector' => '[data-pn-result="filters"]',
+'resultShowMethod' => 'insert',
+'hashParams' => 'filtersHash,sortby',
+'noDisabled' => '1',
+'getDisabled' => '0',
+'limit' => '6',
+'parents' => '13',
+'sortby' => '{ "Resource.id":"DESC"}',
+'tpl' => '@FILE chunks/fffiltering/products/item.tpl',
+'tplEmpty' => '@FILE chunks/fffiltering/designs/ffempty.tpl',
+'extends' => 'pagination.designs',
+]}</div>
+    ##include "file:chunks/fffiltering/designs/pagination.tpl"}
 
     <div id="workflow" aria-hidden="false" class="modal">
         <div class="modal-main">

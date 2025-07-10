@@ -234,5 +234,5 @@
             </div>
         </div>
     </div>
-
+    <div id="modal-search" aria-hidden="true" data-mpc-chunk="common/search_modal.tpl" data-mpc-include="1" data-mpc-copy="moderate_users.tpl" class="modal"></div>
 </div>
