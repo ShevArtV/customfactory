@@ -71,7 +71,7 @@ class LoadToSelectel extends Base
         $c = 0;
         foreach ($products as $product) {
             $this->modx->log(1, print_r("Обрабатываем товар с ID: {$product->get('id')}", 1));
-            $filelist = explode('|', $product->get('print'));
+            $filelist = $product->get('print') ? explode('|', $product->get('print')) : [];
             $this->modx->log(1, "Список файлов: " . print_r($filelist, 1));
             if (empty($filelist)) {
                 continue;
@@ -362,7 +362,7 @@ class LoadToSelectel extends Base
                     'input' => $this->basePath . $localPath,
                     'options' => 'w=249&h=281&zc=1&q=60'
                 ]);
-                if (file_exists($this->basePath . $localPath)) {
+                if (file_exists($this->basePath . $localPath) && !is_dir($this->basePath . $localPath)) {
                     unlink($this->basePath . $localPath);
                 }
             }
@@ -439,7 +439,6 @@ class LoadToSelectel extends Base
                 foreach ($errors as $k => $msg) {
                     $errorMessage .= $k . ': ' . $msg . '. ';
                 }
-                $this->modx->log(1, print_r($internalPath, 1));
                 $this->modx->log(1, '[LoadToSelectel] Can`t upload user file: ' . $originalFilename . '. Error text: ' . $errorMessage);
                 return [];
             }
