@@ -51,3 +51,7 @@
 /assets/project_files/ProdcutUpdatePreview.csv
 /assets/temp-images/
 /.idea/phpspec.xml
+/core/elements/v2/console/articles.inc.php
+/core/elements/v2/console/articles-formatted.inc.php
+/format_articles.php
+/assets/delete-with-mp.xlsx

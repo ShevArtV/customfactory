@@ -253,7 +253,8 @@ class Product extends Base
             return $output;
         }
 
-        if (!$productData['tag_label'] && !$productData['tag_label'] = $this->getTagLabel($productData['tags'][0])) {
+        //if (!$productData['tag_label'] && !$productData['tag_label'] = $this->getTagLabel($productData['tags'][0])) {
+        if (!$productData['tags'][0]) {
             $msg = 'Не выбран тэг товара.';
             $this->setModerateLog([
                 'rid' => (int)$productData['id'],
@@ -282,30 +283,17 @@ class Product extends Base
         $defaultProductData['template'] = 13;
         $log['root'] = $defaultProductData;
         $productData = array_merge($defaultProductData, $productData);
-        if (!$productData['tag_label']) {
-            $q = $this->modx->newQuery('TaggerTag');
-            $q->select('label');
-            $q->where(['tag' => $productData['tags'][0]]);
-            $q->prepare();
-            $tstart = microtime(true);
-            if ($q->prepare() && $q->stmt->execute()) {
-                $this->modx->queryTime += microtime(true) - $tstart;
-                $this->modx->executedQueries++;
-                $result = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
-                $productData['tag_label'] = $result[0];
-            }
-            if (!$productData['tag_label']) {
-                $msg = 'Не указан лейбл тэга.';
-                $this->setModerateLog([
-                    'rid' => (int)$productData['id'],
-                    'msg' => $msg,
-                    'place' => '\CustomServices\Product',
-                    'method' => 'createProduct',
-                    'productData' => $productData
-                ]);
-                $output['msg'] = $msg;
-                return $output;
-            }
+        if (!$productData['tag_label'] = $this->getTagLabel($productData['tags'][0])) {
+            $msg = 'Не удалось получить лейбл тэга.';
+            $this->setModerateLog([
+                'rid' => (int)$productData['id'],
+                'msg' => $msg,
+                'place' => '\CustomServices\Product',
+                'method' => 'createProduct',
+                'productData' => $productData
+            ]);
+            $output['msg'] = $msg;
+            return $output;
         }
 
         $productData['profilenum'] = $productData['profilenum'] ?: $this->getProfileNum((int)$productData['createdby']);
@@ -993,7 +981,7 @@ class Product extends Base
             "MAX(`date`) as {$total}max",
         ]);
         $q->where(['product_id:IN' => $resources]);
-        $this->modx->log(1, print_r($_REQUEST['date'], 1));
+        //$this->modx->log(1, print_r($_REQUEST['date'], 1));
         if ($_REQUEST['date']) {
             $dates = explode(',', $_REQUEST['date']);
             $start = strtotime($dates[0]);

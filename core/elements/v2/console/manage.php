@@ -11,6 +11,7 @@ use CustomServices\Product;
 use CustomServices\Report;
 
 use CustomServices\OuterStatistic\OuterBase;
+use \PhpOffice\PhpSpreadsheet\IOFactory;
 
 define('MODX_API_MODE', true);
 require_once dirname(__FILE__, 5) . '/index.php';
@@ -756,9 +757,10 @@ ORDER BY r.id DESC LIMIT 100";
 
     case 'getdesignlog':
         // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php getdesignlog
+        // php7.4 -d display_errors -d error_reporting=E_ALL core/elements/v2/console/manage.php getdesignlog
         $modx->addPackage('moderatorlog', MODX_CORE_PATH . 'components/moderatorlog/model/');
         $productService = new Product($modx);
-        $logs = $modx->getIterator('moderatorlogEvent', ['rid' => '59107']);
+        $logs = $modx->getIterator('moderatorlogEvent', ['rid' => '105496']);
         foreach ($logs as $log) {
             $data = $log->toArray();
             $data['createdon'] = date('d.m.Y H:i:s', $data['createdon']);
@@ -1019,12 +1021,26 @@ ORDER BY r.id DESC LIMIT 100";
         }
         break;
 
-    case 'test-timings':
-        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php test-timings
-        $productService = new Product($modx);
-        $ids = '86528,85660,85658,85657,85656,85654,85652,85651,85649,85648,85647,85646';
-        $ids = explode(',', $ids);
-        $productService->changeStatus(['selected_id' => $ids, 'status' => 5]);
+    case 'change-status':
+        // php7.4 -d display_errors -d error_reporting=E_ALL www/core/elements/v2/console/manage.php change-status
+        // php7.4 -d display_errors -d error_reporting=E_ALL core/elements/v2/console/manage.php change-status
+        $articles = include dirname(__FILE__) . '/articles-formatted.inc.php';
+        $q = $modx->newQuery('msProductData');
+        $q->select('id');
+        $q->where(['article:IN' => $articles, 'status:!=' => 5]);
+        $q->prepare();
+        $ids = [];
+        if ($q->stmt->execute()) {
+            $ids = $q->stmt->fetchAll(\PDO::FETCH_COLUMN);
+        }
+
+        /*$productService = new Product($modx);
+        $productService->changeStatus([
+            'selected_id' => $ids,
+            'status' => 5,
+            'content' => 'Дизайн отклонён, потому что у него было мало продаж.'
+        ]);*/
+        print_r($ids);
         break;
 
     case 'test-new-stat':
@@ -1316,6 +1332,67 @@ AND ResIndex.status IN ('3','4')";
             $p->set('article', $article);
             $modx->log(1, print_r([$article => $tagLabel], 1));
            // $p->save();
+        }
+        break;
+
+    case 'fix-sales-error':
+        // php7.4 -d display_errors -d error_reporting=E_ALL core/elements/v2/console/manage.php fix-sales-error
+        $fullPath = MODX_BASE_PATH . 'assets/delete-with-mp.xlsx';
+        $articles = [];
+        $spreadsheet = IOFactory::load($fullPath);
+        $worksheet = $spreadsheet->getActiveSheet();
+        $highestRow = $worksheet->getHighestRow();
+
+        for ($row = 2; $row <= $highestRow; $row++) {
+            if (!$value = trim($worksheet->getCell('B' . $row)->getValue())) {
+                continue;
+            }
+            $articles[] = $value;
+        }
+        $q = $modx->newQuery('modResource');
+        $q->leftJoin('msProductData', 'Data');
+        $q->where(['Data.article:IN' => $articles, 'Data.status:!=' => 5]);
+        $q->select('modResource.id as id, modResource.content as content, Data.article as article');
+        $q->prepare();
+        $productService = new Product($modx);
+        if ($q->stmt->execute()) {
+            $resources = $q->stmt->fetchAll(\PDO::FETCH_ASSOC);
+            echo count($resources) .' '. date('Y-m-d H:i:s') . PHP_EOL;
+            /*foreach ($resources as $r) {
+                if(!$r['content']){
+                    $r['content'] = 'Ваш дизайн отклонён, потому что у него не было продаж.';
+                }
+
+                $result = $productService->updateProduct([
+                    'id' => $r['id'],
+                    'content' => $r['content'],
+                    'status' => 5
+                ]);
+                if(!$result['success']) {
+                    print_r($result);
+                }
+            }*/
+        }
+        break;
+
+    case 'fix-tags':
+        // php7.4 -d display_errors -d error_reporting=E_ALL core/elements/v2/console/manage.php fix-tags
+        $modx->addPackage('tagger', MODX_CORE_PATH . 'components/tagger/model/');
+        $q = $modx->newQuery('TaggerTag');
+        $q->select('label, tag');
+        $q->prepare();
+        if ($q->stmt->execute()) {
+            $tags = $q->stmt->fetchAll(\PDO::FETCH_KEY_PAIR);
+        }
+
+        $q = $modx->newQuery('msProductData');
+        $q->where("tags LIKE CONCAT('%', tag_label, '%') AND tag_label != ''");
+        $products = $modx->getIterator('msProductData', $q);
+        foreach($products as $p) {
+            $pt = [$tags[$p->get('tag_label')]];
+            print_r($pt);
+            $p->set('tags', $pt);
+            $p->save();
         }
         break;
 }
